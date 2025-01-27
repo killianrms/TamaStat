@@ -1,11 +1,16 @@
 <?php
+use App\Controleur\Specifique\ControleurUtilisateur;
+use App\Controleur\Specifique\ControleurCsv;
+
 require_once __DIR__ . '/../src/Controleur/Specifique/ControleurUtilisateur.php';
-require_once __DIR__ . '/../src/Controleur/Specifique/ControleurCsv.php'; // Ajoutez le contrôleur pour l'ajout des données CSV
+require_once __DIR__ . '/../src/Controleur/Specifique/ControleurCsv.php';
+require_once __DIR__ . '/vendor/autoload.php';
+
 
 $route = $_GET['route'] ?? 'connexion';
 
 $controleurUtilisateur = new ControleurUtilisateur();
-$controleurCsv = new ControleurCsv(); // Création d'une instance de ControleurCsv pour gérer l'ajout des données
+$controleurCsv = new ControleurCsv();
 
 try {
     switch ($route) {
@@ -48,3 +53,13 @@ try {
     echo '<h1>Erreur interne du serveur</h1>';
     echo '<p>' . $e->getMessage() . '</p>';
 }
+
+function autoload($class) {
+    $classPath = __DIR__ . '/../src/' . str_replace('\\', '/', $class) . '.php';
+    if (file_exists($classPath)) {
+        require_once $classPath;
+    }
+}
+
+spl_autoload_register('autoload');
+

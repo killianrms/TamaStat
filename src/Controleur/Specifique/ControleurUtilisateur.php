@@ -1,14 +1,34 @@
 <?php
-session_start();
+namespace App\Controleur\Specifique;
+
+use App\Configuration\ConfigurationBaseDeDonnees;
+use PDO;
 
 class ControleurUtilisateur {
-    public function login($username, $password) {
-        // Simule une vérification d'utilisateur
-        $utilisateurs = [
-            'admin' => 'password123', // Exemple d'utilisateur
-        ];
+    private $pdo;
 
-        if (isset($utilisateurs[$username]) && $utilisateurs[$username] === $password) {
+    public function __construct() {
+        $host = ConfigurationBaseDeDonnees::getNomHote();
+        $dbname = ConfigurationBaseDeDonnees::getNomBaseDeDonnees();
+        $username = ConfigurationBaseDeDonnees::getLogin();
+        $password = ConfigurationBaseDeDonnees::getPassword();
+        $port = ConfigurationBaseDeDonnees::getPort();
+
+        try {
+            $dsn = "mysql:host=$host;port=$port;dbname=$dbname";
+            $this->pdo = new PDO($dsn, $username, $password);
+            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        } catch (PDOException $e) {
+            die("Erreur de connexion à la base de données : " . $e->getMessage());
+        }
+    }
+
+    public function login($username, $password) {
+        $stmt = $this->pdo->prepare('SELECT * FROM utilisateurs WHERE username = :username');
+        $stmt->execute(['username' => $username]);
+        $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($utilisateur && password_verify($password, $utilisateur['password'])) {
             $_SESSION['user'] = $username;
             header('Location: routeur.php?route=accueil');
             exit;
@@ -24,3 +44,4 @@ class ControleurUtilisateur {
         exit;
     }
 }
+?>
