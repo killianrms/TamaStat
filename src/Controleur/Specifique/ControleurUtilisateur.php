@@ -23,20 +23,27 @@ class ControleurUtilisateur {
         }
     }
 
-    public function login($username, $password) {
-        $stmt = $this->pdo->prepare('SELECT * FROM utilisateurs WHERE username = :username');
-        $stmt->execute(['username' => $username]);
+    public function login($usernameOrEmail, $password) {
+        $stmt = $this->pdo->prepare(
+            'SELECT * FROM utilisateurs WHERE nom_utilisateur = :input OR email = :input'
+        );
+
+        $stmt->execute(['input' => $usernameOrEmail]);
+
         $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($utilisateur && password_verify($password, $utilisateur['password'])) {
-            $_SESSION['user'] = $username;
+        // Vérification du mot de passe
+        if ($utilisateur && $password === $utilisateur['mot_de_passe']) {
+            $_SESSION['user'] = $utilisateur['nom_utilisateur'];
             header('Location: routeur.php?route=accueil');
             exit;
         } else {
             echo '<h2>Identifiants incorrects</h2>';
-            require_once __DIR__ . '/../../Vue/utilisateur/formulaireConnexion.php';
+            require_once __DIR__ . '../../Vue/utilisateur/formulaireConnexion.php';
         }
     }
+
+
 
     public function deconnexion() {
         session_destroy();

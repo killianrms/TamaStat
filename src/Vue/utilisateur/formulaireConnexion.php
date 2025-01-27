@@ -8,10 +8,10 @@
 <body>
 <h1>Connexion</h1>
 <form action="routeur.php?route=login" method="POST">
-    <label for="username">Nom d'utilisateur :</label>
+    <label for="username">Nom d'utilisateur ou email:</label>
     <input type="text" id="username" name="username" required>
     <br>
-    <label for="password">Mot de passe :</label>
+    <label for="password">Mot de passe:</label>
     <input type="password" id="password" name="password" required>
     <br>
     <button type="submit">Se connecter</button>

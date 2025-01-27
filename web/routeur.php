@@ -1,11 +1,12 @@
 <?php
+session_start();
+
 use App\Controleur\Specifique\ControleurUtilisateur;
 use App\Controleur\Specifique\ControleurCsv;
 
 require_once __DIR__ . '/../src/Controleur/Specifique/ControleurUtilisateur.php';
 require_once __DIR__ . '/../src/Controleur/Specifique/ControleurCsv.php';
-require_once __DIR__ . '/vendor/autoload.php';
-
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $route = $_GET['route'] ?? 'connexion';
 
@@ -15,6 +16,10 @@ $controleurCsv = new ControleurCsv();
 try {
     switch ($route) {
         case 'connexion':
+            if (isset($_SESSION['user'])) {
+                header('Location: routeur.php?route=accueil');
+                exit;
+            }
             require_once __DIR__ . '/../src/Vue/utilisateur/formulaireConnexion.php';
             break;
 
@@ -22,11 +27,17 @@ try {
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $username = $_POST['username'] ?? '';
                 $password = $_POST['password'] ?? '';
-                $controleurUtilisateur->login($username, $password);
+                $controleurUtilisateur->login($username, $password); // La méthode `login` redirige si c'est un succès
             }
             break;
 
         case 'accueil':
+            // Vérifiez si l'utilisateur est connecté
+            if (!isset($_SESSION['user'])) {
+                // Si non, redirigez vers la page de connexion
+                header('Location: routeur.php?route=connexion');
+                exit;
+            }
             require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
             break;
 
@@ -62,4 +73,3 @@ function autoload($class) {
 }
 
 spl_autoload_register('autoload');
-
