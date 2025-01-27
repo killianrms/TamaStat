@@ -1,35 +1,32 @@
 <?php
-class ConnexionUtilisateur {
-    private $pdo;
 
-    public function __construct() {
-        $this->pdo = new PDO('mysql:host=localhost;dbname=ton_db', 'root', '');
+namespace App\Lib;
+
+use App\Modele\HTTP\Session;
+
+class ConnexionUtilisateur
+{
+// L'utilisateur connecté sera enregistré en session associé à la clé suivante
+    private static string $cleConnexion = "_utilisateurConnecte";
+
+    public static function connecter($emailUtilisateur): void
+    {
+        Session::getInstance()->verifierDerniereActivite();
+        Session::getInstance()->enregistrer(self::$cleConnexion, $emailUtilisateur);
     }
 
-    public function verifierUtilisateur($nom_utilisateur) {
-        $stmt = $this->pdo->prepare('SELECT * FROM utilisateurs WHERE nom_utilisateur = :nom_utilisateur');
-        $stmt->execute(['nom_utilisateur' => $nom_utilisateur]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+    public static function estConnecte(): bool
+    {
+        return Session::getInstance()->contient(self::$cleConnexion);
     }
 
-    public function importerCsv() {
-        if ($_FILES['fichier']['error'] === UPLOAD_ERR_OK) {
-            $cheminFichier = $_FILES['fichier']['tmp_name'];
-            $handle = fopen($cheminFichier, 'r');
-            $modele = new DonneesCsvModele();
-
-            while (($ligne = fgetcsv($handle, 1000, ',')) !== false) {
-                $modele->ajouterDonnees($ligne);
-            }
-            fclose($handle);
-
-            header('Location: /utilisateur/accueil?import=success');
-            exit;
-        } else {
-            header('Location: /utilisateur/accueil?import=error');
-            exit;
-        }
+    public static function deconnecter(): void
+    {
+        Session::getInstance()->supprimer(self::$cleConnexion);
     }
 
+    public static function getemailUtilisateurConnecte(): ?string
+    {
+        return Session::getInstance()->lire(self::$cleConnexion);
+    }
 }
-
