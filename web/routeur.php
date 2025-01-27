@@ -1,9 +1,11 @@
 <?php
 require_once __DIR__ . '/../src/Controleur/Specifique/ControleurUtilisateur.php';
+require_once __DIR__ . '/../src/Controleur/Specifique/ControleurCsv.php'; // Ajoutez le contrôleur pour l'ajout des données CSV
 
 $route = $_GET['route'] ?? 'connexion';
 
 $controleurUtilisateur = new ControleurUtilisateur();
+$controleurCsv = new ControleurCsv(); // Création d'une instance de ControleurCsv pour gérer l'ajout des données
 
 try {
     switch ($route) {
@@ -21,6 +23,15 @@ try {
 
         case 'accueil':
             require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
+            break;
+
+        case 'ajouterDonnees':
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
+                $csvFile = $_FILES['csv_file'];
+                $controleurCsv->ajouterDonneesDepuisFichier($csvFile);
+                header('Location: routeur.php?route=stats');
+                exit;
+            }
             break;
 
         case 'deconnexion':

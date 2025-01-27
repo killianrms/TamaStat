@@ -15,7 +15,7 @@ if (!isset($_SESSION['user'])) {
 </head>
 <body>
 <h1>Bienvenue, <?php echo htmlspecialchars($_SESSION['user']); ?> !</h1>
-<form action="routeur.php?route=importer_csv" method="POST" enctype="multipart/form-data">
+<form action="routeur.php?route=ajouterDonnees" method="POST" enctype="multipart/form-data">
     <label for="csv_file">Importer un fichier CSV :</label>
     <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
     <br>

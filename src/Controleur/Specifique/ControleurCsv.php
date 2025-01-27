@@ -1,7 +1,7 @@
 <?php
-class ControleurStatistiques
+class ControleurCsv
 {
-    public function importerCsv()
+    public function ajouterDonneesDepuisFichier()
     {
         if ($_FILES['fichier']['error'] === UPLOAD_ERR_OK) {
             $cheminFichier = $_FILES['fichier']['tmp_name'];
