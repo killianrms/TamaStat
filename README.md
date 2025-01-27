@@ -128,10 +128,6 @@ Si vous souhaitez contribuer à ce projet :
 
 ## **9. Contact**
 Pour toute question ou suggestion :
-- **Nom** : Ton nom
-- **Email** : tonemail@example.com
-- **Entreprise** : Nom de l'entreprise
-
----
-
-Avec ce README, ton projet sera bien documenté et facile à comprendre pour ton chef ou d'autres collaborateurs. Si tu as des sections à ajouter ou besoin d'une aide supplémentaire, fais-moi signe ! 😊
+- **Nom** : Ramus
+- **Email** : killian.ramus@gmail.com
+- **Entreprise** : Tamabox
