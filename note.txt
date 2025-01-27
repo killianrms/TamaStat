@@ -1,0 +1,7 @@
+
+Outils pour CSV :
+Utilise des bibliothèques comme fgetcsv() pour lire les fichiers CSV. Gère les cas où le fichier est mal formaté.
+Graphiques :
+Envisage d’utiliser une API ou une bibliothèque comme Chart.js pour afficher les statistiques sous forme graphique.
+Structure de la base de données :
+Prévois une table pour stocker les données extraites des CSV. Ajoute une table séparée pour les logs (par exemple: erreurs ou événements).
