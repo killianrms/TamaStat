@@ -1,14 +1,30 @@
 <?php
-// web/routeur.php
+require_once __DIR__ . '/../src/Controleur/Specifique/ControleurUtilisateur.php';
 
-// Récupération de la route demandée
-$route = $_GET['route'] ?? 'test'; // Par défaut, la route "test"
+$route = $_GET['route'] ?? 'connexion';
 
-// Chargement du contrôleur frontal
+$controleurUtilisateur = new ControleurUtilisateur();
+
 try {
     switch ($route) {
-        case 'test':
-            require_once __DIR__ . '/../src/Vue/utilisateur/test.php';
+        case 'connexion':
+            require_once __DIR__ . '/../src/Vue/utilisateur/formulaireConnexion.php';
+            break;
+
+        case 'login':
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $username = $_POST['username'] ?? '';
+                $password = $_POST['password'] ?? '';
+                $controleurUtilisateur->login($username, $password);
+            }
+            break;
+
+        case 'accueil':
+            require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
+            break;
+
+        case 'deconnexion':
+            $controleurUtilisateur->deconnexion();
             break;
 
         default:

@@ -1,41 +1,26 @@
 <?php
+session_start();
+
 class ControleurUtilisateur {
-    public function connexion() {
-        if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $nom_utilisateur = $_POST['nom_utilisateur'];
-            $mot_de_passe = $_POST['mot_de_passe'];
+    public function login($username, $password) {
+        // Simule une vérification d'utilisateur
+        $utilisateurs = [
+            'admin' => 'password123', // Exemple d'utilisateur
+        ];
 
-            $modele = new ConnexionUtilisateur();
-            $utilisateur = $modele->verifierUtilisateur($nom_utilisateur);
-
-            if ($utilisateur && password_verify($mot_de_passe, $utilisateur['mot_de_passe'])) {
-                session_start();
-                $_SESSION['utilisateur'] = $utilisateur['id'];
-                header('Location: /utilisateur/accueil');
-                exit;
-            } else {
-                header('Location: /utilisateur/erreur');
-                exit;
-            }
-        }
-    }
-    public function importerCsv() {
-        if ($_FILES['fichier']['error'] === UPLOAD_ERR_OK) {
-            $cheminFichier = $_FILES['fichier']['tmp_name'];
-            $handle = fopen($cheminFichier, 'r');
-            $modele = new DonneesCsvModele();
-
-            while (($ligne = fgetcsv($handle, 1000, ',')) !== false) {
-                $modele->ajouterDonnees($ligne);
-            }
-            fclose($handle);
-
-            header('Location: /utilisateur/accueil?import=success');
+        if (isset($utilisateurs[$username]) && $utilisateurs[$username] === $password) {
+            $_SESSION['user'] = $username;
+            header('Location: routeur.php?route=accueil');
             exit;
         } else {
-            header('Location: /utilisateur/accueil?import=error');
-            exit;
+            echo '<h2>Identifiants incorrects</h2>';
+            require_once __DIR__ . '/../../Vue/utilisateur/formulaireConnexion.php';
         }
     }
 
+    public function deconnexion() {
+        session_destroy();
+        header('Location: routeur.php?route=connexion');
+        exit;
+    }
 }
