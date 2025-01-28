@@ -36,6 +36,14 @@ try {
             require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
             break;
 
+        case 'login':
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $username = $_POST['username'] ?? '';
+                $password = $_POST['password'] ?? '';
+                $controleurUtilisateur->login($username, $password);
+            }
+            break;
+
         case 'ajouterDonneesAccueil':
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $nombreBox = $_POST['nombre_de_box'];
@@ -51,6 +59,13 @@ try {
             require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
             break;
 
+        case 'stats':
+            if (!isset($_SESSION['user'])) {
+                header('Location: routeur.php?route=connexion');
+                exit;
+            }
+            require_once __DIR__ . '/../src/Vue/utilisateur/stats.php';
+            break;
 
         case 'deconnexion':
             session_unset();
