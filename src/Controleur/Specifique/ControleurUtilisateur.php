@@ -36,22 +36,39 @@ class ControleurUtilisateur {
 
     public function getDonneesUtilisateur($userId) {
         $pdo = (new ConnexionBD())->getPdo();
-        $sql = "SELECT nombre_de_box, taille_total, prix_par_m3 FROM utilisateurs WHERE id = :id";
+        $sql = "SELECT taille, prix_par_m3, nombre_box FROM user_box WHERE utilisateur_id = :userId";
         $stmt = $pdo->prepare($sql);
-        $stmt->execute(['id' => $userId]);
-        return $stmt->fetch(\PDO::FETCH_ASSOC);
+        $stmt->execute(['userId' => $userId]);
+        $result = $stmt->fetch(\PDO::FETCH_ASSOC);
+
+        return $result ?: [];
     }
 
-    public function mettreAJourDonneesUtilisateur($nombreBox, $tailleTotal, $prixParM3, $userId) {
+    public function mettreAJourDonneesUtilisateur($userId, $taille, $prixParM3, $nombreBox) {
         $pdo = (new ConnexionBD())->getPdo();
-        $sql = "UPDATE utilisateurs SET nombre_de_box = :nombreBox, taille_total = :tailleTotal, prix_par_m3 = :prixParM3 WHERE id = :id";
+
+        $sql = "SELECT COUNT(*) FROM user_box WHERE utilisateur_id = :userId";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(['userId' => $userId]);
+        $exists = $stmt->fetchColumn() > 0;
+
+        if ($exists) {
+            $sql = "UPDATE user_box 
+                SET taille = :taille, prix_par_m3 = :prixParM3, nombre_box = :nombreBox 
+                WHERE utilisateur_id = :userId";
+        } else {
+            $sql = "INSERT INTO user_box (utilisateur_id, taille, prix_par_m3, nombre_box) 
+                VALUES (:userId, :taille, :prixParM3, :nombreBox)";
+        }
+
         $stmt = $pdo->prepare($sql);
         $stmt->execute([
-            'nombreBox' => $nombreBox,
-            'tailleTotal' => $tailleTotal,
+            'userId' => $userId,
+            'taille' => $taille,
             'prixParM3' => $prixParM3,
-            'id' => $userId
+            'nombreBox' => $nombreBox
         ]);
     }
+
 }
 

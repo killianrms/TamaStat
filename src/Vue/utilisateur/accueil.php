@@ -7,7 +7,7 @@ if (!isset($_SESSION['user'])) {
 use App\Controleur\Specifique\ControleurUtilisateur;
 
 $controleurUtilisateur = new ControleurUtilisateur();
-$donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['user']['id']);  // Récupère les données de l'utilisateur
+$donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['user']['id']); // Récupère les données utilisateur
 
 ?>
 
@@ -22,17 +22,17 @@ $donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['u
 
 <h1>Bienvenue sur la page d'accueil</h1>
 
-<?php if ($donneesUtilisateur): ?>
-    <p>Nombre de box : <?php echo htmlspecialchars($donneesUtilisateur['nombre_de_box']); ?></p>
-    <p>Taille totale : <?php echo htmlspecialchars($donneesUtilisateur['taille_total']); ?> m³</p>
+<?php if (!empty($donneesUtilisateur)): ?>
+    <p>Nombre de box : <?php echo htmlspecialchars($donneesUtilisateur['nombre_box']); ?></p>
+    <p>Taille totale : <?php echo htmlspecialchars($donneesUtilisateur['taille']); ?> m³</p>
     <p>Prix par m³ : <?php echo htmlspecialchars($donneesUtilisateur['prix_par_m3']); ?> €</p>
     <form action="routeur.php?route=ajouterDonneesAccueil" method="POST">
         <h3>Modifier les données :</h3>
-        <label for="nombre_de_box">Nombre de Box :</label>
-        <input type="number" id="nombre_de_box" name="nombre_de_box" value="<?php echo htmlspecialchars($donneesUtilisateur['nombre_de_box']); ?>" required>
+        <label for="nombre_box">Nombre de Box :</label>
+        <input type="number" id="nombre_box" name="nombre_box" value="<?php echo htmlspecialchars($donneesUtilisateur['nombre_box']); ?>" required>
         <br>
-        <label for="taille_total">Taille Totale (en m³) :</label>
-        <input type="number" id="taille_total" name="taille_total" value="<?php echo htmlspecialchars($donneesUtilisateur['taille_total']); ?>" required>
+        <label for="taille">Taille Totale (en m³) :</label>
+        <input type="number" step="0.01" id="taille" name="taille" value="<?php echo htmlspecialchars($donneesUtilisateur['taille']); ?>" required>
         <br>
         <label for="prix_par_m3">Prix par m³ (€) :</label>
         <input type="number" step="0.01" id="prix_par_m3" name="prix_par_m3" value="<?php echo htmlspecialchars($donneesUtilisateur['prix_par_m3']); ?>" required>
@@ -41,11 +41,11 @@ $donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['u
     </form>
 <?php else: ?>
     <form action="routeur.php?route=ajouterDonneesAccueil" method="POST">
-        <label for="nombre_de_box">Nombre de Box :</label>
-        <input type="number" id="nombre_de_box" name="nombre_de_box" required>
+        <label for="nombre_box">Nombre de Box :</label>
+        <input type="number" id="nombre_box" name="nombre_box" required>
         <br>
-        <label for="taille_total">Taille Totale (en m³) :</label>
-        <input type="number" id="taille_total" name="taille_total" required>
+        <label for="taille">Taille Totale (en m³) :</label>
+        <input type="number" step="0.01" id="taille" name="taille" required>
         <br>
         <label for="prix_par_m3">Prix par m³ (€) :</label>
         <input type="number" step="0.01" id="prix_par_m3" name="prix_par_m3" required>
