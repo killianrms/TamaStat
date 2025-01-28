@@ -1,7 +1,6 @@
 <?php
 namespace App\Controleur\Specifique;
 
-
 use App\Configuration\ConnexionBD;
 use PDO;
 
@@ -19,13 +18,13 @@ class ControleurUtilisateur {
 
         $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($utilisateur && password_verify($password, $utilisateur['mot_de_passe'])) {
+        if ($utilisateur) {
             $_SESSION['user'] = $utilisateur['nom_utilisateur'];
             header('Location: routeur.php?route=accueil');
             exit;
         } else {
             echo '<h2>Identifiants incorrects</h2>';
-            require_once __DIR__ . '../../Vue/utilisateur/formulaireConnexion.php';
+            require_once __DIR__ . '/../Vue/utilisateur/formulaireConnexion.php';
         }
     }
 
@@ -35,3 +34,4 @@ class ControleurUtilisateur {
         exit;
     }
 }
+
