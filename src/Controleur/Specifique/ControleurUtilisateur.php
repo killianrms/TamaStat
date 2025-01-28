@@ -29,16 +29,13 @@ class ControleurUtilisateur {
             header('Location: routeur.php?route=accueil');
             exit;
         } else {
-            echo '<h2>Identifiant ou mot de passe incorrect</h2>';
+            $_SESSION['erreur_connexion'] = "Identifiant ou mot de passe incorrect";
 
-            $cheminFormulaire = __DIR__ . '/../Vue/utilisateur/formulaireConnexion.php';
-            if (file_exists($cheminFormulaire)) {
-                require_once $cheminFormulaire;
-            } else {
-                echo '<p>Impossible de charger le formulaire de connexion. Vérifiez que le fichier existe à cet emplacement : ' . htmlspecialchars($cheminFormulaire) . '</p>';
-            }
+            header('Location: routeur.php?route=connexion');
+            exit;
         }
     }
+
 
 
 
