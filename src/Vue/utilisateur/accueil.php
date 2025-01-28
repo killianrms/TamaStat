@@ -23,7 +23,6 @@ $donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['u
 <h1>Bienvenue, <?php echo htmlspecialchars($_SESSION['user']['nom_utilisateur']); ?></h1>
 
 <?php if (!empty($donneesUtilisateur)): ?>
-    <!-- Affiche les données actuelles et le formulaire pour modification -->
     <p>Nombre de box : <?php echo htmlspecialchars($donneesUtilisateur['nombre_box']); ?></p>
     <p>Taille totale : <?php echo htmlspecialchars($donneesUtilisateur['taille']); ?> m³</p>
     <p>Prix par m³ : <?php echo htmlspecialchars($donneesUtilisateur['prix_par_m3']); ?> €</p>
