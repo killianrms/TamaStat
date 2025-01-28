@@ -8,10 +8,8 @@ ob_start();
 include __DIR__ . '/../src/Vue/utilisateur/header.php';
 
 use App\Controleur\Specifique\ControleurUtilisateur;
-use App\Controleur\Specifique\ControleurCsv;
 
 require_once __DIR__ . '/../src/Controleur/Specifique/ControleurUtilisateur.php';
-require_once __DIR__ . '/../src/Controleur/Specifique/ControleurCsv.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
 echo '<link rel="stylesheet" href="../ressources/css/style.css">';
@@ -19,7 +17,6 @@ echo '<link rel="stylesheet" href="../ressources/css/style.css">';
 $route = $_GET['route'] ?? 'connexion';
 
 $controleurUtilisateur = new ControleurUtilisateur();
-$controleurCsv = new ControleurCsv();
 
 try {
     switch ($route) {
@@ -31,48 +28,6 @@ try {
             require_once __DIR__ . '/../src/Vue/utilisateur/formulaireConnexion.php';
             break;
 
-        case 'login':
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $username = $_POST['username'] ?? '';
-                $password = $_POST['password'] ?? '';
-                $controleurUtilisateur->login($username, $password);
-            }
-            break;
-
-        case 'ajouterDonneesAccueil':
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $nombreDeBox = $_POST['nombre_de_box'];
-                $tailleTotal = $_POST['taille_total'];
-                $prixParM3 = $_POST['prix_par_m3'];
-
-                $connexion = new ConnexionBD();
-                $pdo = $connexion->getPdo();
-
-                $stmt = $pdo->prepare('INSERT INTO user_box (utilisateur_id, taille, prix_par_m3, nombre_box) 
-                               VALUES (:utilisateur_id, :taille, :prix_par_m3, :nombre_box)');
-                $stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
-                $stmt->bindParam(':taille', $tailleTotal);
-                $stmt->bindParam(':prix_par_m3', $prixParM3);
-                $stmt->bindParam(':nombre_box', $nombreDeBox);
-
-                if ($stmt->execute()) {
-                    header('Location: routeur.php?route=accueil');
-                    exit;
-                } else {
-                    echo "Erreur lors de l'enregistrement des données.";
-                }
-            }
-            break;
-
-
-        case 'stats':
-            if (!isset($_SESSION['user'])) {
-                header('Location: routeur.php?route=connexion');
-                exit;
-            }
-            require_once __DIR__ . '/../src/Vue/utilisateur/stats.php';
-            break;
-
         case 'accueil':
             if (!isset($_SESSION['user'])) {
                 header('Location: routeur.php?route=connexion');
@@ -81,14 +36,21 @@ try {
             require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
             break;
 
-        case 'ajouterDonnees':
-            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
-                $csvFile = $_FILES['csv_file'];
-                $controleurCsv->ajouterDonneesDepuisFichier($csvFile);
-                header('Location: routeur.php?route=stats');
+        case 'ajouterDonneesAccueil':
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $nombreBox = $_POST['nombre_de_box'];
+                $tailleTotal = $_POST['taille_total'];
+                $prixParM3 = $_POST['prix_par_m3'];
+
+                $controleurUtilisateur->mettreAJourDonneesUtilisateur($nombreBox, $tailleTotal, $prixParM3, $_SESSION['user']['id']);
+
+                header('Location: routeur.php?route=accueil');
                 exit;
             }
+            $userData = $controleurUtilisateur->recupererDonneesUtilisateur($_SESSION['user']['id']);
+            require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
             break;
+
 
         case 'deconnexion':
             session_unset();
@@ -110,7 +72,8 @@ try {
 
 include __DIR__ . '/../src/Vue/utilisateur/footer.php';
 
-function autoload($class) {
+function autoload($class)
+{
     $classPath = __DIR__ . '/../src/' . str_replace('\\', '/', $class) . '.php';
     if (file_exists($classPath)) {
         require_once $classPath;
