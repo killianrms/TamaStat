@@ -1,60 +1,59 @@
 <?php
-if (!isset($_SESSION['user'])) {
-    header('Location: routeur.php?route=connexion');
-    exit;
+use App\Configuration\ConnexionBD;
+
+$connexion = new ConnexionBD();
+$pdo = $connexion->getPdo();
+
+$stmt = $pdo->prepare('
+    SELECT * FROM boxes_utilisateur
+    WHERE utilisateur_id = :utilisateur_id
+');
+$stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
+$stmt->execute();
+
+$boxesUtilisateur = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+if (!empty($boxesUtilisateur)) {
+    echo "<h3>Vos boxes :</h3>";
+    echo "<table>";
+    echo "<tr><th>Taille (m³)</th><th>Quantité</th><th>Prix par m³ (€)</th></tr>";
+
+    foreach ($boxesUtilisateur as $box) {
+        echo "<tr>";
+        echo "<td>" . htmlspecialchars($box['taille']) . "</td>";
+        echo "<td>" . htmlspecialchars($box['nombre_box']) . "</td>";
+        echo "<td>" . htmlspecialchars($box['prix_par_m3']) . " €</td>";
+        echo "</tr>";
+    }
+
+    echo "</table>";
+} else {
+    echo "<p>Aucun box disponible pour cet utilisateur.</p>";
 }
-
-use App\Controleur\Specifique\ControleurUtilisateur;
-
-$controleurUtilisateur = new ControleurUtilisateur();
-
-$donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['user']['id']);
-
 ?>
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Accueil</title>
-</head>
-<body>
-<h1>Bienvenue, <?php echo htmlspecialchars($_SESSION['user']['nom_utilisateur']); ?></h1>
+<form action="routeur.php?route=ajouterDonneesAccueil" method="POST">
+    <h3>Ajouter ou modifier des boxes :</h3>
 
-<?php if (!empty($donneesUtilisateur)): ?>
-    <!-- Affiche les données actuelles et le formulaire pour modification -->
-    <p>Nombre de box : <?php echo htmlspecialchars($donneesUtilisateur['nombre_box']); ?></p>
-    <p>Taille totale : <?php echo htmlspecialchars($donneesUtilisateur['taille']); ?> m³</p>
-    <p>Prix par m³ : <?php echo htmlspecialchars($donneesUtilisateur['prix_par_m3']); ?> €</p>
+    <?php
+    $taillesDisponibles = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10];
+    foreach ($taillesDisponibles as $tailleBox) {
+        $boxExistante = null;
+        foreach ($boxesUtilisateur as $box) {
+            if ($box['taille'] == $tailleBox) {
+                $boxExistante = $box;
+                break;
+            }
+        }
+        ?>
 
-    <form action="routeur.php?route=ajouterDonneesAccueil" method="POST">
-        <h3>Modifier les données :</h3>
-        <label for="nombre_box">Nombre de Box :</label>
-        <input type="number" id="nombre_box" name="nombre_box" value="<?php echo htmlspecialchars($donneesUtilisateur['nombre_box']); ?>" required>
+        <label for="box_<?php echo $tailleBox; ?>">Box de <?php echo $tailleBox; ?> m³ :</label>
+        <input type="number" id="box_<?php echo $tailleBox; ?>" name="box_<?php echo $tailleBox; ?>" value="<?php echo $boxExistante ? htmlspecialchars($boxExistante['nombre_box']) : 0; ?>" required>
         <br>
-        <label for="taille">Taille Totale (en m³) :</label>
-        <input type="number" step="0.01" id="taille" name="taille" value="<?php echo htmlspecialchars($donneesUtilisateur['taille']); ?>" required>
-        <br>
-        <label for="prix_par_m3">Prix par m³ (€) :</label>
-        <input type="number" step="0.01" id="prix_par_m3" name="prix_par_m3" value="<?php echo htmlspecialchars($donneesUtilisateur['prix_par_m3']); ?>" required>
-        <br>
-        <button type="submit">Modifier</button>
-    </form>
-<?php else: ?>
-    <form action="routeur.php?route=ajouterDonneesAccueil" method="POST">
-        <h3>Ajouter des données :</h3>
-        <label for="nombre_box">Nombre de Box :</label>
-        <input type="number" id="nombre_box" name="nombre_box" required>
-        <br>
-        <label for="taille">Taille Totale (en m³) :</label>
-        <input type="number" step="0.01" id="taille" name="taille" required>
-        <br>
-        <label for="prix_par_m3">Prix par m³ (€) :</label>
-        <input type="number" step="0.01" id="prix_par_m3" name="prix_par_m3" required>
-        <br>
-        <button type="submit">Ajouter</button>
-    </form>
-<?php endif; ?>
-</body>
-</html>
+
+        <?php
+    }
+    ?>
+
+    <button type="submit">Mettre à jour les boxes</button>
+</form>

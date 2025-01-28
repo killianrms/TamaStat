@@ -57,23 +57,30 @@ try {
 
         case 'ajouterDonneesAccueil':
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $nombreBox = $_POST['nombre_box'] ?? null;
-                $taille = $_POST['taille'] ?? null;
-                $prixParM3 = $_POST['prix_par_m3'] ?? null;
+                $quantitesBox = [];
+                $tailles = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10];
 
-                if ($nombreBox !== null && $taille !== null && $prixParM3 !== null) {
-                    $controleurUtilisateur->mettreAJourDonneesUtilisateur(
-                        $_SESSION['user']['id'],
-                        $taille,
-                        $prixParM3,
-                        $nombreBox
-                    );
+                foreach ($tailles as $tailleBox) {
+                    $quantitesBox[$tailleBox] = $_POST["box_$tailleBox"] ?? 0;
+                }
+
+                foreach ($quantitesBox as $taille => $nombreBox) {
+                    if ($nombreBox > 0) {
+                        $controleurUtilisateur->mettreAJourDonneesUtilisateur(
+                            $_SESSION['user']['id'],
+                            $taille,
+                            $_POST['prix_par_m3'],
+                            $nombreBox
+                        );
+                    }
                 }
 
                 header('Location: routeur.php?route=accueil');
                 exit;
             }
             break;
+
+
 
         case 'deconnexion':
             session_unset();
