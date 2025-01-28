@@ -12,33 +12,28 @@ class ControleurUtilisateur {
         $this->pdo = $connexion->getPdo();
     }
 
-    public function login($usernameOrEmail, $password) {
+    public function login($usernameOrEmail, $password)
+    {
         $stmt = $this->pdo->prepare('SELECT * FROM utilisateurs WHERE nom_utilisateur = :input OR email = :input');
         $stmt->execute(['input' => $usernameOrEmail]);
 
         $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($utilisateur) {
-            // Vérifie si le mot de passe est correct
-            if (password_verify($password, $utilisateur['mot_de_passe'])) {
-                // Stocke toutes les informations nécessaires dans la session
-                $_SESSION['user'] = [
-                    'id' => $utilisateur['id'],
-                    'nom_utilisateur' => $utilisateur['nom_utilisateur'],
-                    'email' => $utilisateur['email'],
-                    'role' => $utilisateur['role']
-                ];
-                header('Location: routeur.php?route=accueil');
-                exit;
-            } else {
-                echo '<h2>Mot de passe incorrect</h2>';
-            }
+        if ($utilisateur && $password === $utilisateur['mot_de_passe']) {
+            $_SESSION['user'] = [
+                'id' => $utilisateur['id'],
+                'nom_utilisateur' => $utilisateur['nom_utilisateur'],
+                'email' => $utilisateur['email'],
+                'role' => $utilisateur['role']
+            ];
+            header('Location: routeur.php?route=accueil');
+            exit;
         } else {
-            echo '<h2>Identifiants incorrects</h2>';
+            $_SESSION['erreur_connexion'] = 'Identifiant ou Mot de passe incorrect';
+            header('Location: routeur.php?route=connexion&erreur=1');
+            exit;
         }
-        require_once __DIR__ . '/../Vue/utilisateur/formulaireConnexion.php';
     }
-
 
     public function deconnexion() {
         session_destroy();
