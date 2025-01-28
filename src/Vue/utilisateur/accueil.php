@@ -27,16 +27,18 @@ if (!empty($boxesUtilisateur)) {
     }
 
     echo "</table>";
-} else {
-    echo "<p>Aucun box disponible pour cet utilisateur.</p>";
 }
 ?>
 
 <form action="routeur.php?route=ajouterDonneesAccueil" method="POST">
     <h3>Ajouter ou modifier des boxes :</h3>
 
+    <label for="prix_par_m3">Prix par m³ (€) :</label>
+    <input type="number" step="0.01" id="prix_par_m3" name="prix_par_m3" required>
+    <br>
+
     <?php
-    $taillesDisponibles = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10];
+    $taillesDisponibles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
     foreach ($taillesDisponibles as $tailleBox) {
         $boxExistante = null;
         foreach ($boxesUtilisateur as $box) {
@@ -57,3 +59,4 @@ if (!empty($boxesUtilisateur)) {
 
     <button type="submit">Mettre à jour les boxes</button>
 </form>
+

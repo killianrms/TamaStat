@@ -51,13 +51,15 @@ class ControleurUtilisateur {
 
 
     public function mettreAJourDonneesUtilisateur($idUtilisateur, $taille, $prixParM3, $nombreBox) {
-        global $pdo;
+        if (!$this->pdo) {
+            throw new Exception("La connexion à la base de données a échoué.");
+        }
 
-        $stmt = $pdo->prepare('
-        INSERT INTO boxes_utilisateur (utilisateur_id, taille, nombre_box, prix_par_m3)
-        VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)
-        ON DUPLICATE KEY UPDATE nombre_box = :nombre_box, prix_par_m3 = :prix_par_m3
-    ');
+        $stmt = $this->pdo->prepare('
+            INSERT INTO boxes_utilisateur (utilisateur_id, taille, nombre_box, prix_par_m3)
+            VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)
+            ON DUPLICATE KEY UPDATE nombre_box = :nombre_box, prix_par_m3 = :prix_par_m3
+        ');
 
         $stmt->bindParam(':utilisateur_id', $idUtilisateur);
         $stmt->bindParam(':taille', $taille);
@@ -66,8 +68,6 @@ class ControleurUtilisateur {
 
         $stmt->execute();
     }
-
-
 
 }
 
