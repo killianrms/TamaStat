@@ -37,12 +37,15 @@ class ControleurUtilisateur {
     }
 
     public function getDonneesUtilisateur($userId) {
-        $stmt = $this->pdo->prepare("SELECT taille, prix_par_m3, nombre_box FROM user_box WHERE utilisateur_id = :userId");
+        $pdo = (new ConnexionBD())->getPdo();
+        $sql = "SELECT taille, prix_par_m3, nombre_box FROM user_box WHERE utilisateur_id = :userId";
+        $stmt = $pdo->prepare($sql);
         $stmt->execute(['userId' => $userId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $result ?: [];
     }
+
 
 
     public function mettreAJourDonneesUtilisateur($userId, $taille, $prixParM3, $nombreBox) {
