@@ -5,29 +5,14 @@ if (!isset($_SESSION['user'])) {
 }
 
 use App\Configuration\ConnexionBD;
-
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nombreDeBox = $_POST['nombre_de_box'];
-    $tailleTotal = $_POST['taille_total'];
-    $prixParM3 = $_POST['prix_par_m3'];
+$stmt = $pdo->prepare('SELECT * FROM user_box WHERE utilisateur_id = :utilisateur_id');
+$stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
+$stmt->execute();
+$userData = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    // Enregistrer ces données dans la base de données
-    $stmt = $pdo->prepare('INSERT INTO user_box (utilisateur_id, taille, prix_par_m3, nombre_box) 
-                           VALUES (:utilisateur_id, :taille, :prix_par_m3, :nombre_box)');
-    $stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
-    $stmt->bindParam(':taille', $tailleTotal, PDO::PARAM_STR);
-    $stmt->bindParam(':prix_par_m3', $prixParM3, PDO::PARAM_STR);
-    $stmt->bindParam(':nombre_box', $nombreDeBox, PDO::PARAM_INT);
-
-    if ($stmt->execute()) {
-        echo "Les données ont été enregistrées avec succès.";
-    } else {
-        echo "Une erreur s'est produite lors de l'enregistrement des données.";
-    }
-}
 ?>
 
 <!DOCTYPE html>
@@ -38,31 +23,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Accueil</title>
 </head>
 <body>
+<h1>Bienvenue sur la page d'accueil</h1>
 
-<h1>Bienvenue sur votre tableau de bord</h1>
-
-<form action="accueil.php" method="POST">
-    <label for="nombre_de_box">Nombre de box :</label>
-    <input type="number" id="nombre_de_box" name="nombre_de_box" required>
-    <br>
-
-    <label for="taille_total">Taille totale (en m³) :</label>
-    <input type="number" step="0.1" id="taille_total" name="taille_total" required>
-    <br>
-
-    <label for="prix_par_m3">Prix par m³ (en €) :</label>
-    <input type="number" step="0.01" id="prix_par_m3" name="prix_par_m3" required>
-    <br>
-
-    <button type="submit">Enregistrer</button>
-</form>
-
-<?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
-    <br>
-    <a href="formulaireAjoutUtilisateur.php">
-        <button type="button">Ajouter un utilisateur</button>
-    </a>
+<?php if ($userData): ?>
+    <h2>Vos données actuelles :</h2>
+    <p>Nombre de box : <?php echo htmlspecialchars($userData['nombre_box']); ?></p>
+    <p>Taille totale des box (en m³) : <?php echo htmlspecialchars($userData['taille']); ?></p>
+    <p>Prix par m³ : <?php echo htmlspecialchars($userData['prix_par_m3']); ?> €</p>
+<?php else: ?>
+    <p>Aucune donnée enregistrée. Veuillez entrer les informations ci-dessous.</p>
 <?php endif; ?>
+
+<h2>Mettre à jour vos informations :</h2>
+<form action="routeur.php?route=ajouterDonneesAccueil" method="POST">
+    <label for="nombre_de_box">Nombre de box :</label>
+    <input type="number" id="nombre_de_box" name="nombre_de_box" value="<?php echo $userData ? htmlspecialchars($userData['nombre_box']) : ''; ?>" required>
+
+    <label for="taille_total">Taille totale des box (en m³) :</label>
+    <input type="number" step="0.1" id="taille_total" name="taille_total" value="<?php echo $userData ? htmlspecialchars($userData['taille']) : ''; ?>" required>
+
+    <label for="prix_par_m3">Prix par m³ (€) :</label>
+    <input type="number" step="0.1" id="prix_par_m3" name="prix_par_m3" value="<?php echo $userData ? htmlspecialchars($userData['prix_par_m3']) : ''; ?>" required>
+
+    <button type="submit">Enregistrer les données</button>
+</form>
 
 </body>
 </html>

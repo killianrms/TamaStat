@@ -39,6 +39,32 @@ try {
             }
             break;
 
+        case 'ajouterDonneesAccueil':
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $nombreDeBox = $_POST['nombre_de_box'];
+                $tailleTotal = $_POST['taille_total'];
+                $prixParM3 = $_POST['prix_par_m3'];
+
+                $connexion = new ConnexionBD();
+                $pdo = $connexion->getPdo();
+
+                $stmt = $pdo->prepare('INSERT INTO user_box (utilisateur_id, taille, prix_par_m3, nombre_box) 
+                               VALUES (:utilisateur_id, :taille, :prix_par_m3, :nombre_box)');
+                $stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
+                $stmt->bindParam(':taille', $tailleTotal);
+                $stmt->bindParam(':prix_par_m3', $prixParM3);
+                $stmt->bindParam(':nombre_box', $nombreDeBox);
+
+                if ($stmt->execute()) {
+                    header('Location: routeur.php?route=accueil');
+                    exit;
+                } else {
+                    echo "Erreur lors de l'enregistrement des données.";
+                }
+            }
+            break;
+
+
         case 'stats':
             if (!isset($_SESSION['user'])) {
                 header('Location: routeur.php?route=connexion');
