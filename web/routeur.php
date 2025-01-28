@@ -1,12 +1,16 @@
 <?php
 session_start();
 
+include __DIR__ . '/../src/Vue/utilisateur/header.php';
+
 use App\Controleur\Specifique\ControleurUtilisateur;
 use App\Controleur\Specifique\ControleurCsv;
 
 require_once __DIR__ . '/../src/Controleur/Specifique/ControleurUtilisateur.php';
 require_once __DIR__ . '/../src/Controleur/Specifique/ControleurCsv.php';
 require_once __DIR__ . '/../vendor/autoload.php';
+
+echo '<link rel="stylesheet" href="/TamaStat/ressources/css/style.css">';
 
 $route = $_GET['route'] ?? 'connexion';
 
@@ -27,14 +31,12 @@ try {
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $username = $_POST['username'] ?? '';
                 $password = $_POST['password'] ?? '';
-                $controleurUtilisateur->login($username, $password); // La méthode `login` redirige si c'est un succès
+                $controleurUtilisateur->login($username, $password);
             }
             break;
 
         case 'accueil':
-            // Vérifiez si l'utilisateur est connecté
             if (!isset($_SESSION['user'])) {
-                // Si non, redirigez vers la page de connexion
                 header('Location: routeur.php?route=connexion');
                 exit;
             }
@@ -51,8 +53,13 @@ try {
             break;
 
         case 'deconnexion':
-            $controleurUtilisateur->deconnexion();
+            session_start();
+            session_unset();
+            session_destroy();
+            header('Location: routeur.php?route=connexion');
+            exit;
             break;
+
 
         default:
             http_response_code(404);
@@ -64,6 +71,8 @@ try {
     echo '<h1>Erreur interne du serveur</h1>';
     echo '<p>' . $e->getMessage() . '</p>';
 }
+
+include __DIR__ . '/../src/Vue/utilisateur/footer.php';
 
 function autoload($class) {
     $classPath = __DIR__ . '/../src/' . str_replace('\\', '/', $class) . '.php';
