@@ -62,15 +62,18 @@ try {
                 $prixParM3 = $_POST['prix_par_m3'] ?? null;
 
                 if ($nombreBox !== null && $taille !== null && $prixParM3 !== null) {
-                    $controleurUtilisateur->mettreAJourDonneesUtilisateur($_SESSION['user']['id'], $taille, $prixParM3, $nombreBox);
+                    $controleurUtilisateur->mettreAJourDonneesUtilisateur(
+                        $_SESSION['user']['id'],
+                        $taille,
+                        $prixParM3,
+                        $nombreBox
+                    );
                 }
 
                 header('Location: routeur.php?route=accueil');
                 exit;
             }
             break;
-
-
 
         case 'deconnexion':
             session_unset();

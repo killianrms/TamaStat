@@ -7,7 +7,8 @@ if (!isset($_SESSION['user'])) {
 use App\Controleur\Specifique\ControleurUtilisateur;
 
 $controleurUtilisateur = new ControleurUtilisateur();
-$donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['user']['id']); // Récupère les données utilisateur
+
+$donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['user']['id']);
 
 ?>
 
@@ -19,13 +20,14 @@ $donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['u
     <title>Accueil</title>
 </head>
 <body>
-
-<h1>Bienvenue sur la page d'accueil</h1>
+<h1>Bienvenue, <?php echo htmlspecialchars($_SESSION['user']['nom_utilisateur']); ?></h1>
 
 <?php if (!empty($donneesUtilisateur)): ?>
+    <!-- Affiche les données actuelles et le formulaire pour modification -->
     <p>Nombre de box : <?php echo htmlspecialchars($donneesUtilisateur['nombre_box']); ?></p>
     <p>Taille totale : <?php echo htmlspecialchars($donneesUtilisateur['taille']); ?> m³</p>
     <p>Prix par m³ : <?php echo htmlspecialchars($donneesUtilisateur['prix_par_m3']); ?> €</p>
+
     <form action="routeur.php?route=ajouterDonneesAccueil" method="POST">
         <h3>Modifier les données :</h3>
         <label for="nombre_box">Nombre de Box :</label>
@@ -41,6 +43,7 @@ $donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['u
     </form>
 <?php else: ?>
     <form action="routeur.php?route=ajouterDonneesAccueil" method="POST">
+        <h3>Ajouter des données :</h3>
         <label for="nombre_box">Nombre de Box :</label>
         <input type="number" id="nombre_box" name="nombre_box" required>
         <br>
@@ -50,9 +53,8 @@ $donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['u
         <label for="prix_par_m3">Prix par m³ (€) :</label>
         <input type="number" step="0.01" id="prix_par_m3" name="prix_par_m3" required>
         <br>
-        <button type="submit">Soumettre</button>
+        <button type="submit">Ajouter</button>
     </form>
 <?php endif; ?>
-
 </body>
 </html>
