@@ -1,6 +1,11 @@
 <?php
 $conn = new mysqli('localhost', 'username', 'password', 'database_name');
-$query = "SELECT colonne1, COUNT(*) AS total FROM votre_table GROUP BY colonne1";
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$query = "SELECT type_de_box, COUNT(*) AS total FROM locations GROUP BY type_de_box";
 $result = $conn->query($query);
 
 $data = [];
@@ -20,13 +25,14 @@ $conn->close();
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<h1>Statistiques</h1>
+<h1>Statistiques des Locations</h1>
 <canvas id="myChart"></canvas>
 <script>
     const ctx = document.getElementById('myChart').getContext('2d');
+
     const chartData = <?php echo json_encode($data); ?>;
 
-    const labels = chartData.map(item => item.colonne1);
+    const labels = chartData.map(item => item.type_de_box);
     const values = chartData.map(item => item.total);
 
     new Chart(ctx, {
@@ -34,7 +40,7 @@ $conn->close();
         data: {
             labels: labels,
             datasets: [{
-                label: 'Total par catégorie',
+                label: 'Total des locations par type de box',
                 data: values,
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
                 borderColor: 'rgba(54, 162, 235, 1)',

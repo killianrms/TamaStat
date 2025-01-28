@@ -1,55 +1,48 @@
 <?php
-namespace App\Controleur\Specifique;
-
-use App\Configuration\ConfigurationBaseDeDonnees;
-use PDO;
-
-class ControleurUtilisateur {
-    private $pdo;
-
-    public function __construct() {
-        $host = ConfigurationBaseDeDonnees::getNomHote();
-        $dbname = ConfigurationBaseDeDonnees::getNomBaseDeDonnees();
-        $username = ConfigurationBaseDeDonnees::getLogin();
-        $password = ConfigurationBaseDeDonnees::getPassword();
-        $port = ConfigurationBaseDeDonnees::getPort();
-
-        try {
-            $dsn = "mysql:host=$host;port=$port;dbname=$dbname";
-            $this->pdo = new PDO($dsn, $username, $password);
-            $this->pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
-            die("Erreur de connexion à la base de données : " . $e->getMessage());
-        }
-    }
-
-    public function login($usernameOrEmail, $password) {
-        $stmt = $this->pdo->prepare(
-            'SELECT * FROM utilisateurs WHERE nom_utilisateur = :input OR email = :input'
-        );
-
-        $stmt->execute(['input' => $usernameOrEmail]);
-
-        $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
-
-        // Vérification du mot de passe
-        if ($utilisateur && $password === $utilisateur['mot_de_passe']) {
-            $_SESSION['user'] = $utilisateur['nom_utilisateur'];
-            header('Location: routeur.php?route=accueil');
-            exit;
-        } else {
-            echo '<h2>Identifiants incorrects</h2>';
-            require_once __DIR__ . '../../Vue/utilisateur/formulaireConnexion.php';
-        }
-    }
-
-
-
-
-    public function deconnexion() {
-        session_destroy();
-        header('Location: routeur.php?route=connexion');
-        exit;
-    }
-}
+$db = new DatabaseConnection();
+$data = $db->getStats();
 ?>
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<h1>Statistiques des Locations</h1>
+<canvas id="myChart"></canvas>
+<script>
+    const ctx = document.getElementById('myChart').getContext('2d');
+
+    const chartData = <?php echo json_encode($data); ?>;
+
+    const labels = chartData.map(item => item.type_de_box);
+    const values = chartData.map(item => item.total);
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Total des locations par type de box',
+                data: values,
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>
