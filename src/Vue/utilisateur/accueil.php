@@ -8,14 +8,8 @@ use App\Controleur\Specifique\ControleurUtilisateur;
 
 $controleurUtilisateur = new ControleurUtilisateur();
 
-$userId = $_SESSION['user']['id'] ?? null;
+$donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['user']['id']);
 
-if ($userId) {
-    $donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($userId);
-} else {
-    header('Location: routeur.php?route=connexion');
-    exit;
-}
 ?>
 
 <!DOCTYPE html>
@@ -28,8 +22,8 @@ if ($userId) {
 <body>
 <h1>Bienvenue, <?php echo htmlspecialchars($_SESSION['user']['nom_utilisateur']); ?></h1>
 
-<?php if (!empty($donneesUtilisateur) && is_array($donneesUtilisateur)): ?>
-    <h3>Vos informations de box :</h3>
+<?php if (!empty($donneesUtilisateur)): ?>
+    <!-- Affiche les données actuelles et le formulaire pour modification -->
     <p>Nombre de box : <?php echo htmlspecialchars($donneesUtilisateur['nombre_box']); ?></p>
     <p>Taille totale : <?php echo htmlspecialchars($donneesUtilisateur['taille']); ?> m³</p>
     <p>Prix par m³ : <?php echo htmlspecialchars($donneesUtilisateur['prix_par_m3']); ?> €</p>
@@ -62,6 +56,5 @@ if ($userId) {
         <button type="submit">Ajouter</button>
     </form>
 <?php endif; ?>
-
 </body>
 </html>

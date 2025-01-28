@@ -18,15 +18,25 @@ class ControleurUtilisateur {
 
         $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($utilisateur && $utilisateur['mot_de_passe'] === $password) {
-            $_SESSION['user'] = $utilisateur['nom_utilisateur'];
-            header('Location: routeur.php?route=accueil');
-            exit;
+        if ($utilisateur) {
+            // Vérifie si le mot de passe est correct
+            if (password_verify($password, $utilisateur['mot_de_passe'])) {
+                // Stocke toutes les informations nécessaires dans la session
+                $_SESSION['user'] = [
+                    'id' => $utilisateur['id'],
+                    'nom_utilisateur' => $utilisateur['nom_utilisateur'],
+                    'email' => $utilisateur['email'],
+                    'role' => $utilisateur['role']
+                ];
+                header('Location: routeur.php?route=accueil');
+                exit;
+            } else {
+                echo '<h2>Mot de passe incorrect</h2>';
+            }
         } else {
-            $_SESSION['erreur_connexion'] = 'Identifiants ou mot de passe incorrects';
-            header('Location: routeur.php?route=connexion');
-            exit;
+            echo '<h2>Identifiants incorrects</h2>';
         }
+        require_once __DIR__ . '/../Vue/utilisateur/formulaireConnexion.php';
     }
 
 
@@ -37,14 +47,13 @@ class ControleurUtilisateur {
     }
 
     public function getDonneesUtilisateur($userId) {
-        $pdo = (new ConnexionBD())->getPdo();
-        $sql = "SELECT taille, prix_par_m3, nombre_box FROM user_box WHERE utilisateur_id = :userId";
-        $stmt = $pdo->prepare($sql);
+        $stmt = $this->pdo->prepare("SELECT taille, prix_par_m3, nombre_box FROM user_box WHERE utilisateur_id = :userId");
         $stmt->execute(['userId' => $userId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
         return $result ?: [];
     }
+
 
     public function mettreAJourDonneesUtilisateur($userId, $taille, $prixParM3, $nombreBox) {
         $pdo = (new ConnexionBD())->getPdo();
