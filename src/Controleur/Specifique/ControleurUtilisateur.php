@@ -1,5 +1,6 @@
 <?php
-namespace App\Controleur;
+namespace App\Controleur\Specifique;
+
 
 use App\Configuration\ConnexionBD;
 use PDO;
