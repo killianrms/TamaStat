@@ -66,21 +66,23 @@ try {
 
                 foreach ($quantitesBox as $taille => $nombreBox) {
                     if ($nombreBox > 0) {
+                        $prixParM3 = $_POST['prix_par_m3'] ?? 0;
+
                         $controleurUtilisateur->mettreAJourDonneesUtilisateur(
                             $_SESSION['user']['id'],
                             $taille,
-                            $_POST['prix_par_m3'],
+                            $prixParM3,
                             $nombreBox
                         );
                     }
                 }
-
                 header('Location: routeur.php?route=accueil');
                 exit;
+            } else {
+                $donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['user']['id']);
+                require_once __DIR__ . '/../src/Vue/utilisateur/ajouterDonnees.php';
             }
             break;
-
-
 
         case 'deconnexion':
             session_unset();
