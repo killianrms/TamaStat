@@ -1,5 +1,4 @@
 <?php
-session_start();
 if (!isset($_SESSION['user'])) {
     header('Location: routeur.php?route=connexion');
     exit;
@@ -15,7 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $tailleTotal = $_POST['taille_total'];
     $prixBox = $_POST['prix_box'];
 
-    $stmt = $pdo->prepare('INSERT INTO user_box (utilisateur_id, taille, prix, nombre_box) 
+    $stmt = $pdo->prepare('INSERT INTO utilisateur_box (utilisateur_id, taille, prix, nombre_box) 
                            VALUES (:utilisateur_id, :taille, :prix, :nombre_box)');
     $stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
     $stmt->bindParam(':taille', $tailleTotal, PDO::PARAM_STR);
