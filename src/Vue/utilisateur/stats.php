@@ -2,6 +2,7 @@
 use App\Configuration\ConnexionBD;
 use App\Modele\CsvModele;
 
+
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
 
@@ -33,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
         }
 
         foreach ($boxDetails as $taille => $details) {
-            $stmt = $pdo->prepare('SELECT nombre_box, prix FROM utilisateur_box WHERE utilisateur_id = :utilisateur_id AND taille = :taille');
+            $stmt = $pdo->prepare('SELECT nombre_box, prix_par_m3 FROM user_box WHERE utilisateur_id = :utilisateur_id AND taille = :taille');
             $stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
             $stmt->bindParam(':taille', $taille);
             $stmt->execute();
@@ -41,13 +42,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
 
             if ($userBox) {
                 $restants = $userBox['nombre_box'] - $details['loues'];
-                $revenuePotentiel = $restants * $userBox['prix'];
+                $revenuePotentiel = $restants * $userBox['prix_par_m3'] * $taille;
 
                 echo "<p>Taille du box : $taille m³</p>";
                 echo "<p>Box total : " . $userBox['nombre_box'] . "</p>";
                 echo "<p>Box loués : " . $details['loues'] . "</p>";
                 echo "<p>Box restants à louer : $restants</p>";
-                echo "<p>Revenue potentiel à venir : $revenuePotentiel €</p>";
+                echo "<p>Revenue potentiel à venir : " . number_format($revenuePotentiel, 2) . " €</p>";
             } else {
                 echo "<p>Aucune donnée disponible pour la taille $taille m³ dans votre base de données.</p>";
             }
