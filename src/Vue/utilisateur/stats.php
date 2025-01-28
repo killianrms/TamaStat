@@ -1,5 +1,4 @@
 <?php
-// Connexion à la base de données pour récupérer les données nécessaires
 $conn = new mysqli('localhost', 'username', 'password', 'database_name');
 $query = "SELECT colonne1, COUNT(*) AS total FROM votre_table GROUP BY colonne1";
 $result = $conn->query($query);

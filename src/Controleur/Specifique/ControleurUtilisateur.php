@@ -45,6 +45,7 @@ class ControleurUtilisateur {
 
 
 
+
     public function deconnexion() {
         session_destroy();
         header('Location: routeur.php?route=connexion');

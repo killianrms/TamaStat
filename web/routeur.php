@@ -10,7 +10,7 @@ require_once __DIR__ . '/../src/Controleur/Specifique/ControleurUtilisateur.php'
 require_once __DIR__ . '/../src/Controleur/Specifique/ControleurCsv.php';
 require_once __DIR__ . '/../vendor/autoload.php';
 
-echo '<link rel="stylesheet" href="/TamaStat/ressources/css/style.css">';
+echo '<link rel="stylesheet" href="../ressources/css/style.css">';
 
 $route = $_GET['route'] ?? 'connexion';
 
@@ -43,6 +43,14 @@ try {
             require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
             break;
 
+        case 'stats':
+            if (!isset($_SESSION['user'])) {
+                header('Location: routeur.php?route=connexion');
+                exit;
+            }
+            require_once __DIR__ . '/../src/Vue/utilisateur/stats.php';
+            break;
+
         case 'ajouterDonnees':
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
                 $csvFile = $_FILES['csv_file'];
@@ -53,7 +61,6 @@ try {
             break;
 
         case 'deconnexion':
-            session_start();
             session_unset();
             session_destroy();
             header('Location: routeur.php?route=connexion');

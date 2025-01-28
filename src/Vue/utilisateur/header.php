@@ -1,3 +1,6 @@
+<?php
+// Code PHP ici...
+?>
 <header>
     <div class="navbar">
         <h1>TamaStats</h1>
@@ -17,10 +20,3 @@
         <?php endif; ?>
     </div>
 </header>
-
-<script>
-    function toggleMenu() {
-        const navbar = document.querySelector('.navbar');
-        navbar.classList.toggle('active');
-    }
-</script>
