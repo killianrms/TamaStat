@@ -33,30 +33,36 @@ if (!empty($boxesUtilisateur)) {
 <form action="routeur.php?route=ajouterDonneesAccueil" method="POST">
     <h3>Ajouter ou modifier des boxes :</h3>
 
-    <label for="prix_par_m3">Prix par m³ (€) :</label>
-    <input type="number" step="0.01" id="prix_par_m3" name="prix_par_m3" required>
-    <br>
-
-    <?php
-    $taillesDisponibles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
-    foreach ($taillesDisponibles as $tailleBox) {
-        $boxExistante = null;
-        foreach ($boxesUtilisateur as $box) {
-            if ($box['taille'] == $tailleBox) {
-                $boxExistante = $box;
-                break;
-            }
-        }
-        ?>
-
-        <label for="box_<?php echo $tailleBox; ?>">Box de <?php echo $tailleBox; ?> m³ :</label>
-        <input type="number" id="box_<?php echo $tailleBox; ?>" name="box_<?php echo $tailleBox; ?>" value="<?php echo $boxExistante ? htmlspecialchars($boxExistante['nombre_box']) : 0; ?>" required>
-        <br>
-
+    <table class="boxes-table">
+        <thead>
+        <tr>
+            <th>Taille (m³)</th>
+            <th>Nombre de Boxes</th>
+            <th>Prix par m³ (€)</th>
+        </tr>
+        </thead>
+        <tbody>
         <?php
-    }
-    ?>
+        $taillesDisponibles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
+        foreach ($taillesDisponibles as $tailleBox) {
+            $boxExistante = null;
+            foreach ($boxesUtilisateur as $box) {
+                if ($box['taille'] == $tailleBox) {
+                    $boxExistante = $box;
+                    break;
+                }
+            }
+            ?>
+            <tr>
+                <td><?php echo $tailleBox; ?> m³</td>
+                <td><input type="number" name="box_<?php echo $tailleBox; ?>" value="<?php echo $boxExistante ? htmlspecialchars($boxExistante['nombre_box']) : 0; ?>" required></td>
+                <td><input type="number" name="prix_<?php echo $tailleBox; ?>" value="<?php echo $boxExistante ? htmlspecialchars($boxExistante['prix_par_m3']) : ''; ?>" step="0.01" required></td>
+            </tr>
+        <?php } ?>
+        </tbody>
+    </table>
 
     <button type="submit">Mettre à jour les boxes</button>
 </form>
+
 

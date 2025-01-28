@@ -174,6 +174,55 @@ footer .footer-info ul li a:hover {
     text-decoration: underline;
 }
 
+.logged-in .navbar .nav-links,
+.logged-in .navbar .burger {
+    display: flex;
+}
+
+.logged-out .navbar .nav-links,
+.logged-out .navbar .burger {
+    display: none;
+}
+
+.logged-out .navbar .connexion-btn {
+    display: block;
+}
+
+.logged-in .navbar .connexion-btn {
+    display: none;
+}
+
+/* Style pour la table des boxes */
+table.boxes-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+table.boxes-table th, table.boxes-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border: 1px solid #ddd;
+}
+
+table.boxes-table th {
+    background-color: #0072bc;
+    color: white;
+}
+
+table.boxes-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table.boxes-table input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    margin: 0;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
 @media (max-width: 768px) {
     .navbar .nav-links {
         display: none;
@@ -189,47 +238,33 @@ footer .footer-info ul li a:hover {
     .navbar .burger {
         display: flex;
     }
-}
 
-footer {
-    background-color: #333333;
-    color: white;
-    padding: 20px 0;
-    margin-top: auto;
-    text-align: center;
-}
+    table.boxes-table, table.boxes-table th, table.boxes-table td {
+        display: block;
+        width: 100%;
+    }
 
-footer a {
-    color: #ff6600;
-}
+    table.boxes-table th {
+        display: none;
+    }
 
-footer a:hover {
-    text-decoration: underline;
-}
+    table.boxes-table tr {
+        margin-bottom: 10px;
+    }
 
-footer .footer-info {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    gap: 30px;
-    padding: 10px 0;
-}
+    table.boxes-table td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+    }
 
-footer .footer-info div {
-    flex: 1;
-    min-width: 200px;
-}
+    table.boxes-table td input {
+        width: 60%;
+    }
 
-footer .footer-info h3 {
-    margin: 0;
-    padding-bottom: 10px;
-    font-size: 1.2rem;
-    color: #ff6600;
-}
-
-footer .footer-info p {
-    margin: 0;
-    font-size: 1rem;
+    table.boxes-table td:first-child {
+        font-weight: bold;
+    }
 }
 
 @media (min-width: 1200px) {
@@ -274,22 +309,4 @@ footer .footer-info p {
     .navbar .nav-links a {
         font-size: 0.8rem;
     }
-}
-
-.logged-in .navbar .nav-links,
-.logged-in .navbar .burger {
-    display: flex;
-}
-
-.logged-out .navbar .nav-links,
-.logged-out .navbar .burger {
-    display: none;
-}
-
-.logged-out .navbar .connexion-btn {
-    display: block;
-}
-
-.logged-in .navbar .connexion-btn {
-    display: none;
 }
