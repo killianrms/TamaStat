@@ -1,5 +1,7 @@
 <?php
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
 include __DIR__ . '/../src/Vue/utilisateur/header.php';
 
@@ -61,7 +63,6 @@ try {
             break;
 
         case 'deconnexion':
-            session_start();
             session_unset();
             session_destroy();
             header('Location: routeur.php?route=connexion');

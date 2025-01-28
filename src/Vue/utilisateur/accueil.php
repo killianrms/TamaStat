@@ -1,9 +1,11 @@
 <?php
+session_start();
 if (!isset($_SESSION['user'])) {
     header('Location: routeur.php?route=connexion');
     exit;
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -12,11 +14,20 @@ if (!isset($_SESSION['user'])) {
     <title>Accueil</title>
 </head>
 <body>
+
 <form action="routeur.php?route=ajouterDonnees" method="POST" enctype="multipart/form-data">
     <label for="csv_file">Importer un fichier CSV :</label>
     <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
     <br>
     <button type="submit">Importer</button>
 </form>
+
+<?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+    <br>
+    <a href="formulaireAjoutUtilisateur.php">
+        <button type="button">Ajouter un utilisateur</button>
+    </a>
+<?php endif; ?>
+
 </body>
 </html>
