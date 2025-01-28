@@ -46,8 +46,6 @@ class ControleurUtilisateur {
         return $result ?: [];
     }
 
-
-
     public function mettreAJourDonneesUtilisateur($userId, $taille, $prixParM3, $nombreBox) {
         $pdo = (new ConnexionBD())->getPdo();
 
