@@ -34,33 +34,24 @@ class ControleurUtilisateur {
         exit;
     }
 
-    public function recupererDonneesUtilisateur($utilisateurId) {
-        $connexion = new ConnexionBD();
-        $pdo = $connexion->getPdo();
-
-        $stmt = $pdo->prepare('SELECT nombre_box, taille, prix_par_m3 FROM user_box WHERE utilisateur_id = :utilisateur_id');
-        $stmt->bindParam(':utilisateur_id', $utilisateurId);
-        $stmt->execute();
-
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+    public function getDonneesUtilisateur($userId) {
+        $pdo = (new ConnexionBD())->getPdo();
+        $sql = "SELECT nombre_de_box, taille_total, prix_par_m3 FROM utilisateurs WHERE id = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute(['id' => $userId]);
+        return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
 
-    public function mettreAJourDonneesUtilisateur($nombreBox, $tailleTotal, $prixParM3, $utilisateurId) {
-        $connexion = new ConnexionBD();
-        $pdo = $connexion->getPdo();
-
-        $stmt = $pdo->prepare('
-            UPDATE user_box 
-            SET nombre_box = :nombre_box, taille = :taille, prix_par_m3 = :prix_par_m3
-            WHERE utilisateur_id = :utilisateur_id
-        ');
-
-        $stmt->bindParam(':nombre_box', $nombreBox);
-        $stmt->bindParam(':taille', $tailleTotal);
-        $stmt->bindParam(':prix_par_m3', $prixParM3);
-        $stmt->bindParam(':utilisateur_id', $utilisateurId);
-
-        $stmt->execute();
+    public function mettreAJourDonneesUtilisateur($nombreBox, $tailleTotal, $prixParM3, $userId) {
+        $pdo = (new ConnexionBD())->getPdo();
+        $sql = "UPDATE utilisateurs SET nombre_de_box = :nombreBox, taille_total = :tailleTotal, prix_par_m3 = :prixParM3 WHERE id = :id";
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([
+            'nombreBox' => $nombreBox,
+            'tailleTotal' => $tailleTotal,
+            'prixParM3' => $prixParM3,
+            'id' => $userId
+        ]);
     }
 }
 
