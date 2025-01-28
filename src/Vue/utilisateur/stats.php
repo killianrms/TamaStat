@@ -1,19 +1,61 @@
 <?php
 use App\Configuration\ConnexionBD;
-use App\Configuration\ConfigurationBaseDeDonnees;
+use App\Modele\CsvModele;
+
+session_start();
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
 
-$sql = "SELECT colonne1, SUM(colonne2) AS total FROM table_exemple GROUP BY colonne1";
-$stmt = $pdo->query($sql);
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
+    $fileExt = strtolower(pathinfo($_FILES['csv_file']['name'], PATHINFO_EXTENSION));
+    if ($fileExt !== 'csv') {
+        echo "Le fichier doit être au format CSV.";
+    } else {
+        $handle = fopen($_FILES['csv_file']['tmp_name'], 'r');
+        $csvData = [];
 
-$data = [];
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $data[] = $row;
+        while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+            $csvData[] = $data;
+        }
+        fclose($handle);
+
+        $boxDetails = [];
+        foreach ($csvData as $row) {
+            $taille = $row[7];
+            $prix = $row[9];
+
+            if (!isset($boxDetails[$taille])) {
+                $boxDetails[$taille] = ['total' => 0, 'loues' => 0, 'prix' => $prix];
+            }
+            $boxDetails[$taille]['total']++;
+            if ($row[12] !== '') {
+                $boxDetails[$taille]['loues']++;
+            }
+        }
+
+        foreach ($boxDetails as $taille => $details) {
+            $stmt = $pdo->prepare('SELECT nombre_box, prix FROM user_box WHERE utilisateur_id = :utilisateur_id AND taille = :taille');
+            $stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
+            $stmt->bindParam(':taille', $taille);
+            $stmt->execute();
+            $userBox = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if ($userBox) {
+                $restants = $userBox['nombre_box'] - $details['loues'];
+                $revenuePotentiel = $restants * $userBox['prix'];
+
+                echo "<p>Taille du box : $taille m³</p>";
+                echo "<p>Box total : " . $userBox['nombre_box'] . "</p>";
+                echo "<p>Box loués : " . $details['loues'] . "</p>";
+                echo "<p>Box restants à louer : $restants</p>";
+                echo "<p>Revenue potentiel à venir : $revenuePotentiel €</p>";
+            } else {
+                echo "<p>Aucune donnée disponible pour la taille $taille m³ dans votre base de données.</p>";
+            }
+        }
+    }
 }
-
-$dataJson = json_encode($data);
 ?>
 
 <!DOCTYPE html>
@@ -22,39 +64,17 @@ $dataJson = json_encode($data);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<h1>Statistiques</h1>
-<canvas id="myChart"></canvas>
-<script>
-    const ctx = document.getElementById('myChart').getContext('2d');
-    const chartData = <?php echo $dataJson; ?>;
 
-    const labels = chartData.map(item => item.colonne1);
-    const values = chartData.map(item => item.total);
+<h1>Statistiques de vos box</h1>
 
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Total par catégorie',
-                data: values,
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
-        }
-    });
-</script>
+<form action="stats.php" method="POST" enctype="multipart/form-data">
+    <label for="csv_file">Importer un fichier CSV :</label>
+    <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
+    <br>
+    <button type="submit">Importer</button>
+</form>
+
 </body>
 </html>
