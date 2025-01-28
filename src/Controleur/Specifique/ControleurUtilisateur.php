@@ -18,26 +18,16 @@ class ControleurUtilisateur {
 
         $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($utilisateur && $password === $utilisateur['mot_de_passe']) {
-            $_SESSION['user'] = [
-                'id' => $utilisateur['id'],
-                'nom_utilisateur' => $utilisateur['nom_utilisateur'],
-                'email' => $utilisateur['email'],
-                'role' => $utilisateur['role']
-            ];
-
+        if ($utilisateur && $utilisateur['mot_de_passe'] === $password) {
+            $_SESSION['user'] = $utilisateur['nom_utilisateur'];
             header('Location: routeur.php?route=accueil');
             exit;
         } else {
-            $_SESSION['erreur_connexion'] = "Identifiant ou mot de passe incorrect";
-
+            $_SESSION['erreur_connexion'] = 'Identifiants ou mot de passe incorrects';
             header('Location: routeur.php?route=connexion');
             exit;
         }
     }
-
-
-
 
 
     public function deconnexion() {

@@ -7,6 +7,14 @@
 </head>
 <body>
 <h1>Connexion</h1>
+
+<?php
+if (isset($_SESSION['erreur_connexion'])) {
+    echo '<div style="color: red; font-weight: bold; margin-bottom: 10px;">' . htmlspecialchars($_SESSION['erreur_connexion']) . '</div>';
+    unset($_SESSION['erreur_connexion']);
+}
+?>
+
 <form action="routeur.php?route=login" method="POST">
     <label for="username">Nom d'utilisateur ou email:</label>
     <input type="text" id="username" name="username" required>
@@ -16,5 +24,6 @@
     <br>
     <button type="submit">Se connecter</button>
 </form>
+
 </body>
 </html>
