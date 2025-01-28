@@ -1,19 +1,19 @@
 <?php
-$conn = new mysqli('localhost', 'username', 'password', 'database_name');
+use App\Configuration\ConnexionBD;
+use App\Configuration\ConfigurationBaseDeDonnees;
 
-if ($conn->connect_error) {
-    die("Connection failed: " . $conn->connect_error);
-}
+$connexion = new ConnexionBD();
+$pdo = $connexion->getPdo();
 
-$query = "SELECT type_de_box, COUNT(*) AS total FROM locations GROUP BY type_de_box";
-$result = $conn->query($query);
+$sql = "SELECT colonne1, SUM(colonne2) AS total FROM table_exemple GROUP BY colonne1";
+$stmt = $pdo->query($sql);
 
 $data = [];
-while ($row = $result->fetch_assoc()) {
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
     $data[] = $row;
 }
 
-$conn->close();
+$dataJson = json_encode($data);
 ?>
 
 <!DOCTYPE html>
@@ -25,14 +25,13 @@ $conn->close();
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-<h1>Statistiques des Locations</h1>
+<h1>Statistiques</h1>
 <canvas id="myChart"></canvas>
 <script>
     const ctx = document.getElementById('myChart').getContext('2d');
+    const chartData = <?php echo $dataJson; ?>;
 
-    const chartData = <?php echo json_encode($data); ?>;
-
-    const labels = chartData.map(item => item.type_de_box);
+    const labels = chartData.map(item => item.colonne1);
     const values = chartData.map(item => item.total);
 
     new Chart(ctx, {
@@ -40,7 +39,7 @@ $conn->close();
         data: {
             labels: labels,
             datasets: [{
-                label: 'Total des locations par type de box',
+                label: 'Total par catégorie',
                 data: values,
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
                 borderColor: 'rgba(54, 162, 235, 1)',

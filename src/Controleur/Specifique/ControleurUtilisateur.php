@@ -1,48 +1,37 @@
 <?php
-$db = new DatabaseConnection();
-$data = $db->getStats();
-?>
+namespace App\Controleur;
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistiques</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-<h1>Statistiques des Locations</h1>
-<canvas id="myChart"></canvas>
-<script>
-    const ctx = document.getElementById('myChart').getContext('2d');
+use App\Configuration\ConnexionBD;
+use PDO;
 
-    const chartData = <?php echo json_encode($data); ?>;
+class ControleurUtilisateur {
+    private $pdo;
 
-    const labels = chartData.map(item => item.type_de_box);
-    const values = chartData.map(item => item.total);
+    public function __construct() {
+        $connexion = new ConnexionBD();
+        $this->pdo = $connexion->getPdo();
+    }
 
-    new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: labels,
-            datasets: [{
-                label: 'Total des locations par type de box',
-                data: values,
-                backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                borderColor: 'rgba(54, 162, 235, 1)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
-                }
-            }
+    public function login($usernameOrEmail, $password) {
+        $stmt = $this->pdo->prepare('SELECT * FROM utilisateurs WHERE nom_utilisateur = :input OR email = :input');
+        $stmt->execute(['input' => $usernameOrEmail]);
+
+        $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($utilisateur && password_verify($password, $utilisateur['mot_de_passe'])) {
+            $_SESSION['user'] = $utilisateur['nom_utilisateur'];
+            header('Location: routeur.php?route=accueil');
+            exit;
+        } else {
+            echo '<h2>Identifiants incorrects</h2>';
+            require_once __DIR__ . '../../Vue/utilisateur/formulaireConnexion.php';
         }
-    });
-</script>
-</body>
-</html>
+    }
+
+    public function deconnexion() {
+        session_destroy();
+        header('Location: routeur.php?route=connexion');
+        exit;
+    }
+}
+?>

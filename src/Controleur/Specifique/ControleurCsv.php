@@ -2,6 +2,7 @@
 
 namespace App\Controleur\Specifique;
 
+use App\Configuration\ConnexionBD;
 use Exception;
 use PDO;
 
@@ -16,25 +17,15 @@ class ControleurCsv
 
         $fileExt = strtolower(pathinfo($fileName, PATHINFO_EXTENSION));
 
-        // Vérification si c'est bien un fichier CSV
         if ($fileExt !== 'csv') {
             throw new Exception("Le fichier doit être au format CSV.");
         }
 
-        // Connexion à la base de données via PDO
-        $dsn = 'mysql:host=localhost;dbname=database_name;charset=utf8';
-        $username = 'username';
-        $password = 'password';
-
-        try {
-            $pdo = new PDO($dsn, $username, $password);
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        } catch (PDOException $e) {
-            throw new Exception("Échec de la connexion à la base de données: " . $e->getMessage());
-        }
+        $connexion = new ConnexionBD();
+        $pdo = $connexion->getPdo();
 
         if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            fgetcsv($handle); // Lire l'en-tête et l'ignorer
+            fgetcsv($handle);
 
             while (($data = fgetcsv($handle, 1000, ',')) !== false) {
                 // Extraction des données
@@ -90,3 +81,4 @@ class ControleurCsv
         $pdo = null;
     }
 }
+?>

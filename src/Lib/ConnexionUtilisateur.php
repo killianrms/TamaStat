@@ -1,9 +1,15 @@
 <?php
+namespace App\Modele;
+
+use App\Configuration\ConnexionBD;
+use PDO;
+
 class ConnexionUtilisateur {
     private $pdo;
 
     public function __construct() {
-        $this->pdo = new PDO('mysql:host=localhost;dbname=ton_db', 'root', '');
+        $connexion = new ConnexionBD();
+        $this->pdo = $connexion->getPdo();
     }
 
     public function verifierUtilisateur($nom_utilisateur) {
@@ -30,6 +36,5 @@ class ConnexionUtilisateur {
             exit;
         }
     }
-
 }
-
+?>
