@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
         }
 
         foreach ($boxDetails as $taille => $details) {
-            $stmt = $pdo->prepare('SELECT nombre_box, prix_par_m3, box_quantities FROM user_box WHERE utilisateur_id = :utilisateur_id AND taille = :taille');
+            $stmt = $pdo->prepare('SELECT nombre_box, prix_par_m3, box_quantities FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id AND taille = :taille');
             $stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
             $stmt->bindParam(':taille', $taille);
             $stmt->execute();
