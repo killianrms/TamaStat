@@ -71,7 +71,7 @@ $prixParM3 = $stmt->fetchColumn();
             <tr>
                 <td><?= $tailleBox ?> m³</td>
                 <td>
-                    <input type="number" name="box_<?= $tailleBox ?>" value="<?= $boxExistante ? htmlspecialchars($boxExistante['nombre_box']) : 0 ?>" required>
+                    <input type="number" name="box_<?= $tailleBox ?>" value="<?= $boxExistante ? htmlspecialchars($boxExistante['nombre_box']) : 0 ?>" min="0" required>
                 </td>
             </tr>
         <?php endforeach; ?>

@@ -61,13 +61,19 @@ try {
                 $tailles = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10];
 
                 foreach ($tailles as $tailleBox) {
-                    $quantitesBox[$tailleBox] = $_POST["box_$tailleBox"] ?? 0;
+                    $quantitesBox[$tailleBox] = isset($_POST["box_$tailleBox"]) ? intval($_POST["box_$tailleBox"]) : 0;
+                    if ($quantitesBox[$tailleBox] < 0) {
+                        $quantitesBox[$tailleBox] = 0;
+                    }
+                }
+
+                $prixParM3 = isset($_POST['prix_par_m3']) ? floatval($_POST['prix_par_m3']) : 0;
+                if ($prixParM3 < 0) {
+                    $prixParM3 = 0;
                 }
 
                 foreach ($quantitesBox as $taille => $nombreBox) {
                     if ($nombreBox > 0) {
-                        $prixParM3 = $_POST['prix_par_m3'] ?? 0;
-
                         $controleurUtilisateur->mettreAJourDonneesUtilisateur(
                             $_SESSION['user']['id'],
                             $taille,
@@ -76,6 +82,7 @@ try {
                         );
                     }
                 }
+
                 header('Location: routeur.php?route=accueil');
                 exit;
             } else {
@@ -83,6 +90,8 @@ try {
                 require_once __DIR__ . '/../src/Vue/utilisateur/ajouterDonnees.php';
             }
             break;
+
+
 
         case 'deconnexion':
             session_unset();
