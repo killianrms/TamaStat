@@ -10,11 +10,8 @@
 </head>
 <body>
 
-<header>
-    <h1>Mentions Légales</h1>
-</header>
-
 <section class="mentions-legales-content">
+    <h1>Mentions Légales</h1>
     <h2>1. Éditeur du Site</h2>
     <p>Nom de l'entreprise : TamaBox</p>
     <p>Adresse : 724 Av. Pierre Brossolette, 83300 Draguignan</p>

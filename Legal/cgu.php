@@ -10,11 +10,8 @@
 </head>
 <body>
 
-<header>
-    <h1>Conditions Générales d'Utilisation (CGU)</h1>
-</header>
-
 <section class="cgu-content">
+    <h1>Conditions Générales d'Utilisation (CGU)</h1>
     <h2>1. Présentation du Site</h2>
     <p>Le présent site, "Tamabox Stats" (ci-après "le Site"), a pour objectif de fournir des statistiques et des informations sur les box de stockage. Il est édité par TamaBox.</p>
 

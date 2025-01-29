@@ -41,7 +41,7 @@ $prixParM3 = $stmt->fetchColumn();
     <p>Aucune box enregistrée.</p>
 <?php endif; ?>
 
-<form method="POST" action="routeur.php?route=ajouterDonnees.php">
+<form method="POST" action="routeur.php?route=ajouterDonnees">
     <label for="prix_par_m3">Prix par m³ (€) :</label>
     <input type="number" id="prix_par_m3" name="prix_par_m3" step="0.01" value="<?= htmlspecialchars($prixParM3) ?>" required>
 
