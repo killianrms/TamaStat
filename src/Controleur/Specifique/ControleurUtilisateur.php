@@ -50,24 +50,34 @@ class ControleurUtilisateur {
     }
 
 
-    public function mettreAJourDonneesUtilisateur($idUtilisateur, $taille, $prixParM3, $nombreBox) {
-        if (!$this->pdo) {
-            throw new Exception("La connexion à la base de données a échoué.");
+    public function mettreAJourDonneesUtilisateur($utilisateurId, $taille, $prixParM3, $nombreBox)
+    {
+        $pdo = $this->getPdo();
+
+        $query = "SELECT COUNT(*) FROM ta_table WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
+        $stmt = $pdo->prepare($query);
+        $stmt->execute([':utilisateur_id' => $utilisateurId, ':taille' => $taille]);
+        $count = $stmt->fetchColumn();
+
+        if ($count > 0) {
+            $updateQuery = "UPDATE ta_table SET nombre_box = :nombre_box, prix_par_m3 = :prix_par_m3 WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
+            $updateStmt = $pdo->prepare($updateQuery);
+            $updateStmt->execute([
+                ':nombre_box' => $nombreBox,
+                ':prix_par_m3' => $prixParM3,
+                ':utilisateur_id' => $utilisateurId,
+                ':taille' => $taille
+            ]);
+        } else {
+            $insertQuery = "INSERT INTO ta_table (utilisateur_id, taille, nombre_box, prix_par_m3) VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)";
+            $insertStmt = $pdo->prepare($insertQuery);
+            $insertStmt->execute([
+                ':utilisateur_id' => $utilisateurId,
+                ':taille' => $taille,
+                ':nombre_box' => $nombreBox,
+                ':prix_par_m3' => $prixParM3
+            ]);
         }
-
-        $stmt = $this->pdo->prepare('
-            INSERT INTO boxes_utilisateur (utilisateur_id, taille, nombre_box, prix_par_m3)
-            VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)
-            ON DUPLICATE KEY UPDATE nombre_box = :nombre_box, prix_par_m3 = :prix_par_m3
-        ');
-
-        $stmt->bindParam(':utilisateur_id', $idUtilisateur);
-        $stmt->bindParam(':taille', $taille);
-        $stmt->bindParam(':nombre_box', $nombreBox);
-        $stmt->bindParam(':prix_par_m3', $prixParM3);
-
-        $stmt->execute();
     }
-
 }
 
