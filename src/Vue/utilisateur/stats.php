@@ -2,7 +2,6 @@
 use App\Configuration\ConnexionBD;
 use App\Modele\CsvModele;
 
-
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
 
@@ -33,19 +32,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
         }
 
         foreach ($boxDetails as $taille => $details) {
-            $stmt = $pdo->prepare('SELECT nombre_box, prix_par_m3, box_quantities FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id AND taille = :taille');
+            $stmt = $pdo->prepare('SELECT nombre_box, prix_par_m3 FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id AND taille = :taille');
             $stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
             $stmt->bindParam(':taille', $taille);
             $stmt->execute();
             $userBox = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($userBox) {
-                $boxQuantities = json_decode($userBox['box_quantities'], true);
-                $restants = $boxQuantities[$taille] - $details['loues'];
+                $restants = $userBox['nombre_box'] - $details['loues'];
                 $revenuePotentiel = $restants * $userBox['prix_par_m3'] * $taille;
 
                 echo "<p>Taille du box : $taille m³</p>";
-                echo "<p>Box total : " . $boxQuantities[$taille] . "</p>";
+                echo "<p>Box total : " . $userBox['nombre_box'] . "</p>";
                 echo "<p>Box loués : " . $details['loues'] . "</p>";
                 echo "<p>Box restants à louer : $restants</p>";
                 echo "<p>Revenue potentiel à venir : " . number_format($revenuePotentiel, 2) . " €</p>";
@@ -55,7 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
         }
     }
 }
-
 ?>
 
 <!DOCTYPE html>
