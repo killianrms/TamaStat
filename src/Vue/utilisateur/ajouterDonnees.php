@@ -17,3 +17,6 @@ var_dump($_POST);
 
     <button type="submit">Sauvegarder</button>
 </form>
+<pre>
+<?php print_r($_POST); ?>
+</pre>

@@ -42,7 +42,7 @@ class ControleurUtilisateur {
     }
 
     public function getDonneesUtilisateur($userId) {
-        $stmt = $this->pdo->prepare("SELECT taille, prix_par_m3, nombre_box FROM user_box WHERE utilisateur_id = :userId");
+        $stmt = $this->pdo->prepare("SELECT taille, prix_par_m3, nombre_box FROM boxes_utilisateur WHERE utilisateur_id = :userId");
         $stmt->execute(['userId' => $userId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -73,13 +73,13 @@ class ControleurUtilisateur {
 
         $pdo = $this->pdo;
 
-        $query = "SELECT COUNT(*) FROM user_box WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
+        $query = "SELECT COUNT(*) FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
         $stmt = $pdo->prepare($query);
         $stmt->execute([':utilisateur_id' => $utilisateurId, ':taille' => $taille]);
         $count = $stmt->fetchColumn();
 
         if ($count > 0) {
-            $updateQuery = "UPDATE user_box SET nombre_box = :nombre_box, prix_par_m3 = :prix_par_m3 WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
+            $updateQuery = "UPDATE boxes_utilisateur SET nombre_box = :nombre_box, prix_par_m3 = :prix_par_m3 WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
             $updateStmt = $pdo->prepare($updateQuery);
             $updateStmt->execute([
                 ':nombre_box' => $nombreBox,
@@ -94,7 +94,7 @@ class ControleurUtilisateur {
                 echo "Aucune mise à jour effectuée. Vérifie les valeurs envoyées.";
             }
         } else {
-            $insertQuery = "INSERT INTO user_box (utilisateur_id, taille, nombre_box, prix_par_m3) VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)";
+            $insertQuery = "INSERT INTO boxes_utilisateur (utilisateur_id, taille, nombre_box, prix_par_m3) VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)";
             $insertStmt = $pdo->prepare($insertQuery);
             $insertStmt->execute([
                 ':utilisateur_id' => $utilisateurId,
