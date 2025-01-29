@@ -66,7 +66,6 @@ try {
                         $quantitesBox[$tailleBox] = 0;
                     }
                 }
-
                 $prixParM3 = isset($_POST['prix_par_m3']) ? floatval($_POST['prix_par_m3']) : 0;
                 if ($prixParM3 < 0) {
                     $prixParM3 = 0;
@@ -82,14 +81,11 @@ try {
                         );
                     }
                 }
-
                 header('Location: routeur.php?route=accueil');
                 exit;
-            } else {
-                $donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['user']['id']);
-                require_once __DIR__ . '/../src/Vue/utilisateur/ajouterDonnees.php';
             }
             break;
+
 
 
 

@@ -52,9 +52,14 @@ class ControleurUtilisateur {
 
     public function mettreAJourDonneesUtilisateur($utilisateurId, $taille, $prixParM3, $nombreBox)
     {
+        if ($utilisateurId === null) {
+            echo "Erreur : l'ID utilisateur est manquant.";
+            exit;
+        }
+
         $taille = (float) $taille;
         $prixParM3 = (float) $prixParM3;
-        $nombreBox = (int) $nombreBox;
+        $nombreBox = (int) round($nombreBox);
 
         $pdo = $this->pdo;
 
@@ -83,6 +88,7 @@ class ControleurUtilisateur {
             ]);
         }
     }
+
 
 }
 
