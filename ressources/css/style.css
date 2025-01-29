@@ -125,70 +125,41 @@ header {
 
 /* Footer */
 footer {
-    background-color: #333333;
-    color: white;
-    padding: 40px 20px;
-    margin-top: auto;
+    background-color: #2c3e50;
+    color: #ecf0f1;
     text-align: center;
+    padding: 20px 0;
+    font-size: 14px;
 }
 
-footer a {
-    color: #ff6600;
-    text-decoration: none;
-    font-weight: bold;
-}
-
-footer a:hover {
-    text-decoration: underline;
-}
-
-footer .footer-container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 20px;
-}
-
-footer .footer-info {
+.footer-container {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 10px;
 }
 
-footer .footer-info ul {
+.footer-info ul {
     list-style: none;
     padding: 0;
-    margin: 0;
-    text-align: center;
 }
 
-footer .footer-info ul li {
-    margin-bottom: 8px;
-    font-size: 1rem;
+.footer-info ul li {
+    margin: 5px 0;
 }
 
-footer .footer-info ul li a {
-    color: #ff6600;
+.footer-links a {
+    color: #ecf0f1;
+    text-decoration: none;
+    margin: 0 10px;
 }
 
-footer .footer-info ul li a:hover {
+.footer-links a:hover {
     text-decoration: underline;
 }
 
-footer .footer-links {
-    margin-top: 20px;
-}
-
-footer .footer-copy {
-    margin-top: 20px;
-    font-size: 0.9rem;
-    color: #ccc;
-}
-
-footer .footer-copy p {
-    margin: 0;
+.footer-copy {
+    font-size: 12px;
 }
 
 .logged-in .navbar .nav-links,
@@ -209,6 +180,7 @@ footer .footer-copy p {
     display: none;
 }
 
+/* Style pour la table des boxes */
 table.boxes-table {
     width: 100%;
     margin-top: 20px;
@@ -290,26 +262,14 @@ table.boxes-table input[type="number"] {
         font-weight: bold;
     }
 
-    footer {
-        padding: 30px 15px;
-    }
-
-    footer .footer-container {
+    .footer-container {
         flex-direction: column;
         align-items: center;
-    }
-
-    footer .footer-info ul li {
-        font-size: 0.9rem;
-    }
-
-    footer .footer-links {
-        font-size: 0.9rem;
         text-align: center;
     }
 
-    footer .footer-copy {
-        font-size: 0.8rem;
+    .footer-info ul {
+        text-align: center;
     }
 }
 
@@ -347,16 +307,29 @@ table.boxes-table input[type="number"] {
         font-size: 0.8rem;
     }
 
-    footer .footer-info ul li {
-        font-size: 0.8rem;
+    .footer-container {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+        padding: 20px 40px;
     }
 
-    footer .footer-links {
-        font-size: 0.8rem;
+    .footer-info, .footer-links, .footer-copy {
+        flex: 1;
     }
 
-    footer .footer-copy {
-        font-size: 0.7rem;
+    .footer-info ul {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .footer-links {
+        text-align: center;
+    }
+
+    .footer-copy {
+        text-align: right;
     }
 }
 
