@@ -22,9 +22,9 @@ foreach ($boxesUtilisateur as $box) {
 $taillesDisponibles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
 ?>
 
-<h3>Gestion de vos boxes</h3>
+<h1>Gestion de vos boxes</h1>
 
-<form method="POST" action="routeur.php?route=ajouterDonnees">
+<form method="POST" action="routeur.php?route=ajouterDonneesAccueil">
     <label for="prix_par_m3">Prix par m³ (€) :</label>
     <input type="number" id="prix_par_m3" name="prix_par_m3" step="0.01" value="<?= htmlspecialchars($prixParM3) ?>" required>
     <br><br>
