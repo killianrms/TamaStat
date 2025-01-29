@@ -69,7 +69,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
 
 <h1>Statistiques de vos box</h1>
 
-<form action="stats.php" method="POST" enctype="multipart/form-data">
+<form action="routeur.php?route=stats" method="POST" enctype="multipart/form-data">
     <label for="csv_file">Importer un fichier CSV :</label>
     <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
     <br>

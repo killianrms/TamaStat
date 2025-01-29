@@ -130,6 +130,8 @@ footer {
     text-align: center;
     padding: 20px 0;
     font-size: 14px;
+    margin-top: auto;
+    width: 100%;
 }
 
 .footer-container {
@@ -149,13 +151,15 @@ footer {
 }
 
 .footer-links a {
-    color: #ecf0f1;
+    color: #ff6600;
     text-decoration: none;
     margin: 0 10px;
+    font-weight: bold;
 }
 
 .footer-links a:hover {
     text-decoration: underline;
+    color: #e65c00;
 }
 
 .footer-copy {
