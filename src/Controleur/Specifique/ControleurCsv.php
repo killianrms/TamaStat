@@ -21,11 +21,17 @@ class ControleurCsv
 
             while (($data = fgetcsv($handle, 1000, ',')) !== false) {
                 if ($this->validerLigneCsv($data)) {
-                    $csvModele = new CsvModele();
-                    try {
-                        $csvModele->ajouterDonnees($data);
-                    } catch (Exception $e) {
-                        echo "Erreur lors de l'ajout des données : " . $e->getMessage();
+                    $taille = isset($data[7]) ? $data[7] : null;
+                    $prix = isset($data[9]) ? $data[9] : null;
+                    if ($taille && $prix !== null) {
+                        $csvModele = new CsvModele();
+                        try {
+                            $csvModele->ajouterDonnees($data);
+                        } catch (Exception $e) {
+                            echo "Erreur lors de l'ajout des données : " . $e->getMessage();
+                        }
+                    } else {
+                        echo "Ligne ignorée : Données manquantes ou invalides.";
                     }
                 } else {
                     echo "Ligne invalide détectée et ignorée : " . implode(", ", $data);
@@ -40,9 +46,6 @@ class ControleurCsv
 
     private function validerLigneCsv($data)
     {
-        if (count($data) < 13) {
-            return false;
-        }
-        return true;
+        return count($data) >= 13;
     }
 }

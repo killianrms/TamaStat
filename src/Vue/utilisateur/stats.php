@@ -20,14 +20,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
 
         $boxDetails = [];
         foreach ($csvData as $row) {
-            $taille = $row[7];
-            $prix = $row[9];
-            if (!isset($boxDetails[$taille])) {
-                $boxDetails[$taille] = ['total' => 0, 'loues' => 0, 'prix' => $prix];
-            }
-            $boxDetails[$taille]['total']++;
-            if ($row[12] !== '') {
-                $boxDetails[$taille]['loues']++;
+            // Vérification de l'existence des indices avant de les utiliser
+            $taille = isset($row[7]) ? $row[7] : null;
+            $prix = isset($row[9]) ? $row[9] : null;
+            $loues = isset($row[12]) && $row[12] !== '' ? 1 : 0;
+
+            if ($taille && $prix !== null) {
+                if (!isset($boxDetails[$taille])) {
+                    $boxDetails[$taille] = ['total' => 0, 'loues' => 0, 'prix' => $prix];
+                }
+                $boxDetails[$taille]['total']++;
+                $boxDetails[$taille]['loues'] += $loues;
             }
         }
 
