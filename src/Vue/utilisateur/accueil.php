@@ -29,9 +29,14 @@ $taillesDisponibles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10
     <input type="number" id="prix_par_m3" name="prix_par_m3" step="0.01" value="<?= htmlspecialchars($prixParM3) ?>" required>
     <br><br>
 
-    <?php foreach ($taillesDisponibles as $tailleBox): ?>
+    <?php
+    $taillesDisponibles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
+
+    foreach ($taillesDisponibles as $tailleBox):
+        $nombreBox = $boxes[$tailleBox] ?? 0;
+        ?>
         <label for="box_<?= $tailleBox ?>">Nombre de box <?= $tailleBox ?>m³ :</label>
-        <input type="number" name="box_<?= $tailleBox ?>" id="box_<?= $tailleBox ?>" value="<?= $boxes[$tailleBox] ?? 0 ?>" min="0" required>
+        <input type="number" name="box_<?= $tailleBox ?>" id="box_<?= $tailleBox ?>" value="<?= $nombreBox ?>" min="0" required>
         <br>
     <?php endforeach; ?>
 

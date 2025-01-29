@@ -50,61 +50,50 @@ class ControleurUtilisateur {
     }
 
 
-    public function mettreAJourDonneesUtilisateur($utilisateurId, $taille, $prixParM3, $nombreBox)
+    public function mettreAJourDonneesUtilisateur($utilisateurId, $prixParM3, $boxes)
     {
-        if ($utilisateurId === null || $taille === null || $prixParM3 === null || $nombreBox === null) {
-            echo "Erreur : des paramètres nécessaires sont manquants.";
+        if ($utilisateurId === null) {
+            echo "Erreur : l'ID utilisateur est manquant.";
             exit;
         }
-
-        if (!is_numeric($prixParM3) || $prixParM3 < 0) {
-            echo "Erreur : le prix par m³ doit être un nombre positif.";
-            exit;
-        }
-
-        if (!is_numeric($nombreBox) || $nombreBox < 0) {
-            echo "Erreur : le nombre de box doit être un nombre positif.";
-            exit;
-        }
-
-        $taille = (float) $taille;
-        $prixParM3 = (float) $prixParM3;
-        $nombreBox = (int) round($nombreBox);
 
         $pdo = $this->pdo;
 
-        $query = "SELECT COUNT(*) FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
-        $stmt = $pdo->prepare($query);
-        $stmt->execute([':utilisateur_id' => $utilisateurId, ':taille' => $taille]);
-        $count = $stmt->fetchColumn();
+        $updatePrixQuery = "UPDATE boxes_utilisateur SET prix_par_m3 = :prix_par_m3 WHERE utilisateur_id = :utilisateur_id";
+        $updatePrixStmt = $pdo->prepare($updatePrixQuery);
+        $updatePrixStmt->execute([
+            ':prix_par_m3' => $prixParM3,
+            ':utilisateur_id' => $utilisateurId
+        ]);
 
-        if ($count > 0) {
-            $updateQuery = "UPDATE boxes_utilisateur SET nombre_box = :nombre_box, prix_par_m3 = :prix_par_m3 WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
-            $updateStmt = $pdo->prepare($updateQuery);
-            $updateStmt->execute([
-                ':nombre_box' => $nombreBox,
-                ':prix_par_m3' => $prixParM3,
-                ':utilisateur_id' => $utilisateurId,
-                ':taille' => $taille
-            ]);
+        foreach ($boxes as $taille => $nombreBox) {
+            $taille = (float) $taille;
+            $nombreBox = (int) $nombreBox;
 
-            if ($updateStmt->rowCount() > 0) {
-                echo "Données mises à jour avec succès!";
+            $query = "SELECT COUNT(*) FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
+            $stmt = $pdo->prepare($query);
+            $stmt->execute([':utilisateur_id' => $utilisateurId, ':taille' => $taille]);
+            $count = $stmt->fetchColumn();
+
+            if ($count > 0) {
+                $updateQuery = "UPDATE boxes_utilisateur SET nombre_box = :nombre_box WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
+                $updateStmt = $pdo->prepare($updateQuery);
+                $updateStmt->execute([
+                    ':nombre_box' => $nombreBox,
+                    ':utilisateur_id' => $utilisateurId,
+                    ':taille' => $taille
+                ]);
             } else {
-                echo "Aucune mise à jour effectuée. Vérifie les valeurs envoyées.";
+                $insertQuery = "INSERT INTO boxes_utilisateur (utilisateur_id, taille, nombre_box, prix_par_m3) VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)";
+                $insertStmt = $pdo->prepare($insertQuery);
+                $insertStmt->execute([
+                    ':utilisateur_id' => $utilisateurId,
+                    ':taille' => $taille,
+                    ':nombre_box' => $nombreBox,
+                    ':prix_par_m3' => $prixParM3
+                ]);
             }
-        } else {
-            $insertQuery = "INSERT INTO boxes_utilisateur (utilisateur_id, taille, nombre_box, prix_par_m3) VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)";
-            $insertStmt = $pdo->prepare($insertQuery);
-            $insertStmt->execute([
-                ':utilisateur_id' => $utilisateurId,
-                ':taille' => $taille,
-                ':nombre_box' => $nombreBox,
-                ':prix_par_m3' => $prixParM3
-            ]);
         }
     }
-
-
 }
 
