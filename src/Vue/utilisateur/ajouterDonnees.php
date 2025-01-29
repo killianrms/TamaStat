@@ -1,27 +1,47 @@
 <?php
-require_once __DIR__ . '/../src/Controleur/Specifique/ControleurUtilisateur.php';
+session_start();
+use App\Configuration\ConnexionBD;
 
-$controleurUtilisateur = new ControleurUtilisateur();
-$donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['user']['id']);
-?>
-<form method="POST" action="routeur.php?route=ajouterDonnees">
-    <?php
-    $tailles = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10];
-    foreach ($tailles as $taille) {
-        $quantite = isset($donneesUtilisateur[$taille]) ? $donneesUtilisateur[$taille] : 0;
-        ?>
-        <label for="box_<?php echo $taille; ?>">Nombre de box <?php echo $taille; ?>m³ :</label>
-        <input type="number" name="box_<?php echo $taille; ?>" id="box_<?php echo $taille; ?>" value="<?php echo $quantite; ?>" min="0">
-        <br>
-    <?php } ?>
+$connexion = new ConnexionBD();
+$pdo = $connexion->getPdo();
 
-    <label for="prix_par_m3">Prix par m³ :</label>
-    <input type="number" step="0.01" name="prix_par_m3" id="prix_par_m3" value="<?php echo isset($donneesUtilisateur['prix_par_m3']) ? $donneesUtilisateur['prix_par_m3'] : ''; ?>">
-    <br>
+if (!isset($_SESSION['user']['id'])) {
+    die("Erreur : Utilisateur non connecté.");
+}
 
-    <button type="submit">Enregistrer</button>
-</form>
+$utilisateurId = $_SESSION['user']['id'];
 
-<pre>
-<?php print_r($_POST); ?>
-</pre>
+$prixParM3 = isset($_POST['prix_par_m3']) ? floatval($_POST['prix_par_m3']) : null;
+
+$taillesDisponibles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
+
+try {
+    $pdo->beginTransaction();
+
+    $stmtDelete = $pdo->prepare("DELETE FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id");
+    $stmtDelete->execute([':utilisateur_id' => $utilisateurId]);
+
+    $stmtInsert = $pdo->prepare("INSERT INTO boxes_utilisateur (utilisateur_id, taille, nombre_box, prix_par_m3) VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)");
+
+    foreach ($taillesDisponibles as $tailleBox) {
+        if (isset($_POST["box_$tailleBox"])) {
+            $nombreBox = intval($_POST["box_$tailleBox"]);
+            if ($nombreBox > 0) {
+                $stmtInsert->execute([
+                    ':utilisateur_id' => $utilisateurId,
+                    ':taille' => $tailleBox,
+                    ':nombre_box' => $nombreBox,
+                    ':prix_par_m3' => $prixParM3
+                ]);
+            }
+        }
+    }
+
+    $pdo->commit();
+
+    header('Location: routeur.php?route=accueil');
+    exit();
+} catch (Exception $e) {
+    $pdo->rollBack();
+    die("Erreur lors de l'enregistrement : " . $e->getMessage());
+}
