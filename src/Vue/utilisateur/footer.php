@@ -9,8 +9,8 @@
             </ul>
         </div>
         <div class="footer-links">
-            <a href="mentions-legales.php">Mentions Légales</a> |
-            <a href="cgu.php">Conditions Générales d'Utilisation</a>
+            <a href="routeur.php?route=mentions-legales">Mentions Légales</a> |
+            <a href="routeur.php?route=cgu">Conditions Générales d'Utilisation</a>
         </div>
         <div class="footer-copy">
             <p>&copy; <?php echo date("Y"); ?> TamaBox - Tous droits réservés.</p>

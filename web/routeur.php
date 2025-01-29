@@ -55,8 +55,8 @@ try {
             require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
             break;
 
-            case 'ajouterUtilisateur':
-                if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        case 'ajouterUtilisateur':
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $nom_utilisateur = htmlspecialchars($_POST['nom_utilisateur']);
                 $mot_de_passe = $_POST['mot_de_passe'];
                 $email = $_POST['email'];
@@ -121,6 +121,14 @@ try {
             session_destroy();
             header('Location: routeur.php?route=connexion');
             exit;
+            break;
+
+        case 'cgu':
+            require_once __DIR__ . '/../Legal/cgu.php';
+            break;
+
+        case 'mentions-legales':
+            require_once __DIR__ . '/../Legal/mentions-legales.php';
             break;
 
         default:
