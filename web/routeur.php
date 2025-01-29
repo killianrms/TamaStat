@@ -92,14 +92,9 @@ try {
 
                 foreach ($tailles as $tailleBox) {
                     $quantitesBox[$tailleBox] = isset($_POST["box_$tailleBox"]) ? intval($_POST["box_$tailleBox"]) : 0;
-                    if ($quantitesBox[$tailleBox] < 0) {
-                        $quantitesBox[$tailleBox] = 0;
-                    }
                 }
+
                 $prixParM3 = isset($_POST['prix_par_m3']) ? floatval($_POST['prix_par_m3']) : 0;
-                if ($prixParM3 < 0) {
-                    $prixParM3 = 0;
-                }
 
                 foreach ($quantitesBox as $taille => $nombreBox) {
                     if ($nombreBox > 0) {
@@ -111,10 +106,15 @@ try {
                         );
                     }
                 }
+
                 header('Location: routeur.php?route=accueil');
                 exit;
+            } else {
+                $donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['user']['id']);
+                require_once __DIR__ . '/../src/Vue/utilisateur/ajouterDonnees.php';
             }
             break;
+
 
         case 'deconnexion':
             session_unset();
@@ -152,3 +152,4 @@ function autoload($class) {
 }
 
 spl_autoload_register('autoload');
+

@@ -52,8 +52,18 @@ class ControleurUtilisateur {
 
     public function mettreAJourDonneesUtilisateur($utilisateurId, $taille, $prixParM3, $nombreBox)
     {
-        if ($utilisateurId === null) {
-            echo "Erreur : l'ID utilisateur est manquant.";
+        if ($utilisateurId === null || $taille === null || $prixParM3 === null || $nombreBox === null) {
+            echo "Erreur : des paramètres nécessaires sont manquants.";
+            exit;
+        }
+
+        if (!is_numeric($prixParM3) || $prixParM3 < 0) {
+            echo "Erreur : le prix par m³ doit être un nombre positif.";
+            exit;
+        }
+
+        if (!is_numeric($nombreBox) || $nombreBox < 0) {
+            echo "Erreur : le nombre de box doit être un nombre positif.";
             exit;
         }
 
@@ -77,6 +87,12 @@ class ControleurUtilisateur {
                 ':utilisateur_id' => $utilisateurId,
                 ':taille' => $taille
             ]);
+
+            if ($updateStmt->rowCount() > 0) {
+                echo "Données mises à jour avec succès!";
+            } else {
+                echo "Aucune mise à jour effectuée. Vérifie les valeurs envoyées.";
+            }
         } else {
             $insertQuery = "INSERT INTO user_box (utilisateur_id, taille, nombre_box, prix_par_m3) VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)";
             $insertStmt = $pdo->prepare($insertQuery);

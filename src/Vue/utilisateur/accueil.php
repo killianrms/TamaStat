@@ -5,24 +5,14 @@ $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
 
 $stmt = $pdo->prepare('
-    SELECT * FROM boxes_utilisateur
+    SELECT taille, nombre_box, prix_par_m3 FROM boxes_utilisateur
     WHERE utilisateur_id = :utilisateur_id
 ');
 $stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
 $stmt->execute();
-
 $boxesUtilisateur = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Récupérer le prix par m³ de l'utilisateur (si disponible)
-$stmt = $pdo->prepare('
-    SELECT prix_par_m3 FROM boxes_utilisateur
-    WHERE utilisateur_id = :utilisateur_id
-    LIMIT 1
-');
-$stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
-$stmt->execute();
-
-$prixParM3 = $stmt->fetchColumn();
+$prixParM3 = $boxesUtilisateur[0]['prix_par_m3'] ?? null;
 ?>
 
 <h3>Vos boxes :</h3>
@@ -55,22 +45,17 @@ $prixParM3 = $stmt->fetchColumn();
         <tbody>
         <?php
         $taillesDisponibles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
-        foreach ($taillesDisponibles as $tailleBox):
-            $boxExistante = null;
-            $sql = "SELECT * FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
-            $stmt = $pdo->prepare($sql);
-            $stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
-            $stmt->bindParam(':taille', $tailleBox);
-            $stmt->execute();
+        $boxes = [];
+        foreach ($boxesUtilisateur as $box) {
+            $boxes[$box['taille']] = $box['nombre_box'];
+        }
 
-            if ($stmt->rowCount() > 0) {
-                $boxExistante = $stmt->fetch(PDO::FETCH_ASSOC);
-            }
+        foreach ($taillesDisponibles as $tailleBox):
             ?>
             <tr>
                 <td><?= $tailleBox ?> m³</td>
                 <td>
-                    <input type="number" name="box_<?= $tailleBox ?>" value="<?= $boxExistante ? htmlspecialchars($boxExistante['nombre_box']) : 0 ?>" min="0" required>
+                    <input type="number" name="box_<?= $tailleBox ?>" value="<?= $boxes[$tailleBox] ?? 0 ?>" min="0" required>
                 </td>
             </tr>
         <?php endforeach; ?>
