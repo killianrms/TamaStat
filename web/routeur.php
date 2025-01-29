@@ -87,10 +87,6 @@ try {
 
         case 'ajouterDonneesAccueil':
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                echo "<pre>";
-                print_r($_POST);
-                echo "</pre>";
-                exit;
                 $quantitesBox = [];
                 $tailles = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10];
 
