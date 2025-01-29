@@ -52,15 +52,19 @@ class ControleurUtilisateur {
 
     public function mettreAJourDonneesUtilisateur($utilisateurId, $taille, $prixParM3, $nombreBox)
     {
-        $pdo = $this->getPdo();
+        $taille = (float) $taille;
+        $prixParM3 = (float) $prixParM3;
+        $nombreBox = (int) $nombreBox;
 
-        $query = "SELECT COUNT(*) FROM ta_table WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
+        $pdo = $this->pdo;
+
+        $query = "SELECT COUNT(*) FROM user_box WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
         $stmt = $pdo->prepare($query);
         $stmt->execute([':utilisateur_id' => $utilisateurId, ':taille' => $taille]);
         $count = $stmt->fetchColumn();
 
         if ($count > 0) {
-            $updateQuery = "UPDATE ta_table SET nombre_box = :nombre_box, prix_par_m3 = :prix_par_m3 WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
+            $updateQuery = "UPDATE user_box SET nombre_box = :nombre_box, prix_par_m3 = :prix_par_m3 WHERE utilisateur_id = :utilisateur_id AND taille = :taille";
             $updateStmt = $pdo->prepare($updateQuery);
             $updateStmt->execute([
                 ':nombre_box' => $nombreBox,
@@ -69,7 +73,7 @@ class ControleurUtilisateur {
                 ':taille' => $taille
             ]);
         } else {
-            $insertQuery = "INSERT INTO ta_table (utilisateur_id, taille, nombre_box, prix_par_m3) VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)";
+            $insertQuery = "INSERT INTO user_box (utilisateur_id, taille, nombre_box, prix_par_m3) VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)";
             $insertStmt = $pdo->prepare($insertQuery);
             $insertStmt->execute([
                 ':utilisateur_id' => $utilisateurId,
@@ -79,5 +83,6 @@ class ControleurUtilisateur {
             ]);
         }
     }
+
 }
 
