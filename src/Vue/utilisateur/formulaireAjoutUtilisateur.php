@@ -41,7 +41,7 @@
 </head>
 <body>
 
-<h2>Ajouter un nouvel utilisateur</h2>
+<h1>Ajouter un nouvel utilisateur</h1>
 
 <form action="routeur.php?route=ajouterUtilisateur" method="POST" onsubmit="return confirmerAjoutUtilisateur(this)">
     <label for="nom_utilisateur">Nom d'utilisateur :</label>

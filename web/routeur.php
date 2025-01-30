@@ -60,7 +60,7 @@ try {
                 $nom_utilisateur = htmlspecialchars($_POST['nom_utilisateur']);
                 $mot_de_passe = $_POST['mot_de_passe'];
                 $email = $_POST['email'];
-                $role = $_POST['role'];
+                $is_admin = $_POST['is_admin'];
 
                 $pdo = (new ConnexionBD())->getPdo();
                 $stmt = $pdo->prepare('SELECT * FROM utilisateurs WHERE nom_utilisateur = :nom_utilisateur OR email = :email');
@@ -68,22 +68,24 @@ try {
                 $utilisateurExist = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($utilisateurExist) {
-                    echo "Cet utilisateur existe déjà.";
+                    header('Location: routeur.php?route=erreur&message=Cet utilisateur existe déjà.');
+                    exit;
                 } else {
                     $mot_de_passe_hache = password_hash($mot_de_passe, PASSWORD_BCRYPT);
 
-                    $stmt = $pdo->prepare('INSERT INTO utilisateurs (nom_utilisateur, mot_de_passe, email, role) VALUES (:nom_utilisateur, :mot_de_passe, :email, :role)');
+                    $stmt = $pdo->prepare('INSERT INTO utilisateurs (nom_utilisateur, mot_de_passe, email, is_admin) VALUES (:nom_utilisateur, :mot_de_passe, :email, :is_admin)');
                     $stmt->execute([
                         ':nom_utilisateur' => $nom_utilisateur,
                         ':mot_de_passe' => $mot_de_passe_hache,
                         ':email' => $email,
-                        ':role' => $role
+                        ':is_admin' => $is_admin
                     ]);
-
-                    echo "Utilisateur ajouté avec succès!";
+                    echo('Utilisateur ajouté avec succès');
+                    exit;
                 }
             }
             break;
+
 
         case 'ajouterDonneesAccueil':
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {

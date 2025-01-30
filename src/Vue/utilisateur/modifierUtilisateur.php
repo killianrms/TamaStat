@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-<h2>Modifier l'utilisateur</h2>
+<h1>Modifier l'utilisateur</h1>
 
 <form method="POST">
     <label for="nom_utilisateur">Nom d'utilisateur :</label>

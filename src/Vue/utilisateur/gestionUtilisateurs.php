@@ -1,6 +1,4 @@
 <?php
-session_start();
-
 if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
     header('Location: routeur.php?route=erreur&message=Accès non autorisé');
     exit;
@@ -41,8 +39,8 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <td><?= htmlspecialchars($utilisateur['email']) ?></td>
             <td><?= $utilisateur['is_admin'] ? 'Oui' : 'Non' ?></td>
             <td class="actions">
-                <a href="routeur.php?route=modifierUtilisateur&id=<?= $utilisateur['id'] ?>">Modifier</a>
                 <?php if (!$utilisateur['is_admin'] && $utilisateur['id'] !== $_SESSION['user']['id']): ?>
+                    <a href="routeur.php?route=modifierUtilisateur&id=<?= $utilisateur['id'] ?>">Modifier</a>
                     <a href="routeur.php?route=supprimerUtilisateur&id=<?= $utilisateur['id'] ?>" class="delete-link" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">Supprimer</a>
                 <?php endif; ?>
             </td>
