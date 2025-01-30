@@ -13,10 +13,6 @@ if (isset($_SESSION['erreur_connexion'])) {
     echo '<div style="color: red; font-weight: bold; margin-bottom: 10px;">' . htmlspecialchars($_SESSION['erreur_connexion']) . '</div>';
     unset($_SESSION['erreur_connexion']);
 }
-
-$mot_de_passe = "test";
-$hash = password_hash($mot_de_passe, PASSWORD_BCRYPT);
-echo "Mot de passe haché : " . $hash;
 ?>
 
 <form action="routeur.php?route=login" method="POST">

@@ -6,8 +6,8 @@
     <title>Ajouter un utilisateur</title>
     <script>
         function confirmerAjoutUtilisateur(form) {
-            var role = form.role.value;
-            if (role === 'admin') {
+            var isAdmin = form.is_admin.value;
+            if (isAdmin === '1') {
                 var confirmation = confirm("Êtes-vous sûr de vouloir ajouter un utilisateur avec le rôle d'administrateur ? Cela peut être dangereux si ce n'est pas fait avec précaution.");
                 if (!confirmation) {
                     return false;
@@ -56,10 +56,10 @@
     <label for="email">Email :</label>
     <input type="email" id="email" name="email" required><br>
 
-    <label for="role">Rôle :</label>
-    <select id="role" name="role">
-        <option value="utilisateur">Utilisateur</option>
-        <option value="admin">Admin</option>
+    <label for="is_admin">Administrateur :</label>
+    <select id="is_admin" name="is_admin">
+        <option value="0">Non</option>
+        <option value="1">Oui</option>
     </select><br>
 
     <button type="submit">Ajouter l'utilisateur</button>
