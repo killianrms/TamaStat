@@ -39,8 +39,9 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <td><?= htmlspecialchars($utilisateur['email']) ?></td>
             <td><?= $utilisateur['is_admin'] ? 'Oui' : 'Non' ?></td>
             <td class="actions">
-                <?php if (!$utilisateur['is_admin'] && $utilisateur['id'] !== $_SESSION['user']['id']): ?>
-                <p>Impossible de modifier / supprimer un admin</p>
+                <?php if ($utilisateur['is_admin']): ?>
+                    <p>Impossible de modifier ou supprimer un administrateur</p>
+                <?php else: ?>
                     <a href="routeur.php?route=modifierUtilisateur&id=<?= $utilisateur['id'] ?>">Modifier</a>
                     <a href="routeur.php?route=supprimerUtilisateur&id=<?= $utilisateur['id'] ?>" class="delete-link" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">Supprimer</a>
                 <?php endif; ?>

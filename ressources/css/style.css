@@ -171,6 +171,12 @@ footer {
     color: #e65c00;
 }
 
+p {
+    color: red;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
 .footer-copy p {
     font-size: 12px;
     color: #ecf0f1;
