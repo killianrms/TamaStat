@@ -1,6 +1,8 @@
 <?php
+session_start();
+
 if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
-    echo "Accès non autorisé!";
+    header('Location: routeur.php?route=erreur&message=Accès non autorisé');
     exit;
 }
 
@@ -11,7 +13,15 @@ $stmt = $pdo->query('SELECT * FROM utilisateurs');
 $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
-<h2>Gestion des utilisateurs</h2>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des utilisateurs</title>
+</head>
+<body>
+<h1>Gestion des utilisateurs</h1>
 
 <table class="user-table">
     <thead>
@@ -33,7 +43,7 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <td class="actions">
                 <a href="routeur.php?route=modifierUtilisateur&id=<?= $utilisateur['id'] ?>">Modifier</a>
                 <?php if (!$utilisateur['is_admin'] && $utilisateur['id'] !== $_SESSION['user']['id']): ?>
-                    <a href="routeur.php?route=supprimerUtilisateur&id=<?= $utilisateur['id'] ?>" class="delete-link" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est définitive et irréversible.')">Supprimer</a>
+                    <a href="routeur.php?route=supprimerUtilisateur&id=<?= $utilisateur['id'] ?>" class="delete-link" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">Supprimer</a>
                 <?php endif; ?>
             </td>
         </tr>
@@ -42,3 +52,5 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </table>
 
 <a href="routeur.php?route=ajouterUtilisateur" class="add-user-button">Ajouter un utilisateur</a>
+</body>
+</html>
