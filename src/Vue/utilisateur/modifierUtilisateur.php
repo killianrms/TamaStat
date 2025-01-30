@@ -1,6 +1,6 @@
 <?php
 if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
-    echo "Accès non autorisé!";
+    header('Location: routeur.php?route=connexion');
     exit;
 }
 

@@ -1,5 +1,4 @@
 <?php
-session_start();
 use App\Configuration\ConnexionBD;
 
 $connexion = new ConnexionBD();
