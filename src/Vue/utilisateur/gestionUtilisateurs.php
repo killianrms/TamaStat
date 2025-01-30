@@ -30,11 +30,10 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <td><?= htmlspecialchars($utilisateur['id']) ?></td>
             <td><?= htmlspecialchars($utilisateur['nom_utilisateur']) ?></td>
             <td><?= htmlspecialchars($utilisateur['email']) ?></td>
-            <td><?= htmlspecialchars($utilisateur['role']) ?></td>
             <td><?= $utilisateur['is_admin'] ? 'Oui' : 'Non' ?></td>
             <td>
                 <a href="routeur.php?route=modifierUtilisateur&id=<?= $utilisateur['id'] ?>">Modifier</a>
-                <a href="routeur.php?route=supprimerUtilisateur&id=<?= $utilisateur['id'] ?>" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">Supprimer</a>
+                <a href="routeur.php?route=supprimerUtilisateur&id=<?= $utilisateur['id'] ?>" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ? Cette action est définitive et irréversible')">Supprimer</a>
             </td>
         </tr>
         <?php endforeach; ?>
