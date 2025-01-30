@@ -280,7 +280,6 @@ table.user-table td.actions a.delete-link:hover {
     color: #cc0000;
 }
 
-/* Bouton Ajouter un utilisateur */
 .add-user-button {
     display: inline-block;
     background-color: #0072bc;
