@@ -55,21 +55,34 @@ try {
             break;
 
         case 'ajouterUtilisateur':
+            if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
+                echo "Accès non autorisé!";
+                exit;
+            }
+
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $nom_utilisateur = htmlspecialchars($_POST['nom_utilisateur']);
                 $mot_de_passe = $_POST['mot_de_passe'];
+                $mot_de_passe_confirme = $_POST['mot_de_passe_confirme'];
                 $email = $_POST['email'];
                 $is_admin = $_POST['is_admin'];
 
+                $erreurs = [];
+
+                if ($mot_de_passe !== $mot_de_passe_confirme) {
+                    $erreurs[] = "Les mots de passe ne correspondent pas.";
+                }
+
                 $pdo = (new ConnexionBD())->getPdo();
-                $stmt = $pdo->prepare('SELECT * FROM utilisateurs WHERE nom_utilisateur = :nom_utilisateur OR email = :email');
-                $stmt->execute(['nom_utilisateur' => $nom_utilisateur, 'email' => $email]);
+                $stmt = $pdo->prepare('SELECT * FROM utilisateurs WHERE email = :email OR nom_utilisateur = :nom_utilisateur');
+                $stmt->execute(['email' => $email, 'nom_utilisateur' => $nom_utilisateur]);
                 $utilisateurExist = $stmt->fetch(PDO::FETCH_ASSOC);
 
                 if ($utilisateurExist) {
-                    header('Location: routeur.php?route=erreur&message=Cet utilisateur existe déjà.');
-                    exit;
-                } else {
+                    $erreurs[] = "Cet utilisateur ou email existe déjà.";
+                }
+
+                if (empty($erreurs)) {
                     $mot_de_passe_hache = password_hash($mot_de_passe, PASSWORD_BCRYPT);
 
                     $stmt = $pdo->prepare('INSERT INTO utilisateurs (nom_utilisateur, mot_de_passe, email, is_admin) VALUES (:nom_utilisateur, :mot_de_passe, :email, :is_admin)');
@@ -79,11 +92,17 @@ try {
                         ':email' => $email,
                         ':is_admin' => $is_admin
                     ]);
-                    echo('Utilisateur ajouté avec succès');
+
+                    header('Location: routeur.php?route=gestionUtilisateurs&message=Utilisateur ajouté avec succès');
                     exit;
+                } else {
+                    $_SESSION['erreurs'] = $erreurs;
                 }
             }
+
+            require_once __DIR__ . '/../src/Vue/utilisateur/formulaireAjoutUtilisateur.php';
             break;
+
 
         case 'ajouterDonneesAccueil':
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {

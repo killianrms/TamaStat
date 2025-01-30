@@ -8,7 +8,7 @@
         function confirmerAjoutUtilisateur(form) {
             var isAdmin = form.is_admin.value;
             if (isAdmin === '1') {
-                var confirmation = confirm("Êtes-vous sûr de vouloir ajouter un utilisateur avec le rôle d'administrateur ? Cela peut être dangereux si ce n'est pas fait avec précaution.");
+                var confirmation = confirm("Êtes-vous sûr de vouloir ajouter un utilisateur avec le rôle d'administrateur ?");
                 if (!confirmation) {
                     return false;
                 }
@@ -43,9 +43,20 @@
 
 <h1>Ajouter un nouvel utilisateur</h1>
 
+<?php
+if (isset($_SESSION['erreurs']) && !empty($_SESSION['erreurs'])):
+    echo '<div style="color: red;">';
+    foreach ($_SESSION['erreurs'] as $erreur) {
+        echo "<p>$erreur</p>";
+    }
+    echo '</div>';
+    unset($_SESSION['erreurs']);
+endif;
+?>
+
 <form action="routeur.php?route=ajouterUtilisateur" method="POST" onsubmit="return confirmerAjoutUtilisateur(this)">
     <label for="nom_utilisateur">Nom d'utilisateur :</label>
-    <input type="text" id="nom_utilisateur" name="nom_utilisateur" required><br>
+    <input type="text" id="nom_utilisateur" name="nom_utilisateur" value="<?= isset($_POST['nom_utilisateur']) ? htmlspecialchars($_POST['nom_utilisateur']) : '' ?>" required><br>
 
     <label for="mot_de_passe">Mot de passe :</label>
     <input type="password" id="mot_de_passe" name="mot_de_passe" required><br>
@@ -54,12 +65,12 @@
     <input type="password" id="mot_de_passe_confirme" name="mot_de_passe_confirme" required><br>
 
     <label for="email">Email :</label>
-    <input type="email" id="email" name="email" required><br>
+    <input type="email" id="email" name="email" value="<?= isset($_POST['email']) ? htmlspecialchars($_POST['email']) : '' ?>" required><br>
 
     <label for="is_admin">Administrateur :</label>
     <select id="is_admin" name="is_admin">
-        <option value="0">Non</option>
-        <option value="1">Oui</option>
+        <option value="0" <?= (isset($_POST['is_admin']) && $_POST['is_admin'] == '0') ? 'selected' : '' ?>>Non</option>
+        <option value="1" <?= (isset($_POST['is_admin']) && $_POST['is_admin'] == '1') ? 'selected' : '' ?>>Oui</option>
     </select><br>
 
     <button type="submit">Ajouter l'utilisateur</button>
