@@ -6,7 +6,6 @@ if ($_SESSION['role'] !== 'admin') {
     exit;
 }
 
-
 use App\Configuration\ConnexionBD;
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -14,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $mot_de_passe = $_POST['mot_de_passe'];
     $email = $_POST['email'];
     $role = $_POST['role'];
+    $is_admin = $_POST['is_admin'] ?? 0; // Par défaut, l'utilisateur n'est pas admin
 
     $pdo = (new ConnexionBD())->getPdo();
     $stmt = $pdo->prepare('SELECT * FROM utilisateurs WHERE nom_utilisateur = :nom_utilisateur OR email = :email');
@@ -25,12 +25,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $mot_de_passe_hache = password_hash($mot_de_passe, PASSWORD_BCRYPT);
 
-        $stmt = $pdo->prepare('INSERT INTO utilisateurs (nom_utilisateur, mot_de_passe, email, role) VALUES (:nom_utilisateur, :mot_de_passe, :email, :role)');
+        $stmt = $pdo->prepare('INSERT INTO utilisateurs (nom_utilisateur, mot_de_passe, email, role, is_admin) VALUES (:nom_utilisateur, :mot_de_passe, :email, :role, :is_admin)');
         $stmt->execute([
             ':nom_utilisateur' => $nom_utilisateur,
             ':mot_de_passe' => $mot_de_passe_hache,
             ':email' => $email,
-            ':role' => $role
+            ':role' => $role,
+            ':is_admin' => $is_admin
         ]);
 
         echo "Utilisateur ajouté avec succès!";

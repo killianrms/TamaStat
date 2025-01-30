@@ -12,14 +12,13 @@ class ControleurUtilisateur {
         $this->pdo = $connexion->getPdo();
     }
 
-    public function login($usernameOrEmail, $password)
-    {
+    public function login($usernameOrEmail, $password) {
         $stmt = $this->pdo->prepare('SELECT * FROM utilisateurs WHERE nom_utilisateur = :input OR email = :input');
         $stmt->execute(['input' => $usernameOrEmail]);
 
         $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($utilisateur && $password === $utilisateur['mot_de_passe']) {
+        if ($utilisateur && password_verify($password, $utilisateur['mot_de_passe'])) {
             $_SESSION['user'] = [
                 'id' => $utilisateur['id'],
                 'nom_utilisateur' => $utilisateur['nom_utilisateur'],

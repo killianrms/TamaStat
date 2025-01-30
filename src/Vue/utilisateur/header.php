@@ -9,6 +9,9 @@
             <div class="nav-links">
                 <a href="routeur.php?route=accueil">Accueil</a>
                 <a href="routeur.php?route=stats">Stats</a>
+                <?php if (isset($_SESSION['user']) && $_SESSION['user']['is_admin'] === 1): ?>
+                    <a href="routeur.php?route=gestionUtilisateurs">Gestion Utilisateurs</a>
+                <?php endif; ?>
                 <a href="routeur.php?route=deconnexion">Déconnexion</a>
             </div>
             <div class="burger" onclick="toggleMenu()">
