@@ -17,6 +17,7 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gestion des utilisateurs</title>
+    echo '<link rel="stylesheet" href="../ressources/css/style.css">';
 </head>
 <body>
 <h1>Gestion des utilisateurs</h1>
@@ -40,7 +41,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <td><?= $utilisateur['is_admin'] ? 'Oui' : 'Non' ?></td>
             <td class="actions">
                 <?php if (!$utilisateur['is_admin'] && $utilisateur['id'] !== $_SESSION['user']['id']): ?>
-                    <p>Aucune action possible sur un admin</p>
                     <a href="routeur.php?route=modifierUtilisateur&id=<?= $utilisateur['id'] ?>">Modifier</a>
                     <a href="routeur.php?route=supprimerUtilisateur&id=<?= $utilisateur['id'] ?>" class="delete-link" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">Supprimer</a>
                 <?php endif; ?>
