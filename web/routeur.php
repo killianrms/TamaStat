@@ -130,7 +130,6 @@ try {
             }
             $id = $_GET['id'] ?? null;
             if ($id) {
-                // Afficher le formulaire de modification
                 require_once __DIR__ . '/../src/Vue/utilisateur/modifierUtilisateur.php';
             }
             break;
@@ -149,7 +148,7 @@ try {
                 exit;
             }
             break;
-            
+
         case 'deconnexion':
             session_unset();
             session_destroy();

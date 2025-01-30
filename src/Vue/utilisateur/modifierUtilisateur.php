@@ -25,14 +25,12 @@ if (!$utilisateur) {
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nom_utilisateur = htmlspecialchars($_POST['nom_utilisateur']);
     $email = $_POST['email'];
-    $role = $_POST['role'];
     $is_admin = $_POST['is_admin'] ?? 0;
 
-    $stmt = $pdo->prepare('UPDATE utilisateurs SET nom_utilisateur = :nom_utilisateur, email = :email, role = :role, is_admin = :is_admin WHERE id = :id');
+    $stmt = $pdo->prepare('UPDATE utilisateurs SET nom_utilisateur = :nom_utilisateur, email = :email, is_admin = :is_admin WHERE id = :id');
     $stmt->execute([
         ':nom_utilisateur' => $nom_utilisateur,
         ':email' => $email,
-        ':role' => $role,
         ':is_admin' => $is_admin,
         ':id' => $id
     ]);
@@ -50,12 +48,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <label for="email">Email :</label>
     <input type="email" id="email" name="email" value="<?= htmlspecialchars($utilisateur['email']) ?>" required><br>
-
-    <label for="role">Rôle :</label>
-    <select id="role" name="role">
-        <option value="utilisateur" <?= $utilisateur['role'] === 'utilisateur' ? 'selected' : '' ?>>Utilisateur</option>
-        <option value="admin" <?= $utilisateur['role'] === 'admin' ? 'selected' : '' ?>>Admin</option>
-    </select><br>
 
     <label for="is_admin">Administrateur :</label>
     <select id="is_admin" name="is_admin">

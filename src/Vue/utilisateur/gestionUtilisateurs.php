@@ -19,7 +19,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <th>ID</th>
             <th>Nom d'utilisateur</th>
             <th>Email</th>
-            <th>Rôle</th>
             <th>Admin</th>
             <th>Actions</th>
         </tr>
