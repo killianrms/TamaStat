@@ -18,6 +18,8 @@ $route = $_GET['route'] ?? 'connexion';
 $controleurUtilisateur = new ControleurUtilisateur();
 $controleurCsv = new ControleurCsv();
 
+echo '<link rel="stylesheet" href="../ressources/css/style.css">';
+
 try {
     switch ($route) {
         case 'connexion':
