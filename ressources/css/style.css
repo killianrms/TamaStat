@@ -225,6 +225,85 @@ table.boxes-table input[type="number"] {
     border: 1px solid #ddd;
 }
 
+/* Styles pour le tableau des utilisateurs */
+table.user-table {
+    width: 100%;
+    margin-top: 20px;
+    border-collapse: collapse;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background-color: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+table.user-table th, table.user-table td {
+    padding: 12px 15px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+table.user-table th {
+    background-color: #0072bc;
+    color: white;
+    font-weight: bold;
+}
+
+table.user-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+table.user-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+table.user-table td.actions {
+    display: flex;
+    gap: 10px;
+}
+
+table.user-table td.actions a {
+    color: #0072bc;
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+table.user-table td.actions a:hover {
+    color: #ff6600;
+}
+
+table.user-table td.actions a.delete-link {
+    color: #ff0000;
+}
+
+table.user-table td.actions a.delete-link:hover {
+    color: #cc0000;
+}
+
+/* Bouton Ajouter un utilisateur */
+.add-user-button {
+    display: inline-block;
+    background-color: #0072bc;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    margin-top: 20px;
+    transition: background-color 0.3s ease;
+}
+
+.add-user-button:hover {
+    background-color: #005f9e;
+}
+
+/* Message d'erreur */
+.error-message {
+    color: #ff0000;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
 @media (max-width: 768px) {
     h1 {
         font-size: 1.5rem;
@@ -247,6 +326,37 @@ table.boxes-table input[type="number"] {
 
     .navbar .burger {
         display: flex;
+    }
+
+    table.user-table, table.user-table th, table.user-table td {
+        display: block;
+        width: 100%;
+    }
+
+    table.user-table th {
+        display: none;
+    }
+
+    table.user-table tr {
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    table.user-table td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+    }
+
+    table.user-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    table.user-table td.actions {
+        justify-content: center;
     }
 
     table.boxes-table, table.boxes-table th, table.boxes-table td {
