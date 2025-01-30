@@ -1,6 +1,7 @@
-<?php
-// Code PHP ici...
-?>
+<?php if (isset($_SESSION['user']) && !empty($_SESSION['user']['is_admin']) && $_SESSION['user']['is_admin'] == 1): ?>
+    <a href="routeur.php?route=gestionUtilisateurs">Gestion Utilisateurs</a>
+<?php endif; ?>
+
 <header>
     <div class="navbar">
         <h1>TamaStats</h1>

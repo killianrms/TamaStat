@@ -23,7 +23,8 @@ class ControleurUtilisateur {
                 'id' => $utilisateur['id'],
                 'nom_utilisateur' => $utilisateur['nom_utilisateur'],
                 'email' => $utilisateur['email'],
-                'role' => $utilisateur['role']
+                'role' => $utilisateur['role'],
+                'is_admin' => isset($utilisateur['is_admin']) ? (int)$utilisateur['is_admin'] : 0,
             ];
             header('Location: routeur.php?route=accueil');
             exit;
