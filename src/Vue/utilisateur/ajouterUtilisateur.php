@@ -13,7 +13,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajouter un utilisateur</title>
-    <link rel="stylesheet" href="../ressources/css/style.css">
+    <link rel="stylesheet" href="../../../ressources/css/style.css">
     <script>
         function confirmerAjoutUtilisateur(form) {
             var isAdmin = form.is_admin.value;
