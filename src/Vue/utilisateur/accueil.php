@@ -24,15 +24,41 @@ $taillesDisponibles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10
 
 <h1>Gestion de vos boxes</h1>
 
-<form method="POST" action="routeur.php?route=ajouterDonneesAccueil">
-    <label for="prix_par_m3">Prix par m³ (€) :</label>
-    <input type="number" id="prix_par_m3" name="prix_par_m3" step="0.01" value="<?= htmlspecialchars($prixParM3) ?>" required>
-    <br><br>
-    <?php foreach ($taillesDisponibles as $tailleBox): ?>
-        <label for="box_<?= str_replace('.', '_', $tailleBox) ?>">Nombre de box <?= $tailleBox ?>m³ :</label>
-        <input type="number" name="box_<?= str_replace('.', '_', $tailleBox) ?>" id="box_<?= str_replace('.', '_', $tailleBox) ?>" value="<?= $boxes[(string)$tailleBox] ?? 0 ?>" min="0" required>
+<div class="container">
+    <form method="POST" action="routeur.php?route=ajouterDonneesAccueil">
+        <label for="prix_par_m3">Prix par m³ (€) :</label>
+        <input type="number" id="prix_par_m3" name="prix_par_m3" step="0.01" value="<?= htmlspecialchars($prixParM3) ?>" required>
+        <br><br>
+
+        <?php foreach ($taillesDisponibles as $tailleBox): ?>
+            <label for="box_<?= str_replace('.', '_', $tailleBox) ?>">Nombre de box <?= $tailleBox ?>m³ :</label>
+            <input type="number" name="box_<?= str_replace('.', '_', $tailleBox) ?>" id="box_<?= str_replace('.', '_', $tailleBox) ?>" value="<?= $boxes[(string)$tailleBox] ?? 0 ?>" min="0" required>
+            <br>
+        <?php endforeach; ?>
+
         <br>
-    <?php endforeach; ?>
-    <br>
-    <button type="submit">Enregistrer</button>
-</form>
+        <button type="submit">Enregistrer</button>
+    </form>
+
+    <div class="table-container">
+        <h2>Liste des Box</h2>
+        <table class="boxes-table">
+            <thead>
+            <tr>
+                <th>Taille (m³)</th>
+                <th>Nombre de Box</th>
+                <th>Prix par m³ (€)</th>
+            </tr>
+            </thead>
+            <tbody>
+            <?php foreach ($boxesUtilisateur as $box): ?>
+                <tr>
+                    <td><?= htmlspecialchars($box['taille']) ?></td>
+                    <td><?= htmlspecialchars($box['nombre_box']) ?></td>
+                    <td><?= htmlspecialchars($box['prix_par_m3']) ?></td>
+                </tr>
+            <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -26,6 +26,7 @@ form {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     max-width: 500px;
     margin: 20px auto;
+    flex: 1;
 }
 
 label {
@@ -194,18 +195,34 @@ footer {
     display: none;
 }
 
-/* Style pour la table des boxes */
-table.boxes-table {
-    width: 100%;
-    margin-top: 20px;
-    border-collapse: collapse;
+/* Conteneur principal */
+.container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Tableau des boxes */
+.table-container {
+    flex: 1;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
+table.boxes-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
 table.boxes-table th, table.boxes-table td {
-    padding: 12px 15px;
+    padding: 10px;
     text-align: left;
-    border: 1px solid #ddd;
+    border-bottom: 1px solid #ddd;
 }
 
 table.boxes-table th {
@@ -215,6 +232,13 @@ table.boxes-table th {
 
 table.boxes-table tr:nth-child(even) {
     background-color: #f9f9f9;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
 }
 
 table.boxes-table input[type="number"] {
