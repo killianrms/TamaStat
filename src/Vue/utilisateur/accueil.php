@@ -31,7 +31,6 @@ $taillesDisponibles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10
 
     <?php foreach ($taillesDisponibles as $tailleBox): ?>
         <label for="box_<?= $tailleBox ?>">Nombre de box <?= $tailleBox ?>m³ :</label>
-        <!-- Utilisation de la taille sous forme de chaîne pour éviter les problèmes de précision -->
         <input type="number" name="box_<?= $tailleBox ?>" id="box_<?= $tailleBox ?>" value="<?= $boxes[(string)$tailleBox] ?? 0 ?>" min="0" required>
         <br>
     <?php endforeach; ?>

@@ -107,7 +107,7 @@ try {
         case 'ajouterDonneesAccueil':
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $quantitesBox = [];
-                $tailles = [1, 1.5, 2, 2.5, 3, 4, 5, 6, 7, 8, 9, 10];
+                $tailles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
 
                 foreach ($tailles as $tailleBox) {
                     $quantitesBox[$tailleBox] = isset($_POST["box_$tailleBox"]) ? intval($_POST["box_$tailleBox"]) : 0;
@@ -115,22 +115,17 @@ try {
 
                 $prixParM3 = isset($_POST['prix_par_m3']) ? floatval($_POST['prix_par_m3']) : 0;
 
-                foreach ($quantitesBox as $taille => $nombreBox) {
-                    if ($nombreBox > 0) {
-                        $controleurUtilisateur->mettreAJourDonneesUtilisateur(
-                            $_SESSION['user']['id'],
-                            $taille,
-                            $prixParM3,
-                            $nombreBox
-                        );
-                    }
-                }
+                $controleurUtilisateur->mettreAJourDonneesUtilisateur(
+                    $_SESSION['user']['id'],
+                    $prixParM3,
+                    $quantitesBox
+                );
 
                 header('Location: routeur.php?route=accueil');
                 exit;
             } else {
                 $donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['user']['id']);
-                require_once __DIR__ . '/../src/Vue/utilisateur/ajouterDonnees.php';
+                require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
             }
             break;
 
