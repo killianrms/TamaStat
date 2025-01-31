@@ -302,20 +302,6 @@ body.connexion-page {
 }
 
 /* Page d'accueil */
-.accueil-page {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-}
-
-.accueil-page h1 {
-    color: #0072bc;
-    font-size: 2rem;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
 .accueil-page .form-container {
     display: flex;
     gap: 20px;
@@ -403,6 +389,7 @@ body.connexion-page {
 
     .accueil-page .form-column {
         min-width: auto;
+    }
 
     table.boxes-table input[type="number"] {
         width: 100%;
