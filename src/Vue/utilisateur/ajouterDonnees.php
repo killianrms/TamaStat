@@ -11,6 +11,9 @@ if (!isset($_SESSION['user']['id'])) {
 $utilisateurId = $_SESSION['user']['id'];
 
 $prixParM3 = isset($_POST['prix_par_m3']) ? floatval($_POST['prix_par_m3']) : null;
+if ($prixParM3 === null || $prixParM3 <= 0) {
+    die("Erreur : Prix par m³ invalide.");
+}
 
 $taillesDisponibles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
 
@@ -44,3 +47,4 @@ try {
     $pdo->rollBack();
     die("Erreur lors de l'enregistrement : " . $e->getMessage());
 }
+?>

@@ -13,6 +13,10 @@ class CsvModele {
     }
 
     public function ajouterDonnees($ligne) {
+        if (count($ligne) < 17) {
+            throw new Exception("Ligne CSV incomplète.");
+        }
+
         $stmt = $this->pdo->prepare('
             INSERT INTO locations 
             (reference, nom_de_famille, prenom, societe, mail, date_prelevement, centre, box, type_de_box, 
