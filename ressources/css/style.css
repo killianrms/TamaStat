@@ -461,164 +461,163 @@ table.boxes-table tr:nth-child(even) {
     }
 }
 
-    @media (max-width: 768px) {
-        h1 {
-            font-size: 1.5rem;
-        }
-
-        .navbar .nav-links a {
-            font-size: 0.9rem;
-        }
-
-        .navbar .nav-links {
-            display: none;
-        }
-
-        .navbar.active .nav-links {
-            display: block;
-            width: 100%;
-            text-align: center;
-            background-color: #0072bc;
-        }
-
-        .navbar .burger {
-            display: flex;
-        }
-
-        table.user-table, table.user-table th, table.user-table td {
-            display: block;
-            width: 100%;
-        }
-
-        table.user-table th {
-            display: none;
-        }
-
-        table.user-table tr {
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-
-        table.user-table td {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-        }
-
-        table.user-table td::before {
-            content: attr(data-label);
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        table.user-table td.actions {
-            justify-content: center;
-        }
-
-        table.boxes-table, table.boxes-table th, table.boxes-table td {
-            display: block;
-            width: 100%;
-        }
-
-        table.boxes-table th {
-            display: none;
-        }
-
-        table.boxes-table tr {
-            margin-bottom: 10px;
-        }
-
-        table.boxes-table td {
-            display: flex;
-            justify-content: space-between;
-            padding: 8px;
-        }
-
-        table.boxes-table td input {
-            width: 60%;
-        }
-
-        table.boxes-table td:first-child {
-            font-weight: bold;
-        }
-
-        .footer-container {
-            flex-direction: column;
-            align-items: center;
-            text-align: center;
-        }
-
-        .footer-info ul {
-            text-align: center;
-        }
-
-        .footer-links {
-            margin-top: 10px;
-        }
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.5rem;
     }
 
-    @media (min-width: 1200px) {
-        h1 {
-            font-size: 3rem;
-        }
-
-        .navbar h1 {
-            font-size: 2rem;
-        }
-
-        .navbar .nav-links a {
-            font-size: 1.1rem;
-        }
+    .navbar .nav-links a {
+        font-size: 0.9rem;
     }
 
-    @media (max-width: 992px) {
-        h1 {
-            font-size: 2rem;
-        }
-
-        .navbar .nav-links a {
-            font-size: 1rem;
-        }
+    .navbar .nav-links {
+        display: none;
     }
 
-
-    @media (max-width: 480px) {
-        h1 {
-            font-size: 1.2rem;
-        }
-
-        .container {
-            flex-direction: column;
-        }
-
-        .navbar .nav-links a {
-            font-size: 0.8rem;
-        }
-
-        .footer-container {
-            flex-direction: row;
-            justify-content: space-between;
-            text-align: left;
-            padding: 20px 40px;
-        }
-
-        .footer-info, .footer-links, .footer-copy {
-            flex: 1;
-        }
-
-        .footer-info ul {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .footer-links {
-            text-align: center;
-        }
-
-        .footer-copy {
-            text-align: right;
-        }
+    .navbar.active .nav-links {
+        display: block;
+        width: 100%;
+        text-align: center;
+        background-color: #0072bc;
     }
 
+    .navbar .burger {
+        display: flex;
+    }
+
+    table.user-table, table.user-table th, table.user-table td {
+        display: block;
+        width: 100%;
+    }
+
+    table.user-table th {
+        display: none;
+    }
+
+    table.user-table tr {
+        margin-bottom: 10px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    table.user-table td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+    }
+
+    table.user-table td::before {
+        content: attr(data-label);
+        font-weight: bold;
+        margin-right: 10px;
+    }
+
+    table.user-table td.actions {
+        justify-content: center;
+    }
+
+    table.boxes-table, table.boxes-table th, table.boxes-table td {
+        display: block;
+        width: 100%;
+    }
+
+    table.boxes-table th {
+        display: none;
+    }
+
+    table.boxes-table tr {
+        margin-bottom: 10px;
+    }
+
+    table.boxes-table td {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+    }
+
+    table.boxes-table td input {
+        width: 60%;
+    }
+
+    table.boxes-table td:first-child {
+        font-weight: bold;
+    }
+
+    .footer-container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-info ul {
+        text-align: center;
+    }
+
+    .footer-links {
+        margin-top: 10px;
+    }
+}
+
+@media (min-width: 1200px) {
+    h1 {
+        font-size: 3rem;
+    }
+
+    .navbar h1 {
+        font-size: 2rem;
+    }
+
+    .navbar .nav-links a {
+        font-size: 1.1rem;
+    }
+}
+
+@media (max-width: 992px) {
+    h1 {
+        font-size: 2rem;
+    }
+
+    .navbar .nav-links a {
+        font-size: 1rem;
+    }
+}
+
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.2rem;
+    }
+
+    .container {
+        flex-direction: column;
+    }
+
+    .navbar .nav-links a {
+        font-size: 0.8rem;
+    }
+
+    .footer-container {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+        padding: 20px 40px;
+    }
+
+    .footer-info, .footer-links, .footer-copy {
+        flex: 1;
+    }
+
+    .footer-info ul {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .footer-links {
+        text-align: center;
+    }
+
+    .footer-copy {
+        text-align: right;
+    }
+}
