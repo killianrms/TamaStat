@@ -35,7 +35,7 @@ $taillesDisponibles = range(1, 12);
 
 <div class="form-container">
     <div class="form-column">
-        <form method="POST" action="routeur.php?route=ajouterDonneesAccueil">
+        <form id="form1" method="POST" action="routeur.php?route=ajouterDonneesAccueil">
             <label for="prix_par_m3">Prix par m³ (€) :</label>
             <input type="number" id="prix_par_m3" name="prix_par_m3" step="0.01" value="<?= htmlspecialchars($prixParM3) ?>" required>
             <br><br>
@@ -49,17 +49,26 @@ $taillesDisponibles = range(1, 12);
     </div>
 
     <div class="form-column">
-        <form method="POST" action="routeur.php?route=ajouterDonneesAccueil">
+        <form id="form2" method="POST" action="routeur.php?route=ajouterDonneesAccueil">
             <?php foreach (array_slice($taillesDisponibles, 6) as $tailleBox): ?>
                 <label for="box_<?= str_replace('.', '_', $tailleBox) ?>">Nombre de box <?= $tailleBox ?>m³ :</label>
                 <input type="number" name="box_<?= str_replace('.', '_', $tailleBox) ?>" id="box_<?= str_replace('.', '_', $tailleBox) ?>" value="<?= $boxes[(string)$tailleBox] ?? 0 ?>" min="0" required>
                 <br>
             <?php endforeach; ?>
             <br>
-            <button type="submit">Enregistrer</button>
+            <button type="submit" onclick="soumettreLesFormulaires(event)">Enregistrer</button>
         </form>
     </div>
 </div>
+
+<script>
+    function soumettreLesFormulaires(event) {
+        event.preventDefault();
+        document.getElementById('form1').submit();
+        document.getElementById('form2').submit();
+    }
+</script>
+
 
 <div class="table-container">
     <h2>Liste des Box</h2>
