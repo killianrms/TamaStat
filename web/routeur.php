@@ -129,14 +129,6 @@ try {
             }
             break;
 
-        case 'gestionUtilisateurs':
-            if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
-                echo "Accès non autorisé!";
-                exit;
-            }
-            require_once __DIR__ . '/../src/Vue/utilisateur/gestionUtilisateurs.php';
-            break;
-
         case 'modifierUtilisateur':
             if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
                 echo "Accès non autorisé!";

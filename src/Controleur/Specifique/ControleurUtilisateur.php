@@ -64,14 +64,12 @@ class ControleurUtilisateur
 
         $pdo = $this->pdo;
 
-        // Supprimer les anciennes entrées pour cet utilisateur
         $deleteQuery = "DELETE FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id";
         $deleteStmt = $pdo->prepare($deleteQuery);
         $deleteStmt->execute([':utilisateur_id' => $utilisateurId]);
 
-        // Insérer les nouvelles données
         foreach ($boxes as $taille => $nombreBox) {
-            if ($nombreBox > 0) {
+            if ($nombreBox >= 0) {
                 $insertQuery = "INSERT INTO boxes_utilisateur (utilisateur_id, taille, nombre_box, prix_par_m3) VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)";
                 $insertStmt = $pdo->prepare($insertQuery);
                 $insertStmt->execute([
