@@ -35,7 +35,7 @@ $taillesDisponibles = range(1, 12);
 
 <div class="form-container">
     <div class="form-column">
-        <form id="form1" method="POST" action="routeur.php?route=ajouterDonneesAccueil">
+        <form id="form1">
             <label for="prix_par_m3">Prix par m³ (€) :</label>
             <input type="number" id="prix_par_m3" name="prix_par_m3" step="0.01" value="<?= htmlspecialchars($prixParM3) ?>" required>
             <br><br>
@@ -56,17 +56,30 @@ $taillesDisponibles = range(1, 12);
                 <br>
             <?php endforeach; ?>
             <br>
-            <button type="submit" onclick="soumettreLesFormulaires(event)">Enregistrer</button>
+            <button type="submit" onclick="fusionnerEtEnvoyer(event)">Enregistrer</button>
         </form>
     </div>
 </div>
 
 <script>
-    function soumettreLesFormulaires(event) {
+    function fusionnerEtEnvoyer(event) {
         event.preventDefault();
-        document.getElementById('form1').submit();
-        document.getElementById('form2').submit();
+
+        let form1 = document.getElementById('form1');
+        let form2 = document.getElementById('form2');
+
+        let inputsForm1 = form1.querySelectorAll('input');
+        inputsForm1.forEach(input => {
+            let newInput = document.createElement('input');
+            newInput.type = 'hidden';
+            newInput.name = input.name;
+            newInput.value = input.value;
+            form2.appendChild(newInput);
+        });
+
+        form2.submit();
     }
 </script>
+
 </body>
 </html>
