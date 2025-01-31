@@ -16,7 +16,6 @@
                 <div></div>
                 <div></div>
             </div>
-        <?php else: ?>
         <?php endif; ?>
     </div>
 </header>

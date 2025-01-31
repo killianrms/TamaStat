@@ -306,6 +306,7 @@ body.connexion-page {
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
+    width: 100%;
 }
 
 .accueil-page h1 {
@@ -319,6 +320,7 @@ body.connexion-page {
     display: flex;
     gap: 20px;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 .accueil-page .form-column {
@@ -327,6 +329,7 @@ body.connexion-page {
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    min-width: 300px;
 }
 
 .accueil-page label {
@@ -363,6 +366,7 @@ body.connexion-page {
 
 .accueil-page .table-container {
     margin-top: 20px;
+    width: 100%;
 }
 
 .accueil-page table.boxes-table {
@@ -396,6 +400,9 @@ body.connexion-page {
     .accueil-page .form-container {
         flex-direction: column;
     }
+
+    .accueil-page .form-column {
+        min-width: auto;
 
     table.boxes-table input[type="number"] {
         width: 100%;
