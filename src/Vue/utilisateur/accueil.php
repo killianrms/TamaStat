@@ -68,28 +68,5 @@ $taillesDisponibles = range(1, 12);
         document.getElementById('form2').submit();
     }
 </script>
-
-
-<div class="table-container">
-    <h2>Liste des Box</h2>
-    <table class="boxes-table">
-        <thead>
-        <tr>
-            <th>Taille (m³)</th>
-            <th>Nombre de Box</th>
-            <th>Prix par m³ (€)</th>
-        </tr>
-        </thead>
-        <tbody>
-        <?php foreach ($boxesUtilisateur as $box): ?>
-            <tr>
-                <td><?= htmlspecialchars($box['taille']) ?></td>
-                <td><?= htmlspecialchars($box['nombre_box']) ?></td>
-                <td><?= htmlspecialchars($box['prix_par_m3']) ?></td>
-            </tr>
-        <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
 </body>
 </html>
