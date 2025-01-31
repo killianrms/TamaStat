@@ -79,6 +79,7 @@ class ControleurUtilisateur
                     ':prix_par_m3' => $prixParM3
                 ]);
             }
+            error_log("Insertion : utilisateur_id=$utilisateurId, taille=$taille, nombre_box=$nombreBox, prix_par_m3=$prixParM3");
         }
     }
 }

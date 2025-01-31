@@ -3,6 +3,8 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+error_log("Données reçues : " . print_r($_POST, true));
+
 ob_start();
 
 include __DIR__ . '/../src/Vue/utilisateur/header.php';
@@ -110,7 +112,8 @@ try {
                 $tailles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
 
                 foreach ($tailles as $tailleBox) {
-                    $quantitesBox[$tailleBox] = isset($_POST["box_$tailleBox"]) ? intval($_POST["box_$tailleBox"]) : 0;
+                    $cle = "box_" . str_replace('.', '_', $tailleBox); // Remplacer le point par un tiret bas
+                    $quantitesBox[$tailleBox] = isset($_POST[$cle]) ? intval($_POST[$cle]) : 0;
                 }
 
                 $prixParM3 = isset($_POST['prix_par_m3']) ? floatval($_POST['prix_par_m3']) : 0;
