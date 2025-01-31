@@ -235,23 +235,6 @@ table.boxes-table tr:nth-child(even) {
 }
 
 /* Page de connexion */
-body.connexion-page {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
-    background-color: #f5f5f5;
-    margin: 0;
-    padding: 0;
-}
-
-.connexion-page h1 {
-    color: #0072bc;
-    font-size: 2rem;
-    text-align: center;
-    margin-bottom: 20px;
-}
-
 .connexion-page form {
     background-color: #ffffff;
     padding: 30px;
