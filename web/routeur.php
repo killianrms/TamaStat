@@ -133,7 +133,7 @@ try {
 
         case 'modifierUtilisateur':
             if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
-                echo "Accès non autorisé!";
+                header('Location: routeur.php?route=connexion');
                 exit;
             }
             $id = $_GET['id'] ?? null;
@@ -144,7 +144,7 @@ try {
 
         case 'supprimerUtilisateur':
             if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
-                echo "Accès non autorisé!";
+                header('Location: routeur.php?route=connexion');
                 exit;
             }
             $id = $_GET['id'] ?? null;
@@ -159,7 +159,7 @@ try {
 
         case 'gestionUtilisateurs':
             if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
-                echo "Accès non autorisé!";
+                header('Location: routeur.php?route=connexion');
                 exit;
             }
             require_once __DIR__ . '/../src/Vue/utilisateur/gestionUtilisateurs.php';
