@@ -19,7 +19,7 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <title>Gestion des utilisateurs</title>
     <link rel="stylesheet" href="../../../ressources/css/style.css">
 </head>
-<body>
+<body class="gestion-utilisateurs-page">
 <h1>Gestion des utilisateurs</h1>
 
 <table class="user-table">

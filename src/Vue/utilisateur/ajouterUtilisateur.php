@@ -1,16 +1,10 @@
-<?php
-if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
-    header('Location: routeur.php?route=connexion');
-    exit;
-}
-?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ajouter un utilisateur</title>
+    <link rel="stylesheet" href="../ressources/css/style.css">
     <script>
         function confirmerAjoutUtilisateur(form) {
             var isAdmin = form.is_admin.value;
@@ -46,7 +40,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
         }
     </script>
 </head>
-<body>
+<body class="ajouter-utilisateur-page">
 <h1>Ajouter un nouvel utilisateur</h1>
 
 <form action="routeur.php?route=ajouterUtilisateur" method="POST" onsubmit="return confirmerAjoutUtilisateur(this)">
