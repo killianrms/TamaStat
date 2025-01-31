@@ -5,15 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Connexion</title>
 </head>
-<body>
+<body class="connexion-page">
 <h1>Connexion</h1>
 
-<?php
-if (isset($_SESSION['erreur_connexion'])) {
-    echo '<div style="color: red; font-weight: bold; margin-bottom: 10px;">' . htmlspecialchars($_SESSION['erreur_connexion']) . '</div>';
-    unset($_SESSION['erreur_connexion']);
-}
-?>
+<?php if (isset($_SESSION['erreur_connexion'])): ?>
+    <div class="error-message"><?= htmlspecialchars($_SESSION['erreur_connexion']) ?></div>
+    <?php unset($_SESSION['erreur_connexion']); ?>
+<?php endif; ?>
 
 <form action="routeur.php?route=login" method="POST">
     <label for="username">Nom d'utilisateur :</label>
@@ -24,6 +22,5 @@ if (isset($_SESSION['erreur_connexion'])) {
     <br>
     <button type="submit">Se connecter</button>
 </form>
-
 </body>
 </html>
