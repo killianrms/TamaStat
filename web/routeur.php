@@ -109,11 +109,10 @@ try {
         case 'ajouterDonneesAccueil':
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $quantitesBox = [];
-                $tailles = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
+                $tailles = range(1, 12);
 
                 foreach ($tailles as $tailleBox) {
-                    $cle = "box_" . str_replace('.', '_', $tailleBox);
-                    $quantitesBox[$tailleBox] = isset($_POST[$cle]) ? intval($_POST[$cle]) : 0;
+                    $quantitesBox[$tailleBox] = isset($_POST["box_$tailleBox"]) ? intval($_POST["box_$tailleBox"]) : 0;
                 }
 
                 $prixParM3 = isset($_POST['prix_par_m3']) ? floatval($_POST['prix_par_m3']) : 0;
