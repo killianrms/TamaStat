@@ -109,7 +109,7 @@ try {
         case 'ajouterDonneesAccueil':
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $quantitesBox = [];
-                $tailles = [1.0, 1.5, 2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
+                $tailles = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
 
                 foreach ($tailles as $tailleBox) {
                     $cle = "box_" . str_replace('.', '_', $tailleBox);
