@@ -22,19 +22,65 @@ foreach ($boxesUtilisateur as $box) {
 $taillesDisponibles = range(1, 12);
 ?>
 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Boxes</title>
+</head>
+<body class="accueil-page">
+
 <h1>Gestion de vos boxes</h1>
 
-<form method="POST" action="routeur.php?route=ajouterDonneesAccueil">
-    <label for="prix_par_m3">Prix par m³ (€) :</label>
-    <input type="number" id="prix_par_m3" name="prix_par_m3" step="0.01" value="<?= htmlspecialchars($prixParM3) ?>" required>
-    <br><br>
+<div class="form-container">
+    <div class="form-column">
+        <form method="POST" action="routeur.php?route=ajouterDonneesAccueil">
+            <label for="prix_par_m3">Prix par m³ (€) :</label>
+            <input type="number" id="prix_par_m3" name="prix_par_m3" step="0.01" value="<?= htmlspecialchars($prixParM3) ?>" required>
+            <br><br>
 
-    <?php foreach ($taillesDisponibles as $tailleBox): ?>
-        <label for="box_<?= $tailleBox ?>">Nombre de box <?= $tailleBox ?>m³ :</label>
-        <input type="number" name="box_<?= $tailleBox ?>" id="box_<?= $tailleBox ?>" value="<?= $boxes[(string)$tailleBox] ?? 0 ?>" min="0" required>
-        <br>
-    <?php endforeach; ?>
+            <?php foreach (array_slice($taillesDisponibles, 0, 6) as $tailleBox): ?>
+                <label for="box_<?= str_replace('.', '_', $tailleBox) ?>">Nombre de box <?= $tailleBox ?>m³ :</label>
+                <input type="number" name="box_<?= str_replace('.', '_', $tailleBox) ?>" id="box_<?= str_replace('.', '_', $tailleBox) ?>" value="<?= $boxes[(string)$tailleBox] ?? 0 ?>" min="0" required>
+                <br>
+            <?php endforeach; ?>
+        </form>
+    </div>
 
-    <br>
-    <button type="submit">Enregistrer</button>
-</form>
+    <div class="form-column">
+        <form method="POST" action="routeur.php?route=ajouterDonneesAccueil">
+            <?php foreach (array_slice($taillesDisponibles, 6) as $tailleBox): ?>
+                <label for="box_<?= str_replace('.', '_', $tailleBox) ?>">Nombre de box <?= $tailleBox ?>m³ :</label>
+                <input type="number" name="box_<?= str_replace('.', '_', $tailleBox) ?>" id="box_<?= str_replace('.', '_', $tailleBox) ?>" value="<?= $boxes[(string)$tailleBox] ?? 0 ?>" min="0" required>
+                <br>
+            <?php endforeach; ?>
+            <br>
+            <button type="submit">Enregistrer</button>
+        </form>
+    </div>
+</div>
+
+<div class="table-container">
+    <h2>Liste des Box</h2>
+    <table class="boxes-table">
+        <thead>
+        <tr>
+            <th>Taille (m³)</th>
+            <th>Nombre de Box</th>
+            <th>Prix par m³ (€)</th>
+        </tr>
+        </thead>
+        <tbody>
+        <?php foreach ($boxesUtilisateur as $box): ?>
+            <tr>
+                <td><?= htmlspecialchars($box['taille']) ?></td>
+                <td><?= htmlspecialchars($box['nombre_box']) ?></td>
+                <td><?= htmlspecialchars($box['prix_par_m3']) ?></td>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
