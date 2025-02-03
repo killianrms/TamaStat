@@ -83,14 +83,17 @@ $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             </thead>
             <tbody>
             <?php foreach ($stats as $taille => $data): ?>
-                <tr>
-                    <td><?= $taille ?></td>
-                    <td><?= $data['total'] ?></td>
-                    <td><?= $data['loues'] ?></td>
-                    <td><?= $data['total'] > 0 ? round(($data['loues'] / $data['total']) * 100, 2) . '%' : '0%' ?></td>
-                    <td><?= number_format($data['revenu'], 2) ?> €</td>
-                </tr>
+                <?php if ($data['total'] > 0):?>
+                    <tr>
+                        <td><?= $taille ?></td>
+                        <td><?= $data['total'] ?></td>
+                        <td><?= $data['loues'] ?></td>
+                        <td><?= round(($data['loues'] / $data['total']) * 100, 2) ?>%</td>
+                        <td><?= number_format($data['revenu'], 2) ?> €</td>
+                    </tr>
+                <?php endif; ?>
             <?php endforeach; ?>
+
             </tbody>
         </table>
     </div>
