@@ -1,28 +1,20 @@
 <?php
-
 use App\Configuration\ConnexionBD;
 use App\Modele\CsvModele;
 use App\Controleur\Specifique\ControleurCsv;
-
-if (!isset($_SESSION['user']) || !isset($_SESSION['user']['id'])) {
-    echo "<div class='error-message'>Erreur : utilisateur non connecté.</div>";
-    exit;
-}
-
-$utilisateur_id = $_SESSION['user']['id'];
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
 $csvModele = new CsvModele();
 
-$locations = $csvModele->getLocationsByUser($utilisateur_id);
+$locations = $csvModele->getLocationsByUser($_SESSION['user']['id']);
 $hasCSV = !empty($locations);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     $controleurCsv = new ControleurCsv();
     try {
-        $controleurCsv->importerCsv($_FILES['csv_file'], $utilisateur_id);
-        header('Location: routeur.php?route=stats');
+        $controleurCsv->importerCsv($_FILES['csv_file'], $_SESSION['user']['id']);
+        header('Location: routeur.php?route=stats'); // Recharger la page
         exit;
     } catch (Exception $e) {
         echo "<div class='error-message'>Erreur : " . $e->getMessage() . "</div>";
@@ -30,7 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
 }
 
 $stmt = $pdo->prepare('SELECT taille, nombre_box, prix_par_m3 FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id');
-$stmt->execute(['utilisateur_id' => $utilisateur_id]);
+$stmt->execute(['utilisateur_id' => $_SESSION['user']['id']]);
 $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -55,6 +47,7 @@ $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="stats-container">
         <a href="routeur.php?route=stats&reimport=1" class="button">Modifier CSV</a>
 
+        <!-- Calcul des statistiques -->
         <?php
         $stats = [];
         foreach ($boxes as $box) {
@@ -62,7 +55,8 @@ $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $totalBoxes = $box['nombre_box'];
             $prixParM3 = $box['prix_par_m3'];
 
-            $locationsTaille = array_filter($locations, function ($location) use ($taille) {
+            // Calculer les locations pour cette taille
+            $locationsTaille = array_filter($locations, function($location) use ($taille) {
                 return $location['nb_produits'] == $taille;
             });
 
@@ -87,9 +81,9 @@ $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <tbody>
             <?php foreach ($stats as $taille => $data): ?>
                 <tr>
-                    <td><?= htmlspecialchars($taille) ?></td>
-                    <td><?= htmlspecialchars($data['total']) ?></td>
-                    <td><?= htmlspecialchars($data['loues']) ?></td>
+                    <td><?= $taille ?></td>
+                    <td><?= $data['total'] ?></td>
+                    <td><?= $data['loues'] ?></td>
                     <td><?= round(($data['loues'] / $data['total']) * 100, 2) ?>%</td>
                     <td><?= number_format($data['revenu'], 2) ?> €</td>
                 </tr>
