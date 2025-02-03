@@ -1,6 +1,7 @@
 <?php
-var_dump($_FILES);
-exit;
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
 use App\Configuration\ConnexionBD;
 use App\Modele\CsvModele;
@@ -14,6 +15,7 @@ $locations = $csvModele->getLocationsByUser($_SESSION['user']['id']);
 $hasCSV = !empty($locations);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
+    var_dump($_FILES);
     $controleurCsv = new ControleurCsv();
     try {
         $controleurCsv->importerCsv($_FILES['csv_file'], $_SESSION['user']['id']);

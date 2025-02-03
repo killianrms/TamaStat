@@ -13,26 +13,30 @@ class CsvModele {
     }
 
     public function importerLocations($utilisateur_id, $ligne) {
-        $stmt = $this->pdo->prepare('
+        try {
+            $stmt = $this->pdo->prepare('
             INSERT INTO locations 
             (reference, centre, type_tiers, nom_societe, prenom, telephone, mail, nb_produits, total_ttc, date_location, utilisateur_id)
             VALUES 
             (:reference, :centre, :type_tiers, :nom_societe, :prenom, :telephone, :mail, :nb_produits, :total_ttc, :date_location, :utilisateur_id)
         ');
 
-        $stmt->execute([
-            'reference' => $ligne[0],
-            'centre' => $ligne[1],
-            'type_tiers' => $ligne[2],
-            'nom_societe' => $ligne[4],
-            'prenom' => $ligne[5],
-            'telephone' => $ligne[6],
-            'mail' => $ligne[7],
-            'nb_produits' => $ligne[8],
-            'total_ttc' => (float)str_replace(['€', ' '], '', $ligne[10]),
-            'date_location' => \DateTime::createFromFormat('d/m/Y', $ligne[11])->format('Y-m-d'),
-            'utilisateur_id' => $utilisateur_id
-        ]);
+            $stmt->execute([
+                'reference' => $ligne[0],
+                'centre' => $ligne[1],
+                'type_tiers' => $ligne[2],
+                'nom_societe' => $ligne[4],
+                'prenom' => $ligne[5],
+                'telephone' => $ligne[6],
+                'mail' => $ligne[7],
+                'nb_produits' => $ligne[8],
+                'total_ttc' => (float)str_replace(['€', ' '], '', $ligne[10]),
+                'date_location' => \DateTime::createFromFormat('d/m/Y', $ligne[11])->format('Y-m-d'),
+                'utilisateur_id' => $utilisateur_id
+            ]);
+        } catch (\PDOException $e) {
+            throw new Exception("Erreur PDO : " . $e->getMessage());
+        }
     }
 
     public function getLocationsByUser($utilisateur_id) {
