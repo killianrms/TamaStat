@@ -62,20 +62,15 @@ try {
 
         case 'accueil':
             verifierConnexion();
-            if (!isset($_SESSION['user'])) {
-                header('Location: routeur.php?route=connexion');
-                exit;
-            }
             require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
             break;
 
         case 'ajouterUtilisateur':
             verifierConnexion();
-            if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
+            if ($_SESSION['user']['is_admin'] !== 1) {
                 echo "Accès non autorisé!";
                 exit;
             }
-
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $nom_utilisateur = htmlspecialchars($_POST['nom_utilisateur']);
                 $mot_de_passe = $_POST['mot_de_passe'];
@@ -148,7 +143,7 @@ try {
 
         case 'modifierUtilisateur':
             verifierConnexion();
-            if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
+            if ($_SESSION['user']['is_admin'] !== 1) {
                 header('Location: routeur.php?route=connexion');
                 exit;
             }
@@ -160,7 +155,7 @@ try {
 
         case 'supprimerUtilisateur':
             verifierConnexion();
-            if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
+            if ($_SESSION['user']['is_admin'] !== 1) {
                 header('Location: routeur.php?route=connexion');
                 exit;
             }
@@ -176,7 +171,7 @@ try {
 
         case 'gestionUtilisateurs':
             verifierConnexion();
-            if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
+            if ($_SESSION['user']['is_admin'] !== 1) {
                 header('Location: routeur.php?route=connexion');
                 exit;
             }
