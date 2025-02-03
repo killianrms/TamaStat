@@ -25,51 +25,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     }
 }
 
-$filterPeriod = $_GET['period'] ?? 'all';
-$filterSizes = $_GET['sizes'] ?? [];
-
 $stmt = $pdo->prepare('SELECT taille, nombre_box, prix_par_m3 FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id');
 $stmt->execute(['utilisateur_id' => $_SESSION['user']['id']]);
 $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$filteredLocations = $locations;
-if ($filterPeriod !== 'all') {
-    $now = new DateTime();
-    $filteredLocations = array_filter($filteredLocations, function($location) use ($filterPeriod, $now) {
-        $locationDate = new DateTime($location['date_location']);
-        $interval = $now->diff($locationDate);
-        switch ($filterPeriod) {
-            case '1month': return $interval->m < 1 && $interval->y == 0;
-            case '6months': return $interval->m < 6 && $interval->y == 0;
-            case '1year': return $interval->y < 1;
-            default: return true;
-        }
-    });
-}
-
-if (!empty($filterSizes)) {
-    $filteredLocations = array_filter($filteredLocations, function($location) use ($filterSizes) {
-        return in_array($location['nb_produits'], $filterSizes);
-    });
-}
-
+// Calcul des statistiques
 $totalBoxesDispo = array_sum(array_column($boxes, 'nombre_box'));
-$totalBoxesLoues = count($filteredLocations);
+$totalBoxesLoues = count($locations);
 $tauxOccupationGlobal = ($totalBoxesDispo > 0) ? round(($totalBoxesLoues / $totalBoxesDispo) * 100, 2) : 0;
 
 $stats = [];
+$revenuTotal = 0;
+$capaciteTotale = 0;
+$capaciteUtilisee = 0;
+
 foreach ($boxes as $box) {
     $taille = $box['taille'];
-    $locationsTaille = array_filter($filteredLocations, fn($loc) => $loc['nb_produits'] == $taille);
+    $locationsTaille = array_filter($locations, fn($loc) => $loc['nb_produits'] == $taille);
 
     $stats[$taille] = [
         'total' => $box['nombre_box'],
         'loues' => count($locationsTaille),
         'revenu' => count($locationsTaille) * $taille * $box['prix_par_m3']
     ];
+
+    $revenuTotal += $stats[$taille]['revenu'];
+    $capaciteTotale += $box['nombre_box'] * $taille;
+    $capaciteUtilisee += count($locationsTaille) * $taille;
 }
 
-$revenuTotal = array_sum(array_column($stats, 'revenu'));
+$tauxCapaciteUtilisee = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capaciteTotale) * 100, 2) : 0;
 ?>
 
 <!DOCTYPE html>
@@ -78,6 +63,7 @@ $revenuTotal = array_sum(array_column($stats, 'revenu'));
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
+    <link rel="stylesheet" href="../ressources/css/style.css">
 </head>
 <body>
 <h1>Statistiques de vos locations</h1>
@@ -92,33 +78,6 @@ $revenuTotal = array_sum(array_column($stats, 'revenu'));
     <div class="stats-container">
         <a href="routeur.php?route=stats&reimport=1" class="button">Modifier CSV</a>
 
-        <form method="GET" action="routeur.php?route=stats" class="filters-form">
-            <div class="filter-group">
-                <label for="period">Période :</label>
-                <select id="period" name="period">
-                    <option value="all" <?= $filterPeriod === 'all' ? 'selected' : '' ?>>Toutes périodes</option>
-                    <option value="1month" <?= $filterPeriod === '1month' ? 'selected' : '' ?>>1 mois</option>
-                    <option value="6months" <?= $filterPeriod === '6months' ? 'selected' : '' ?>>6 mois</option>
-                    <option value="1year" <?= $filterPeriod === '1year' ? 'selected' : '' ?>>1 an</option>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <label for="sizes">Tailles des boxes :</label>
-                <select id="sizes" name="sizes[]" multiple>
-                    <?php foreach ($boxes as $box): ?>
-                        <option value="<?= $box['taille'] ?>" <?= in_array($box['taille'], $filterSizes) ? 'selected' : '' ?>>
-                            <?= $box['taille'] ?> m³
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-
-            <div class="filter-group">
-                <button type="submit" class="button">Appliquer les filtres</button>
-            </div>
-        </form>
-
         <div class="stats-globales">
             <div class="stat-card">
                 <h3>Revenu total</h3>
@@ -128,7 +87,13 @@ $revenuTotal = array_sum(array_column($stats, 'revenu'));
             <div class="stat-card">
                 <h3>Taux d'occupation</h3>
                 <div class="value"><?= $tauxOccupationGlobal ?>%</div>
-                <small><?= $totalBoxesLoues ?>/<?= $totalBoxesDispo ?> boxes occupées</small>
+                <small><?= $totalBoxesLoues ?>/<?= $totalBoxesDispo ?> boxes</small>
+            </div>
+
+            <div class="stat-card">
+                <h3>Capacité utilisée</h3>
+                <div class="value"><?= $tauxCapaciteUtilisee ?>%</div>
+                <small><?= $capaciteUtilisee ?>m³/<?= $capaciteTotale ?>m³</small>
             </div>
         </div>
 
@@ -161,64 +126,50 @@ $revenuTotal = array_sum(array_column($stats, 'revenu'));
             </tbody>
         </table>
     </div>
-<?php endif; ?>
 
-<script>
-    function updateChart() {
-        const selectedSizes = [...document.querySelectorAll('#sizes option:checked')]
-            .map(option => option.value);
-
-        const filteredStats = <?= json_encode($stats) ?>;
-        const filteredData = selectedSizes.length > 0
-            ? selectedSizes.reduce((acc, size) => {
-                if(filteredStats[size]) acc[size] = filteredStats[size];
-                return acc;
-            }, {})
-            : filteredStats;
-
-        revenueChart.data.labels = Object.keys(filteredData);
-        revenueChart.data.datasets[0].data = Object.values(filteredData).map(d => d.revenu);
-        revenueChart.update();
-    }
-
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-    const revenueChart = new Chart(ctx, {
-        type: 'bar',
-        data: {
-            labels: <?= json_encode(array_keys($stats)) ?>,
-            datasets: [{
-                label: 'Revenu par taille (€)',
-                data: <?= json_encode(array_column($stats, 'revenu')) ?>,
-                backgroundColor: '#0072bc',
-                borderColor: '#005f9e',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'top',
-                }
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: <?= json_encode(array_keys($stats)) ?>,
+                datasets: [{
+                    label: 'Revenu par taille (€)',
+                    data: <?= json_encode(array_column($stats, 'revenu')) ?>,
+                    backgroundColor: '#0072bc',
+                    borderColor: '#005f9e',
+                    borderWidth: 2
+                }]
             },
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    ticks: {
-                        callback: function(value) {
-                            return value + ' €';
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.raw.toFixed(2) + ' €';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value + ' €';
+                            }
                         }
                     }
                 }
             }
-        }
-    });
-
-    document.getElementById('sizes').addEventListener('change', updateChart);
-    document.getElementById('period').addEventListener('change', () => {
-        document.querySelector('form').submit();
-    });
-</script>
+        });
+    </script>
+<?php endif; ?>
 </body>
 </html>

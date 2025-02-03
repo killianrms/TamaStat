@@ -24,6 +24,14 @@ echo '<link rel="stylesheet" href="../ressources/css/style.css">';
 
 $pdo = (new ConnexionBD())->getPdo();
 
+function verifierConnexion() {
+    if (!isset($_SESSION['user'])) {
+        header('Location: routeur.php?route=connexion');
+        exit;
+    }
+}
+
+
 try {
     switch ($route) {
         case 'connexion':
@@ -43,6 +51,7 @@ try {
             break;
 
         case 'stats':
+            verifierConnexion();
             if (isset($_GET['reimport'])) {
                 $pdo->prepare('DELETE FROM locations WHERE utilisateur_id = ?')->execute([$_SESSION['user']['id']]);
                 header('Location: routeur.php?route=stats');
@@ -52,6 +61,7 @@ try {
             break;
 
         case 'accueil':
+            verifierConnexion();
             if (!isset($_SESSION['user'])) {
                 header('Location: routeur.php?route=connexion');
                 exit;
@@ -60,6 +70,7 @@ try {
             break;
 
         case 'ajouterUtilisateur':
+            verifierConnexion();
             if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
                 echo "Accès non autorisé!";
                 exit;
@@ -110,6 +121,7 @@ try {
 
 
         case 'ajouterDonneesAccueil':
+            verifierConnexion();
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $quantitesBox = [];
                 $tailles = range(1, 12);
@@ -135,6 +147,7 @@ try {
             break;
 
         case 'modifierUtilisateur':
+            verifierConnexion();
             if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
                 header('Location: routeur.php?route=connexion');
                 exit;
@@ -146,6 +159,7 @@ try {
             break;
 
         case 'supprimerUtilisateur':
+            verifierConnexion();
             if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
                 header('Location: routeur.php?route=connexion');
                 exit;
@@ -161,6 +175,7 @@ try {
             break;
 
         case 'gestionUtilisateurs':
+            verifierConnexion();
             if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
                 header('Location: routeur.php?route=connexion');
                 exit;
@@ -169,6 +184,7 @@ try {
             break;
 
         case 'deconnexion':
+            verifierConnexion();
             session_unset();
             session_destroy();
             header('Location: routeur.php?route=connexion');
