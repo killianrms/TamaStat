@@ -15,10 +15,12 @@ class ControleurCsv {
         $csvModele = new CsvModele();
 
         if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            fgetcsv($handle); // Ignorer l'en-tête
+            echo "Fichier CSV ouvert avec succès.<br>"; // Debug
+            fgetcsv($handle);
+
             while (($data = fgetcsv($handle, 1000, ',')) !== false) {
                 var_dump($data);
-                if (count($data) >= 12) { // Validation minimale
+                if (count($data) >= 12) {
                     $csvModele->importerLocations($utilisateur_id, $data);
                 }
             }

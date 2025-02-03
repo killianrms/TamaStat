@@ -19,7 +19,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     $controleurCsv = new ControleurCsv();
     try {
         $controleurCsv->importerCsv($_FILES['csv_file'], $_SESSION['user']['id']);
-        header('Location: routeur.php?route=stats'); // Recharger la page
+        header('Location: routeur.php?route=stats');
         exit;
     } catch (Exception $e) {
         echo "<div class='error-message'>Erreur : " . $e->getMessage() . "</div>";

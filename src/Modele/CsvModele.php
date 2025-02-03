@@ -34,6 +34,7 @@ class CsvModele {
                 'date_location' => \DateTime::createFromFormat('d/m/Y', $ligne[11])->format('Y-m-d'),
                 'utilisateur_id' => $utilisateur_id
             ]);
+            echo "Ligne insérée avec succès.<br>";
         } catch (\PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
         }
