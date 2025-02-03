@@ -31,7 +31,7 @@ class CsvModele {
                 'mail' => $ligne[7],
                 'nb_produits' => $ligne[8],
                 'total_ttc' => (float)str_replace(['€', '&euro;', ' '], '', $ligne[10]),
-                'date_location' => \DateTime::createFromFormat('d/m/Y', $ligne[11]),
+                'date_location' => \DateTime::createFromFormat('d/m/Y', $ligne[11])->format('Y-m-d'),
                 'utilisateur_id' => $utilisateur_id
             ]);
             echo "Ligne insérée avec succès.<br>";
