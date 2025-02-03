@@ -1,4 +1,7 @@
 <?php
+var_dump($_FILES);
+exit;
+
 use App\Configuration\ConnexionBD;
 use App\Modele\CsvModele;
 use App\Controleur\Specifique\ControleurCsv;
@@ -7,11 +10,9 @@ $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
 $csvModele = new CsvModele();
 
-// Vérifier si l'utilisateur a déjà importé un CSV
 $locations = $csvModele->getLocationsByUser($_SESSION['user']['id']);
 $hasCSV = !empty($locations);
 
-// Traitement du formulaire
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     $controleurCsv = new ControleurCsv();
     try {
@@ -23,7 +24,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     }
 }
 
-// Récupérer les données des boxes de l'utilisateur
 $stmt = $pdo->prepare('SELECT taille, nombre_box, prix_par_m3 FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id');
 $stmt->execute(['utilisateur_id' => $_SESSION['user']['id']]);
 $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -41,18 +41,15 @@ $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <h1>Statistiques de vos locations</h1>
 
 <?php if (!$hasCSV): ?>
-    <!-- Afficher le formulaire d'importation si aucun CSV n'est importé -->
     <form action="routeur.php?route=stats" method="POST" enctype="multipart/form-data">
         <label for="csv_file">Importer un fichier CSV :</label>
         <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
         <button type="submit">Importer</button>
     </form>
 <?php else: ?>
-    <!-- Afficher les statistiques et le bouton "Modifier CSV" -->
     <div class="stats-container">
         <a href="routeur.php?route=stats&reimport=1" class="button">Modifier CSV</a>
 
-        <!-- Calcul des statistiques -->
         <?php
         $stats = [];
         foreach ($boxes as $box) {
@@ -60,7 +57,6 @@ $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $totalBoxes = $box['nombre_box'];
             $prixParM3 = $box['prix_par_m3'];
 
-            // Calculer les locations pour cette taille
             $locationsTaille = array_filter($locations, function($location) use ($taille) {
                 return $location['nb_produits'] == $taille;
             });
@@ -73,7 +69,6 @@ $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         ?>
 
-        <!-- Affichage des statistiques -->
         <table class="stats-table">
             <thead>
             <tr>
