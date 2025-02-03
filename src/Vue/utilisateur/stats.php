@@ -15,7 +15,6 @@ $locations = $csvModele->getLocationsByUser($_SESSION['user']['id']);
 $hasCSV = !empty($locations);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
-    var_dump($_FILES);
     $controleurCsv = new ControleurCsv();
     try {
         $controleurCsv->importerCsv($_FILES['csv_file'], $_SESSION['user']['id']);
@@ -26,9 +25,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     }
 }
 
-// Récupérer les filtres
 $filterPeriod = $_GET['period'] ?? 'all';
 $filterSizes = $_GET['sizes'] ?? [];
+
 $stmt = $pdo->prepare('SELECT taille, nombre_box, prix_par_m3 FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id');
 $stmt->execute(['utilisateur_id' => $_SESSION['user']['id']]);
 $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -40,14 +39,10 @@ if ($filterPeriod !== 'all') {
         $locationDate = new DateTime($location['date_location']);
         $interval = $now->diff($locationDate);
         switch ($filterPeriod) {
-            case '1month':
-                return $interval->m < 1 && $interval->y == 0;
-            case '6months':
-                return $interval->m < 6 && $interval->y == 0;
-            case '1year':
-                return $interval->y < 1;
-            default:
-                return true;
+            case '1month': return $interval->m < 1 && $interval->y == 0;
+            case '6months': return $interval->m < 6 && $interval->y == 0;
+            case '1year': return $interval->y < 1;
+            default: return true;
         }
     });
 }
@@ -57,6 +52,24 @@ if (!empty($filterSizes)) {
         return in_array($location['nb_produits'], $filterSizes);
     });
 }
+
+$totalBoxesDispo = array_sum(array_column($boxes, 'nombre_box'));
+$totalBoxesLoues = count($filteredLocations);
+$tauxOccupationGlobal = ($totalBoxesDispo > 0) ? round(($totalBoxesLoues / $totalBoxesDispo) * 100, 2) : 0;
+
+$stats = [];
+foreach ($boxes as $box) {
+    $taille = $box['taille'];
+    $locationsTaille = array_filter($filteredLocations, fn($loc) => $loc['nb_produits'] == $taille);
+
+    $stats[$taille] = [
+        'total' => $box['nombre_box'],
+        'loues' => count($locationsTaille),
+        'revenu' => count($locationsTaille) * $taille * $box['prix_par_m3']
+    ];
+}
+
+$revenuTotal = array_sum(array_column($stats, 'revenu'));
 ?>
 
 <!DOCTYPE html>
@@ -65,8 +78,6 @@ if (!empty($filterSizes)) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
-    <link rel="stylesheet" href="../ressources/css/style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <h1>Statistiques de vos locations</h1>
@@ -82,67 +93,48 @@ if (!empty($filterSizes)) {
         <a href="routeur.php?route=stats&reimport=1" class="button">Modifier CSV</a>
 
         <form method="GET" action="routeur.php?route=stats" class="filters-form">
-            <label for="period">Période :</label>
-            <select id="period" name="period">
-                <option value="all" <?= $filterPeriod === 'all' ? 'selected' : '' ?>>Toutes les périodes</option>
-                <option value="1month" <?= $filterPeriod === '1month' ? 'selected' : '' ?>>1 mois</option>
-                <option value="6months" <?= $filterPeriod === '6months' ? 'selected' : '' ?>>6 mois</option>
-                <option value="1year" <?= $filterPeriod === '1year' ? 'selected' : '' ?>>1 an</option>
-            </select>
+            <div class="filter-group">
+                <label for="period">Période :</label>
+                <select id="period" name="period">
+                    <option value="all" <?= $filterPeriod === 'all' ? 'selected' : '' ?>>Toutes périodes</option>
+                    <option value="1month" <?= $filterPeriod === '1month' ? 'selected' : '' ?>>1 mois</option>
+                    <option value="6months" <?= $filterPeriod === '6months' ? 'selected' : '' ?>>6 mois</option>
+                    <option value="1year" <?= $filterPeriod === '1year' ? 'selected' : '' ?>>1 an</option>
+                </select>
+            </div>
 
-            <label for="sizes">Taille des boxes :</label>
-            <select id="sizes" name="sizes[]" multiple>
-                <?php foreach ($boxes as $box): ?>
-                    <option value="<?= $box['taille'] ?>" <?= in_array($box['taille'], $filterSizes) ? 'selected' : '' ?>><?= $box['taille'] ?> m³</option>
-                <?php endforeach; ?>
-            </select>
+            <div class="filter-group">
+                <label for="sizes">Tailles des boxes :</label>
+                <select id="sizes" name="sizes[]" multiple>
+                    <?php foreach ($boxes as $box): ?>
+                        <option value="<?= $box['taille'] ?>" <?= in_array($box['taille'], $filterSizes) ? 'selected' : '' ?>>
+                            <?= $box['taille'] ?> m³
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
 
-            <button type="submit">Filtrer</button>
+            <div class="filter-group">
+                <button type="submit" class="button">Appliquer les filtres</button>
+            </div>
         </form>
 
-        <?php
-        $stats = [];
-        foreach ($boxes as $box) {
-            $taille = $box['taille'];
-            $totalBoxes = $box['nombre_box'];
-            $prixParM3 = $box['prix_par_m3'];
+        <div class="stats-globales">
+            <div class="stat-card">
+                <h3>Revenu total</h3>
+                <div class="value"><?= number_format($revenuTotal, 2) ?> €</div>
+            </div>
 
-            $locationsTaille = array_filter($filteredLocations, function($location) use ($taille) {
-                return $location['nb_produits'] == $taille;
-            });
+            <div class="stat-card">
+                <h3>Taux d'occupation</h3>
+                <div class="value"><?= $tauxOccupationGlobal ?>%</div>
+                <small><?= $totalBoxesLoues ?>/<?= $totalBoxesDispo ?> boxes occupées</small>
+            </div>
+        </div>
 
-            $stats[$taille] = [
-                'total' => $totalBoxes,
-                'loues' => count($locationsTaille),
-                'revenu' => count($locationsTaille) * $taille * $prixParM3
-            ];
-        }
-        ?>
-
-        <canvas id="revenueChart" width="400" height="200"></canvas>
-        <script>
-            const ctx = document.getElementById('revenueChart').getContext('2d');
-            const revenueChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: <?= json_encode(array_keys($stats)) ?>,
-                    datasets: [{
-                        label: 'Revenu (€)',
-                        data: <?= json_encode(array_column($stats, 'revenu')) ?>,
-                        backgroundColor: 'rgba(0, 114, 188, 0.2)',
-                        borderColor: 'rgba(0, 114, 188, 1)',
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
-                    }
-                }
-            });
-        </script>
+        <div class="chart-container">
+            <canvas id="revenueChart"></canvas>
+        </div>
 
         <table class="stats-table">
             <thead>
@@ -156,7 +148,7 @@ if (!empty($filterSizes)) {
             </thead>
             <tbody>
             <?php foreach ($stats as $taille => $data): ?>
-                <?php if ($data['total'] > 0):?>
+                <?php if ($data['total'] > 0): ?>
                     <tr>
                         <td><?= $taille ?></td>
                         <td><?= $data['total'] ?></td>
@@ -170,5 +162,63 @@ if (!empty($filterSizes)) {
         </table>
     </div>
 <?php endif; ?>
+
+<script>
+    function updateChart() {
+        const selectedSizes = [...document.querySelectorAll('#sizes option:checked')]
+            .map(option => option.value);
+
+        const filteredStats = <?= json_encode($stats) ?>;
+        const filteredData = selectedSizes.length > 0
+            ? selectedSizes.reduce((acc, size) => {
+                if(filteredStats[size]) acc[size] = filteredStats[size];
+                return acc;
+            }, {})
+            : filteredStats;
+
+        revenueChart.data.labels = Object.keys(filteredData);
+        revenueChart.data.datasets[0].data = Object.values(filteredData).map(d => d.revenu);
+        revenueChart.update();
+    }
+
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    const revenueChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: <?= json_encode(array_keys($stats)) ?>,
+            datasets: [{
+                label: 'Revenu par taille (€)',
+                data: <?= json_encode(array_column($stats, 'revenu')) ?>,
+                backgroundColor: '#0072bc',
+                borderColor: '#005f9e',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'top',
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return value + ' €';
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    document.getElementById('sizes').addEventListener('change', updateChart);
+    document.getElementById('period').addEventListener('change', () => {
+        document.querySelector('form').submit();
+    });
+</script>
 </body>
 </html>

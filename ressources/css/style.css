@@ -542,8 +542,128 @@ table.boxes-table tr:nth-child(even) {
     background-color: #0072bc;
     color: white;
 }
-/* Responsive */
+
+.button {
+    display: inline-block;
+    background-color: #ff6600;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    margin-bottom: 20px;
+}
+
+.button:hover {
+    background-color: #e65c00;
+}
+
+.filters-form {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.filters-form label {
+    display: block;
+    margin-bottom: 10px;
+    color: #0072bc;
+    font-weight: bold;
+}
+
+.filters-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.filters-form button {
+    background-color: #ff6600;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.filters-form button:hover {
+    background-color: #e65c00;
+}
+
+canvas {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.stats-globales {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+.stat-card h3 {
+    color: #0072bc;
+    margin: 0 0 10px 0;
+    font-size: 1.2rem;
+}
+
+.stat-card .value {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ff6600;
+}
+
+.filters-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 30px;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.filter-group {
+    flex: 1;
+    min-width: 200px;
+}
+
+.filter-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: #0072bc;
+    font-weight: bold;
+}
+
+.filter-group select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background: white;
+}
+
 @media (max-width: 768px) {
+    h1 {
+        font-size: 1.5rem;
+    }
+
     .container {
         flex-direction: column;
     }
@@ -564,7 +684,6 @@ table.boxes-table tr:nth-child(even) {
         border: 1px solid #ddd;
     }
 
-    /* Styles pour le tableau des utilisateurs */
     table.user-table {
         width: 100%;
         margin-top: 20px;
@@ -635,17 +754,22 @@ table.boxes-table tr:nth-child(even) {
         background-color: #005f9e;
     }
 
-    /* Message d'erreur */
     .error-message {
         color: #ff0000;
         font-weight: bold;
         margin-top: 10px;
     }
-}
 
-@media (max-width: 768px) {
-    h1 {
+    .filters-form {
+        flex-direction: column;
+    }
+
+    .stat-card .value {
         font-size: 1.5rem;
+    }
+
+    #revenueChart {
+        max-height: 300px;
     }
 
     .navbar .nav-links a {
@@ -740,63 +864,6 @@ table.boxes-table tr:nth-child(even) {
     }
 }
 
-.button {
-    display: inline-block;
-    background-color: #ff6600;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    text-decoration: none;
-    margin-bottom: 20px;
-}
-
-.button:hover {
-    background-color: #e65c00;
-}
-
-.filters-form {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-.filters-form label {
-    display: block;
-    margin-bottom: 10px;
-    color: #0072bc;
-    font-weight: bold;
-}
-
-.filters-form select {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-.filters-form button {
-    background-color: #ff6600;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-}
-
-.filters-form button:hover {
-    background-color: #e65c00;
-}
-
-canvas {
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
 @media (min-width: 1200px) {
     h1 {
         font-size: 3rem;
