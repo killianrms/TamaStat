@@ -2,9 +2,8 @@
     <div class="navbar">
         <h1>TamaStats</h1>
 
-        <?php if (isset($_SESSION['user'])): ?>
         <div class="nav-links">
-
+        <?php if (isset($_SESSION['user'])): ?>
             <a href="routeur.php?route=accueil">Accueil</a>
             <a href="routeur.php?route=stats">Stats</a>
 
