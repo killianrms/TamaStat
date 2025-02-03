@@ -4,31 +4,22 @@ namespace App\Controleur\Specifique;
 use App\Modele\CsvModele;
 use Exception;
 
-class ControleurCsv
-{
-    public function ajouterDonneesDepuisFichier($csvFile)
-    {
+class ControleurCsv {
+    public function importerCsv($csvFile, $utilisateur_id) {
         $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
         if ($fileExt !== 'csv') {
             throw new Exception("Le fichier doit être au format CSV.");
         }
 
-        $fileName = $csvFile['name'];
         $fileTmpName = $csvFile['tmp_name'];
+        $csvModele = new CsvModele();
 
         if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            fgetcsv($handle);
+            fgetcsv($handle); // Ignorer l'en-tête
 
-            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-                if ($this->validerLigneCsv($data)) {
-                    $csvModele = new CsvModele();
-                    try {
-                        $csvModele->ajouterDonnees($data);
-                    } catch (Exception $e) {
-                        echo "Erreur lors de l'ajout des données : " . $e->getMessage();
-                    }
-                } else {
-                    echo "Ligne invalide détectée et ignorée : " . implode(", ", $data);
+            while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+                if (count($data) >= 12) { // Validation minimale
+                    $csvModele->importerLocations($utilisateur_id, $data);
                 }
             }
 
@@ -36,11 +27,6 @@ class ControleurCsv
         } else {
             throw new Exception("Erreur lors de l'ouverture du fichier.");
         }
-    }
-
-    private function validerLigneCsv($data)
-    {
-        return count($data) >= 17;
     }
 }
 ?>

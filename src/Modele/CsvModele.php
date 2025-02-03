@@ -12,39 +12,33 @@ class CsvModele {
         $this->pdo = $connexion->getPdo();
     }
 
-    public function ajouterDonnees($ligne) {
-        if (count($ligne) < 17) {
-            throw new Exception("Ligne CSV incomplète.");
-        }
-
+    public function importerLocations($utilisateur_id, $ligne) {
         $stmt = $this->pdo->prepare('
             INSERT INTO locations 
-            (reference, nom_de_famille, prenom, societe, mail, date_prelevement, centre, box, type_de_box, 
-            prix_ht, prix_ttc, date_entree, fin_location, sortie_effective, email_envoye, creer_par, etat)
+            (reference, centre, type_tiers, nom_societe, prenom, telephone, mail, nb_produits, total_ttc, date_location, utilisateur_id)
             VALUES 
-            (:reference, :nom_famille, :prenom, :societe, :mail, :date_prelevement, :centre, :box, 
-            :type_box, :prix_ht, :prix_ttc, :date_entree, :fin_location, :sortie_effective, :email_envoye, :creer_par, :etat)'
-        );
+            (:reference, :centre, :type_tiers, :nom_societe, :prenom, :telephone, :mail, :nb_produits, :total_ttc, :date_location, :utilisateur_id)
+        ');
 
         $stmt->execute([
             'reference' => $ligne[0],
-            'nom_famille' => $ligne[1],
-            'prenom' => $ligne[2],
-            'societe' => $ligne[3],
-            'mail' => $ligne[4],
-            'date_prelevement' => $ligne[5],
-            'centre' => $ligne[6],
-            'box' => $ligne[7],
-            'type_box' => $ligne[8],
-            'prix_ht' => $ligne[9],
-            'prix_ttc' => $ligne[10],
-            'date_entree' => $ligne[11],
-            'fin_location' => $ligne[12],
-            'sortie_effective' => $ligne[13],
-            'email_envoye' => $ligne[14],
-            'creer_par' => $ligne[15],
-            'etat' => $ligne[16]
+            'centre' => $ligne[1],
+            'type_tiers' => $ligne[2],
+            'nom_societe' => $ligne[4],
+            'prenom' => $ligne[5],
+            'telephone' => $ligne[6],
+            'mail' => $ligne[7],
+            'nb_produits' => $ligne[8],
+            'total_ttc' => (float)str_replace(['€', ' '], '', $ligne[10]),
+            'date_location' => \DateTime::createFromFormat('d/m/Y', $ligne[11])->format('Y-m-d'),
+            'utilisateur_id' => $utilisateur_id
         ]);
+    }
+
+    public function getLocationsByUser($utilisateur_id) {
+        $stmt = $this->pdo->prepare('SELECT * FROM locations WHERE utilisateur_id = :utilisateur_id');
+        $stmt->execute(['utilisateur_id' => $utilisateur_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 ?>

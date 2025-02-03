@@ -22,6 +22,8 @@ $controleurCsv = new ControleurCsv();
 
 echo '<link rel="stylesheet" href="../ressources/css/style.css">';
 
+$pdo = (new ConnexionBD())->getPdo();
+
 try {
     switch ($route) {
         case 'connexion':
@@ -41,8 +43,9 @@ try {
             break;
 
         case 'stats':
-            if (!isset($_SESSION['user'])) {
-                header('Location: routeur.php?route=connexion');
+            if (isset($_GET['reimport'])) {
+                $pdo->prepare('DELETE FROM locations WHERE utilisateur_id = ?')->execute([$_SESSION['user']['id']]);
+                header('Location: routeur.php?route=stats');
                 exit;
             }
             require_once __DIR__ . '/../src/Vue/utilisateur/stats.php';

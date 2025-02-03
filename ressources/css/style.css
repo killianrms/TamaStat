@@ -517,6 +517,31 @@ table.boxes-table tr:nth-child(even) {
     background-color: #e65c00;
 }
 
+.stats-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.stats-table th, .stats-table td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+.stats-table th {
+    background-color: #0072bc;
+    color: white;
+}
 /* Responsive */
 @media (max-width: 768px) {
     .container {
