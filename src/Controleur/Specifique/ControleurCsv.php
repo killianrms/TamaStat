@@ -18,7 +18,7 @@ class ControleurCsv {
             echo "Fichier CSV ouvert avec succès.<br>"; // Debug
             fgetcsv($handle);
 
-            while (($data = fgetcsv($handle, 1000, ',')) !== false) {
+            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                 var_dump($data);
                 if (count($data) >= 12) {
                     $csvModele->importerLocations($utilisateur_id, $data);
