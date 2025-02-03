@@ -754,6 +754,49 @@ table.boxes-table tr:nth-child(even) {
     background-color: #e65c00;
 }
 
+.filters-form {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.filters-form label {
+    display: block;
+    margin-bottom: 10px;
+    color: #0072bc;
+    font-weight: bold;
+}
+
+.filters-form select {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.filters-form button {
+    background-color: #ff6600;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.filters-form button:hover {
+    background-color: #e65c00;
+}
+
+canvas {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
 @media (min-width: 1200px) {
     h1 {
         font-size: 3rem;

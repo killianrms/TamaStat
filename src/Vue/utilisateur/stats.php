@@ -26,9 +26,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
     }
 }
 
+// Récupérer les filtres
+$filterPeriod = $_GET['period'] ?? 'all';
+$filterSizes = $_GET['sizes'] ?? [];
 $stmt = $pdo->prepare('SELECT taille, nombre_box, prix_par_m3 FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id');
 $stmt->execute(['utilisateur_id' => $_SESSION['user']['id']]);
 $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$filteredLocations = $locations;
+if ($filterPeriod !== 'all') {
+    $now = new DateTime();
+    $filteredLocations = array_filter($filteredLocations, function($location) use ($filterPeriod, $now) {
+        $locationDate = new DateTime($location['date_location']);
+        $interval = $now->diff($locationDate);
+        switch ($filterPeriod) {
+            case '1month':
+                return $interval->m < 1 && $interval->y == 0;
+            case '6months':
+                return $interval->m < 6 && $interval->y == 0;
+            case '1year':
+                return $interval->y < 1;
+            default:
+                return true;
+        }
+    });
+}
+
+if (!empty($filterSizes)) {
+    $filteredLocations = array_filter($filteredLocations, function($location) use ($filterSizes) {
+        return in_array($location['nb_produits'], $filterSizes);
+    });
+}
 ?>
 
 <!DOCTYPE html>
@@ -38,6 +66,7 @@ $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
     <link rel="stylesheet" href="../ressources/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <h1>Statistiques de vos locations</h1>
@@ -52,6 +81,25 @@ $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <div class="stats-container">
         <a href="routeur.php?route=stats&reimport=1" class="button">Modifier CSV</a>
 
+        <form method="GET" action="routeur.php?route=stats" class="filters-form">
+            <label for="period">Période :</label>
+            <select id="period" name="period">
+                <option value="all" <?= $filterPeriod === 'all' ? 'selected' : '' ?>>Toutes les périodes</option>
+                <option value="1month" <?= $filterPeriod === '1month' ? 'selected' : '' ?>>1 mois</option>
+                <option value="6months" <?= $filterPeriod === '6months' ? 'selected' : '' ?>>6 mois</option>
+                <option value="1year" <?= $filterPeriod === '1year' ? 'selected' : '' ?>>1 an</option>
+            </select>
+
+            <label for="sizes">Taille des boxes :</label>
+            <select id="sizes" name="sizes[]" multiple>
+                <?php foreach ($boxes as $box): ?>
+                    <option value="<?= $box['taille'] ?>" <?= in_array($box['taille'], $filterSizes) ? 'selected' : '' ?>><?= $box['taille'] ?> m³</option>
+                <?php endforeach; ?>
+            </select>
+
+            <button type="submit">Filtrer</button>
+        </form>
+
         <?php
         $stats = [];
         foreach ($boxes as $box) {
@@ -59,7 +107,7 @@ $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             $totalBoxes = $box['nombre_box'];
             $prixParM3 = $box['prix_par_m3'];
 
-            $locationsTaille = array_filter($locations, function($location) use ($taille) {
+            $locationsTaille = array_filter($filteredLocations, function($location) use ($taille) {
                 return $location['nb_produits'] == $taille;
             });
 
@@ -70,6 +118,31 @@ $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
             ];
         }
         ?>
+
+        <canvas id="revenueChart" width="400" height="200"></canvas>
+        <script>
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            const revenueChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: <?= json_encode(array_keys($stats)) ?>,
+                    datasets: [{
+                        label: 'Revenu (€)',
+                        data: <?= json_encode(array_column($stats, 'revenu')) ?>,
+                        backgroundColor: 'rgba(0, 114, 188, 0.2)',
+                        borderColor: 'rgba(0, 114, 188, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        </script>
 
         <table class="stats-table">
             <thead>
@@ -93,7 +166,6 @@ $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     </tr>
                 <?php endif; ?>
             <?php endforeach; ?>
-
             </tbody>
         </table>
     </div>
