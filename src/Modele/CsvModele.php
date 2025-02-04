@@ -29,7 +29,7 @@ class CsvModele {
                 'prenom' => $ligne[5],
                 'telephone' => $ligne[6],
                 'mail' => $ligne[7],
-                'nb_produits' => $ligne[8],
+                'nb_produits' => is_numeric($ligne[8]) ? (int)$ligne[8] : null,
                 'total_ttc' => (float)str_replace(['€', '&euro;', ' '], '', $ligne[10]),
                 'date_location' => \DateTime::createFromFormat('d/m/Y', $ligne[11])->format('Y-m-d'),
                 'utilisateur_id' => $utilisateur_id
