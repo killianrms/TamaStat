@@ -3,6 +3,7 @@ namespace App\Modele;
 
 use App\Configuration\ConnexionBD;
 use PDO;
+use Exception;
 
 class CsvModele {
     private $pdo;
@@ -21,22 +22,30 @@ class CsvModele {
             (:reference, :centre, :type_tiers, :nom_societe, :prenom, :telephone, :mail, :nb_produits, :total_ttc, :date_location, :utilisateur_id)
         ');
 
+            // Correction des indices pour correspondre aux bonnes colonnes
+            $nb_produits = is_numeric($ligne[6]) ? (int)$ligne[6] : null;
+            $prix_ttc = preg_replace('/[^0-9.,]/', '', explode(' ', $ligne[10])[0]);
+
+            // Conversion de la date
+            $date_location = \DateTime::createFromFormat('d/m/Y', $ligne[11]);
+            $date_location = $date_location ? $date_location->format('Y-m-d') : null;
+
             $stmt->execute([
-                'reference' => $ligne[0],
-                'centre' => $ligne[1],
-                'type_tiers' => $ligne[2],
-                'nom_societe' => $ligne[4],
-                'prenom' => $ligne[5],
-                'telephone' => $ligne[6],
-                'mail' => $ligne[7],
-                'nb_produits' => is_numeric($ligne[8]) ? (int)$ligne[8] : null,
-                'total_ttc' => (float)str_replace(['€', '&euro;', ' '], '', $ligne[10]),
-                'date_location' => \DateTime::createFromFormat('d/m/Y', $ligne[11])->format('Y-m-d'),
+                'reference' => $ligne[1],
+                'centre' => $ligne[7],
+                'type_tiers' => $ligne[8],
+                'nom_societe' => $ligne[3],
+                'prenom' => $ligne[4],
+                'telephone' => $ligne[5],
+                'mail' => $ligne[6],
+                'nb_produits' => $nb_produits,
+                'total_ttc' => (float)str_replace(',', '.', $prix_ttc),
+                'date_location' => $date_location,
                 'utilisateur_id' => $utilisateur_id
             ]);
             echo "Ligne insérée avec succès.<br>";
         } catch (\PDOException $e) {
-            throw new \Exception("Erreur PDO : " . $e->getMessage());
+            throw new Exception("Erreur PDO : " . $e->getMessage());
         }
     }
 
@@ -46,4 +55,3 @@ class CsvModele {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
-?>
