@@ -17,9 +17,9 @@ class CsvModele {
         try {
             $stmt = $this->pdo->prepare('
             INSERT INTO locations 
-            (reference, centre, type_tiers, nom_societe, prenom, telephone, mail, nb_produits, total_ttc, date_location, utilisateur_id)
+            (reference, centre, box_reference, nom_societe, prenom, telephone, mail, nb_produits, total_ttc, date_location, utilisateur_id)
             VALUES 
-            (:reference, :centre, :type_tiers, :nom_societe, :prenom, :telephone, :mail, :nb_produits, :total_ttc, :date_location, :utilisateur_id)
+            (:reference, :centre, :box_reference, :nom_societe, :prenom, :telephone, :mail, :nb_produits, :total_ttc, :date_location, :utilisateur_id)
         ');
 
             $nb_produits = is_numeric($ligne[6]) ? (int)$ligne[6] : null;
@@ -28,11 +28,12 @@ class CsvModele {
             $date_location = \DateTime::createFromFormat('d/m/Y', $ligne[11]);
             $date_location = $date_location ? $date_location->format('Y-m-d') : null;
 
+            $box_reference = $ligne[8];
 
             $stmt->execute([
                 'reference' => $ligne[1],
                 'centre' => $ligne[7],
-                'type_tiers' => $ligne[8],
+                'box_reference' => $box_reference,
                 'nom_societe' => $ligne[3],
                 'prenom' => $ligne[4],
                 'telephone' => $ligne[5],
@@ -42,6 +43,7 @@ class CsvModele {
                 'date_location' => $date_location,
                 'utilisateur_id' => $utilisateur_id
             ]);
+
             echo "Ligne insérée avec succès.<br>";
         } catch (\PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
@@ -54,3 +56,4 @@ class CsvModele {
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
+?>

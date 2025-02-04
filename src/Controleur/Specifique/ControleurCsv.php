@@ -15,7 +15,7 @@ class ControleurCsv {
         $csvModele = new CsvModele();
 
         if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            echo "Fichier CSV ouvert avec succès.<br>"; // Debug
+            echo "Fichier CSV ouvert avec succès.<br>";
             fgetcsv($handle);
 
             while (($data = fgetcsv($handle, 1000, ';')) !== false) {
