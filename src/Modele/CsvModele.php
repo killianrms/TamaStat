@@ -22,13 +22,12 @@ class CsvModele {
             (:reference, :centre, :type_tiers, :nom_societe, :prenom, :telephone, :mail, :nb_produits, :total_ttc, :date_location, :utilisateur_id)
         ');
 
-            // Correction des indices pour correspondre aux bonnes colonnes
             $nb_produits = is_numeric($ligne[6]) ? (int)$ligne[6] : null;
             $prix_ttc = preg_replace('/[^0-9.,]/', '', explode(' ', $ligne[10])[0]);
 
-            // Conversion de la date
             $date_location = \DateTime::createFromFormat('d/m/Y', $ligne[11]);
             $date_location = $date_location ? $date_location->format('Y-m-d') : null;
+
 
             $stmt->execute([
                 'reference' => $ligne[1],
