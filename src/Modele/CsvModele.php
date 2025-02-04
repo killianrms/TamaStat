@@ -36,7 +36,7 @@ class CsvModele {
             ]);
             echo "Ligne insérée avec succès.<br>";
         } catch (\PDOException $e) {
-            throw new Exception("Erreur PDO : " . $e->getMessage());
+            throw new \Exception("Erreur PDO : " . $e->getMessage());
         }
     }
 
