@@ -1,116 +1,218 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 
-use App\Configuration\ConnexionBD;
-use App\Modele\CsvModele;
+error_log("Données reçues : " . print_r($_POST, true));
+
+ob_start();
+
+include __DIR__ . '/../src/Vue/utilisateur/header.php';
+
+use App\Controleur\Specifique\ControleurUtilisateur;
 use App\Controleur\Specifique\ControleurCsv;
+use App\Configuration\ConnexionBD;
 
-$connexion = new ConnexionBD();
-$pdo = $connexion->getPdo();
-$csvModele = new CsvModele();
+require_once __DIR__ . '/../vendor/autoload.php';
 
-$locations = $csvModele->getLocationsByUser($_SESSION['user']['id']);
-$hasCSV = !empty($locations);
+$route = $_GET['route'] ?? 'connexion';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
-    $controleurCsv = new ControleurCsv();
-    try {
-        $controleurCsv->importerCsv($_FILES['csv_file'], $_SESSION['user']['id']);
-        header('Location: routeur.php?route=stats');
+$controleurUtilisateur = new ControleurUtilisateur();
+$controleurCsv = new ControleurCsv();
+
+echo '<link rel="stylesheet" href="../ressources/css/style.css">';
+
+$pdo = (new ConnexionBD())->getPdo();
+
+function verifierConnexion() {
+    if (!isset($_SESSION['user'])) {
+        header('Location: routeur.php?route=connexion');
         exit;
-    } catch (Exception $e) {
-        echo "<div class='error-message'>Erreur : " . $e->getMessage() . "</div>";
     }
 }
 
-$stmt = $pdo->prepare('SELECT taille, nombre_box, prix_par_m3 FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id');
-$stmt->execute(['utilisateur_id' => $_SESSION['user']['id']]);
-$boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Calcul des statistiques
-$stats = [];
-$revenuTotal = 0;
-$capaciteTotale = 0;
-$capaciteUtilisee = 0;
+try {
+    switch ($route) {
+        case 'connexion':
+            if (isset($_SESSION['user'])) {
+                header('Location: routeur.php?route=accueil');
+                exit;
+            }
+            require_once __DIR__ . '/../src/Vue/utilisateur/formulaireConnexion.php';
+            break;
 
-foreach ($boxes as $box) {
-    $taille = $box['taille'];
-    $locationsTaille = array_filter($locations, fn($loc) => $loc['nb_produits'] == $taille);
+        case 'login':
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $username = $_POST['username'] ?? '';
+                $password = $_POST['password'] ?? '';
+                $controleurUtilisateur->login($username, $password);
+            }
+            break;
 
-    $stats[$taille] = [
-        'total' => $box['nombre_box'],
-        'loues' => count($locationsTaille),
-        'revenu' => count($locationsTaille) * $taille * $box['prix_par_m3']
-    ];
+        case 'stats':
+            verifierConnexion();
+            if (isset($_GET['reimport'])) {
+                $pdo->prepare('DELETE FROM locations WHERE utilisateur_id = ?')->execute([$_SESSION['user']['id']]);
+                header('Location: routeur.php?route=stats');
+                exit;
+            }
+            require_once __DIR__ . '/../src/Vue/utilisateur/stats.php';
+            break;
 
-    $revenuTotal += $stats[$taille]['revenu'];
-    $capaciteTotale += $box['nombre_box'] * $taille;
-    $capaciteUtilisee += count($locationsTaille) * $taille;
+        case 'accueil':
+            verifierConnexion();
+            require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
+            break;
+
+        case 'ajouterUtilisateur':
+            verifierConnexion();
+            if ($_SESSION['user']['is_admin'] !== 1) {
+                echo "Accès non autorisé!";
+                exit;
+            }
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $nom_utilisateur = htmlspecialchars($_POST['nom_utilisateur']);
+                $mot_de_passe = $_POST['mot_de_passe'];
+                $mot_de_passe_confirme = $_POST['mot_de_passe_confirme'];
+                $email = $_POST['email'];
+                $is_admin = $_POST['is_admin'];
+
+                $erreurs = [];
+
+                if ($mot_de_passe !== $mot_de_passe_confirme) {
+                    $erreurs[] = "Les mots de passe ne correspondent pas.";
+                }
+
+                $pdo = (new ConnexionBD())->getPdo();
+                $stmt = $pdo->prepare('SELECT * FROM utilisateurs WHERE email = :email OR nom_utilisateur = :nom_utilisateur');
+                $stmt->execute(['email' => $email, 'nom_utilisateur' => $nom_utilisateur]);
+                $utilisateurExist = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if ($utilisateurExist) {
+                    $erreurs[] = "Cet utilisateur ou email existe déjà.";
+                }
+
+                if (empty($erreurs)) {
+                    $mot_de_passe_hache = password_hash($mot_de_passe, PASSWORD_BCRYPT);
+
+                    $stmt = $pdo->prepare('INSERT INTO utilisateurs (nom_utilisateur, mot_de_passe, email, is_admin) VALUES (:nom_utilisateur, :mot_de_passe, :email, :is_admin)');
+                    $stmt->execute([
+                        ':nom_utilisateur' => $nom_utilisateur,
+                        ':mot_de_passe' => $mot_de_passe_hache,
+                        ':email' => $email,
+                        ':is_admin' => $is_admin
+                    ]);
+
+                    header('Location: routeur.php?route=gestionUtilisateurs&message=Utilisateur ajouté avec succès');
+                    exit;
+                } else {
+                    $_SESSION['erreurs'] = $erreurs;
+                }
+            }
+
+            require_once __DIR__ . '/../src/Vue/utilisateur/formulaireAjoutUtilisateur.php';
+            break;
+
+
+        case 'ajouterDonneesAccueil':
+            verifierConnexion();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $quantitesBox = [];
+                $tailles = range(1, 12);
+
+                foreach ($tailles as $tailleBox) {
+                    $quantitesBox[$tailleBox] = isset($_POST["box_$tailleBox"]) ? intval($_POST["box_$tailleBox"]) : 0;
+                }
+
+                $prixParM3 = isset($_POST['prix_par_m3']) ? floatval($_POST['prix_par_m3']) : 0;
+
+                $controleurUtilisateur->mettreAJourDonneesUtilisateur(
+                    $_SESSION['user']['id'],
+                    $prixParM3,
+                    $quantitesBox
+                );
+
+                header('Location: routeur.php?route=accueil');
+                exit;
+            } else {
+                $donneesUtilisateur = $controleurUtilisateur->getDonneesUtilisateur($_SESSION['user']['id']);
+                require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
+            }
+            break;
+
+        case 'modifierUtilisateur':
+            verifierConnexion();
+            if ($_SESSION['user']['is_admin'] !== 1) {
+                header('Location: routeur.php?route=connexion');
+                exit;
+            }
+            $id = $_GET['id'] ?? null;
+            if ($id) {
+                require_once __DIR__ . '/../src/Vue/utilisateur/modifierUtilisateur.php';
+            }
+            break;
+
+        case 'supprimerUtilisateur':
+            verifierConnexion();
+            if ($_SESSION['user']['is_admin'] !== 1) {
+                header('Location: routeur.php?route=connexion');
+                exit;
+            }
+            $id = $_GET['id'] ?? null;
+            if ($id) {
+                $pdo = (new ConnexionBD())->getPdo();
+                $stmt = $pdo->prepare('DELETE FROM utilisateurs WHERE id = :id');
+                $stmt->execute(['id' => $id]);
+                header('Location: routeur.php?route=gestionUtilisateurs');
+                exit;
+            }
+            break;
+
+        case 'gestionUtilisateurs':
+            verifierConnexion();
+            if ($_SESSION['user']['is_admin'] !== 1) {
+                header('Location: routeur.php?route=connexion');
+                exit;
+            }
+            require_once __DIR__ . '/../src/Vue/utilisateur/gestionUtilisateurs.php';
+            break;
+
+        case 'deconnexion':
+            verifierConnexion();
+            session_unset();
+            session_destroy();
+            header('Location: routeur.php?route=connexion');
+            exit;
+            break;
+
+        case 'cgu':
+            require_once __DIR__ . '/../Legal/cgu.php';
+            break;
+
+        case 'mentions-legales':
+            require_once __DIR__ . '/../Legal/mentions-legales.php';
+            break;
+
+        default:
+            http_response_code(404);
+            echo '<h1>Erreur 404 : Page non trouvée</h1>';
+            break;
+    }
+} catch (Exception $e) {
+    http_response_code(500);
+    echo '<h1>Erreur interne du serveur</h1>';
+    echo '<p>' . $e->getMessage() . '</p>';
 }
 
-$tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capaciteTotale) * 100, 2) : 0;
-?>
+include __DIR__ . '/../src/Vue/utilisateur/footer.php';
 
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistiques</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body>
-<h1>Statistiques de vos locations</h1>
+function autoload($class) {
+    $classPath = __DIR__ . '/../src/' . str_replace('\\', '/', $class) . '.php';
+    if (file_exists($classPath)) {
+        require_once $classPath;
+    }
+}
 
-<?php if (!$hasCSV): ?>
-    <form action="routeur.php?route=stats" method="POST" enctype="multipart/form-data">
-        <label for="csv_file">Importer un fichier CSV :</label>
-        <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
-        <button type="submit">Importer</button>
-    </form>
-<?php else: ?>
-    <div class="stats-container">
-        <a href="routeur.php?route=stats&reimport=1" class="button">Modifier CSV</a>
+spl_autoload_register('autoload');
 
-        <!-- Section Graphiques -->
-        <div class="charts-grid">
-            <div class="chart-card">
-                <h3>Revenu par taille de box</h3>
-                <canvas id="revenueChart"></canvas>
-            </div>
-
-            <div class="chart-card">
-                <h3>Taux d'occupation</h3>
-                <canvas id="occupationChart"></canvas>
-            </div>
-
-            <div class="chart-card">
-                <h3>Répartition des locations</h3>
-                <canvas id="distributionChart"></canvas>
-            </div>
-
-            <div class="chart-card">
-                <h3>Capacité utilisée</h3>
-                <canvas id="capacityChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <!-- Données pour les graphiques -->
-    <script>
-        const statsData = {
-            labels: <?= json_encode(array_keys($stats)) ?>,
-            revenus: <?= json_encode(array_column($stats, 'revenu')) ?>,
-            occupation: <?= json_encode(array_column($stats, 'loues')) ?>,
-            totalBoxes: <?= json_encode(array_column($stats, 'total')) ?>,
-            capaciteTotale: <?= $capaciteTotale ?>,
-            capaciteUtilisee: <?= $capaciteUtilisee ?>
-        };
-    </script>
-
-    <script src="../ressources/"></script>
-<?php endif; ?>
-</body>
-</html>

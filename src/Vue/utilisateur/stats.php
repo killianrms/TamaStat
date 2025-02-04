@@ -29,11 +29,6 @@ $stmt = $pdo->prepare('SELECT taille, nombre_box, prix_par_m3 FROM boxes_utilisa
 $stmt->execute(['utilisateur_id' => $_SESSION['user']['id']]);
 $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Calcul des statistiques
-$totalBoxesDispo = array_sum(array_column($boxes, 'nombre_box'));
-$totalBoxesLoues = count($locations);
-$tauxOccupationGlobal = ($totalBoxesDispo > 0) ? round(($totalBoxesLoues / $totalBoxesDispo) * 100, 2) : 0;
-
 $stats = [];
 $revenuTotal = 0;
 $capaciteTotale = 0;
@@ -54,7 +49,7 @@ foreach ($boxes as $box) {
     $capaciteUtilisee += count($locationsTaille) * $taille;
 }
 
-$tauxCapaciteUtilisee = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capaciteTotale) * 100, 2) : 0;
+$tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capaciteTotale) * 100, 2) : 0;
 ?>
 
 <!DOCTYPE html>
@@ -63,7 +58,7 @@ $tauxCapaciteUtilisee = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
-    <link rel="stylesheet" href="../ressources/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <h1>Statistiques de vos locations</h1>
@@ -78,98 +73,42 @@ $tauxCapaciteUtilisee = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     <div class="stats-container">
         <a href="routeur.php?route=stats&reimport=1" class="button">Modifier CSV</a>
 
-        <div class="stats-globales">
-            <div class="stat-card">
-                <h3>Revenu total</h3>
-                <div class="value"><?= number_format($revenuTotal, 2) ?> €</div>
+        <!-- Section Graphiques -->
+        <div class="charts-grid">
+            <div class="chart-card">
+                <h3>Revenu par taille de box</h3>
+                <canvas id="revenueChart"></canvas>
             </div>
 
-            <div class="stat-card">
+            <div class="chart-card">
                 <h3>Taux d'occupation</h3>
-                <div class="value"><?= $tauxOccupationGlobal ?>%</div>
-                <small><?= $totalBoxesLoues ?>/<?= $totalBoxesDispo ?> boxes</small>
+                <canvas id="occupationChart"></canvas>
             </div>
 
-            <div class="stat-card">
+            <div class="chart-card">
+                <h3>Répartition des locations</h3>
+                <canvas id="distributionChart"></canvas>
+            </div>
+
+            <div class="chart-card">
                 <h3>Capacité utilisée</h3>
-                <div class="value"><?= $tauxCapaciteUtilisee ?>%</div>
-                <small><?= $capaciteUtilisee ?>m³/<?= $capaciteTotale ?>m³</small>
+                <canvas id="capacityChart"></canvas>
             </div>
         </div>
-
-        <div class="chart-container">
-            <canvas id="revenueChart"></canvas>
-        </div>
-
-        <table class="stats-table">
-            <thead>
-            <tr>
-                <th>Taille (m³)</th>
-                <th>Box disponibles</th>
-                <th>Box loués</th>
-                <th>Taux d'occupation</th>
-                <th>Revenu</th>
-            </tr>
-            </thead>
-            <tbody>
-            <?php foreach ($stats as $taille => $data): ?>
-                <?php if ($data['total'] > 0): ?>
-                    <tr>
-                        <td><?= $taille ?></td>
-                        <td><?= $data['total'] ?></td>
-                        <td><?= $data['loues'] ?></td>
-                        <td><?= round(($data['loues'] / $data['total']) * 100, 2) ?>%</td>
-                        <td><?= number_format($data['revenu'], 2) ?> €</td>
-                    </tr>
-                <?php endif; ?>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
-        const ctx = document.getElementById('revenueChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'bar',
-            data: {
-                labels: <?= json_encode(array_keys($stats)) ?>,
-                datasets: [{
-                    label: 'Revenu par taille (€)',
-                    data: <?= json_encode(array_column($stats, 'revenu')) ?>,
-                    backgroundColor: '#0072bc',
-                    borderColor: '#005f9e',
-                    borderWidth: 2
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'top',
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                return context.raw.toFixed(2) + ' €';
-                            }
-                        }
-                    }
-                },
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        ticks: {
-                            callback: function(value) {
-                                return value + ' €';
-                            }
-                        }
-                    }
-                }
-            }
-        });
+        const statsData = {
+            labels: <?= json_encode(array_keys($stats)) ?>,
+            revenus: <?= json_encode(array_column($stats, 'revenu')) ?>,
+            occupation: <?= json_encode(array_column($stats, 'loues')) ?>,
+            totalBoxes: <?= json_encode(array_column($stats, 'total')) ?>,
+            capaciteTotale: <?= $capaciteTotale ?>,
+            capaciteUtilisee: <?= $capaciteUtilisee ?>
+        };
     </script>
+
+    <script src="../ressources/js/stats.js"></script>
 <?php endif; ?>
 </body>
 </html>
