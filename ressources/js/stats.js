@@ -1,18 +1,32 @@
 document.addEventListener('DOMContentLoaded', function () {
-    // Initialisation des graphiques
-    initCharts();
+    let charts = [];
+
+    function destroyCharts() {
+        charts.forEach(chart => chart.destroy());
+        charts = [];
+    }
+
 
     function initCharts() {
-        new Chart(document.getElementById('revenueChart'), {
+        // Fonction de génération de couleurs
+        const generateColors = (count) => {
+            const colors = [];
+            const hueStep = 360 / count;
+            for (let i = 0; i < count; i++) {
+                colors.push(`hsl(${hueStep * i}, 70%, 50%)`);
+            }
+            return colors;
+        };
+
+        charts.push(new Chart(document.getElementById('revenueChart'), {
             type: 'bar',
             data: {
                 labels: statsData.labels.map(label => label + ' m³'),
                 datasets: [{
                     label: 'Revenu (€)',
                     data: statsData.revenus,
-                    backgroundColor: '#0072bc',
-                    borderColor: '#005f9e',
-                    borderWidth: 2
+                    backgroundColor: generateColors(statsData.labels.length),
+                    borderWidth: 1
                 }]
             },
             options: {
@@ -23,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 },
                 scales: { y: { beginAtZero: true } }
             }
-        });
+        }));
 
         new Chart(document.getElementById('occupationChart'), {
             type: 'doughnut',
@@ -89,10 +103,15 @@ document.addEventListener('DOMContentLoaded', function () {
         const response = await fetch(`routeur.php?route=stats&${params}`);
         const html = await response.text();
 
-        document.querySelector('.stats-container').innerHTML =
-            new DOMParser().parseFromString(html, 'text/html')
-                .querySelector('.stats-container').innerHTML;
+        const parser = new DOMParser();
+        const newDoc = parser.parseFromString(html, 'text/html');
 
+        const newStatsData = JSON.parse(newDoc.querySelector('script').innerHTML.replace('const statsData = ', '').replace(';', ''));
+        Object.assign(statsData, newStatsData);
+
+        destroyCharts();
         initCharts();
     });
+
+    initCharts();
 });

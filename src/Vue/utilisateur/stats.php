@@ -11,22 +11,35 @@ $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
 $csvModele = new CsvModele();
 
-$startDate = $_GET['start_date'] ?? null;
-$endDate = $_GET['end_date'] ?? null;
+$period = $_GET['period'] ?? 'all';
 $selectedSizes = $_GET['sizes'] ?? [];
 
-$locations = $csvModele->getLocationsByUser($_SESSION['user']['id']);
-$hasCSV = !empty($locations);
+$now = new DateTime();
+$startDate = null;
+$endDate = null;
 
+switch ($period) {
+    case '6months':
+        $startDate = (clone $now)->modify('-6 months')->format('Y-m-d');
+        $endDate = $now->format('Y-m-d');
+        break;
+    case 'year':
+        $startDate = (clone $now)->modify('-1 year')->format('Y-m-d');
+        $endDate = $now->format('Y-m-d');
+        break;
+    case 'all':
+    default:
+        $startDate = '1970-01-01';
+        $endDate = $now->format('Y-m-d');
+        break;
+}
 
 $query = "SELECT * FROM locations WHERE utilisateur_id = :user_id";
 $params = [':user_id' => $_SESSION['user']['id']];
 
-if ($startDate && $endDate) {
-    $query .= " AND date_location BETWEEN :start_date AND :end_date";
-    $params[':start_date'] = $startDate;
-    $params[':end_date'] = $endDate;
-}
+$query .= " AND date_location BETWEEN :start_date AND :end_date";
+$params[':start_date'] = $startDate;
+$params[':end_date'] = $endDate;
 
 if (!empty($selectedSizes)) {
     $placeholders = implode(',', array_fill(0, count($selectedSizes), '?'));
@@ -37,6 +50,10 @@ if (!empty($selectedSizes)) {
 $stmt = $pdo->prepare($query);
 $stmt->execute($params);
 $filteredLocations = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$locations = $csvModele->getLocationsByUser($_SESSION['user']['id']);
+$hasCSV = !empty($locations);
+
 
 $stmt = $pdo->prepare('SELECT taille, nombre_box, prix_par_m3 FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id');
 $stmt->execute(['utilisateur_id' => $_SESSION['user']['id']]);
@@ -93,24 +110,28 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
             <form method="GET" action="routeur.php?route=stats">
                 <div class="filter-group">
                     <label>Période :</label>
-                    <input type="text" id="dateRange" name="date_range" placeholder="Sélectionner une période"
-                           data-mode="range" data-alt-format="d/m/Y" data-date-format="Y-m-d">
+                    <div class="period-buttons">
+                        <button type="button" class="period-btn" data-period="6months">6 derniers mois</button>
+                        <button type="button" class="period-btn" data-period="year">Cette année</button>
+                        <button type="button" class="period-btn" data-period="all">Total</button>
+                    </div>
+                    <input type="hidden" name="period" id="selectedPeriod" value="<?= $period ?>">
                 </div>
 
                 <div class="filter-group">
                     <label>Tailles des boxes :</label>
-                    <select name="sizes[]" multiple class="size-select">
+                    <div class="size-checkboxes">
                         <?php foreach ($boxes as $box): ?>
-                            <option value="<?= $box['taille'] ?>"
-                                <?= in_array($box['taille'], $selectedSizes) ? 'selected' : '' ?>>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="sizes[]" value="<?= $box['taille'] ?>"
+                                    <?= in_array($box['taille'], $selectedSizes) ? 'checked' : '' ?>>
                                 <?= $box['taille'] ?> m³
-                            </option>
+                            </label>
                         <?php endforeach; ?>
-                    </select>
+                    </div>
                 </div>
 
-                <button type="submit" class="button">Appliquer les filtres</button>
-                <a href="routeur.php?route=stats" class="button reset-button">Réinitialiser</a>
+                <button type="submit" class="button">Appliquer</button>
             </form>
         </div>
 
@@ -153,19 +174,10 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
-    flatpickr("#dateRange", {
-        mode: "range",
-        dateFormat: "Y-m-d",
-        locale: "fr",
-        defaultDate: ["<?= $startDate ?>", "<?= $endDate ?>"]
-    });
-
-    document.querySelectorAll('.size-select').forEach(select => {
-        new Choices(select, {
-            removeItemButton: true,
-            searchEnabled: true,
-            placeholder: true,
-            noResultsText: 'Aucun résultat'
+    document.querySelectorAll('.period-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            document.getElementById('selectedPeriod').value = this.dataset.period;
+            document.querySelector('form').submit();
         });
     });
 </script>
