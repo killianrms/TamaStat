@@ -647,63 +647,6 @@ canvas {
     position: relative;
 }
 
-/* Filtres */
-.filters-container {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin: 20px 0;
-}
-
-.filter-group {
-    margin-bottom: 15px;
-}
-
-.filter-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: #0072bc;
-    font-weight: bold;
-}
-
-/* Datepicker personnalisé */
-.flatpickr-input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-.choices__list--multiple .choices__item {
-    background: #0072bc;
-    border: none;
-    color: white;
-    margin: 2px;
-}
-
-.choices__list--dropdown {
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.reset-button {
-    background: #2c3e50 !important;
-    margin-left: 10px;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    .filters-container form {
-        flex-direction: column;
-    }
-
-    .reset-button {
-        margin-left: 0;
-        margin-top: 10px;
-    }
-}
-
 @media (max-width: 768px) {
     h1 {
         font-size: 1.5rem;
