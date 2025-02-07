@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../Configuration/ConnexionBD.php';
+use App\Configuration\ConnexionBD;
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
