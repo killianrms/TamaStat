@@ -5,7 +5,7 @@ $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
 
 $stmt = $pdo->prepare('
-    SELECT taille, nombre_box, prix_par_m3 FROM boxes_utilisateur
+    SELECT box_type_id, quantite FROM utilisateur_boxes
     WHERE utilisateur_id = :utilisateur_id
 ');
 $stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);

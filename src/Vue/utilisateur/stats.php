@@ -5,7 +5,6 @@ error_reporting(E_ALL);
 
 use App\Configuration\ConnexionBD;
 use App\Modele\CsvModele;
-use App\Controleur\Specifique\ControleurCsv;
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
@@ -34,12 +33,12 @@ switch ($period) {
         break;
 }
 
-$query = "SELECT * FROM locations WHERE utilisateur_id = :user_id";
-$params = [':user_id' => $_SESSION['user']['id']];
-
-$query .= " AND date_location BETWEEN :start_date AND :end_date";
-$params[':start_date'] = $startDate;
-$params[':end_date'] = $endDate;
+$query = "SELECT * FROM locations WHERE utilisateur_id = :user_id AND date_location BETWEEN :start_date AND :end_date";
+$params = [
+    ':user_id' => $_SESSION['user']['id'],
+    ':start_date' => $startDate,
+    ':end_date' => $endDate
+];
 
 if (!empty($selectedSizes)) {
     $placeholders = implode(',', array_fill(0, count($selectedSizes), '?'));
@@ -54,8 +53,12 @@ $filteredLocations = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $locations = $csvModele->getLocationsByUser($_SESSION['user']['id']);
 $hasCSV = !empty($locations);
 
-
-$stmt = $pdo->prepare('SELECT taille, nombre_box, prix_par_m3 FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id');
+$stmt = $pdo->prepare("
+    SELECT ub.box_type_id, ub.quantite, bt.prix_ttc 
+    FROM utilisateur_boxes ub
+    JOIN box_types bt ON ub.box_type_id = bt.id
+    WHERE ub.utilisateur_id = :utilisateur_id
+");
 $stmt->execute(['utilisateur_id' => $_SESSION['user']['id']]);
 $boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -65,18 +68,18 @@ $capaciteTotale = 0;
 $capaciteUtilisee = 0;
 
 foreach ($boxes as $box) {
-    $taille = $box['taille'];
-    $locationsTaille = array_filter($filteredLocations, fn($loc) => $loc['nb_produits'] == $taille);
+    $boxTypeId = $box['box_type_id'];
+    $locationsTaille = array_filter($filteredLocations, fn($loc) => $loc['nb_produits'] == $boxTypeId);
 
-    $stats[$taille] = [
-        'total' => $box['nombre_box'],
+    $stats[$boxTypeId] = [
+        'total' => $box['quantite'],
         'loues' => count($locationsTaille),
-        'revenu' => count($locationsTaille) * $taille * $box['prix_par_m3']
+        'revenu' => count($locationsTaille) * $box['prix_ttc']
     ];
 
-    $revenuTotal += $stats[$taille]['revenu'];
-    $capaciteTotale += $box['nombre_box'] * $taille;
-    $capaciteUtilisee += count($locationsTaille) * $taille;
+    $revenuTotal += $stats[$boxTypeId]['revenu'];
+    $capaciteTotale += $box['quantite'];
+    $capaciteUtilisee += count($locationsTaille);
 }
 
 $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capaciteTotale) * 100, 2) : 0;
@@ -88,7 +91,6 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
-    <link rel="stylesheet" href="../ressources/css/style.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
@@ -123,9 +125,9 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
                     <div class="size-checkboxes">
                         <?php foreach ($boxes as $box): ?>
                             <label class="checkbox-label">
-                                <input type="checkbox" name="sizes[]" value="<?= $box['taille'] ?>"
-                                    <?= in_array($box['taille'], $selectedSizes) ? 'checked' : '' ?>>
-                                <?= $box['taille'] ?> m³
+                                <input type="checkbox" name="sizes[]" value="<?= $box['box_type_id'] ?>"
+                                    <?= in_array($box['box_type_id'], $selectedSizes) ? 'checked' : '' ?> >
+                                <?= $box['box_type_id'] ?> m³
                             </label>
                         <?php endforeach; ?>
                     </div>
