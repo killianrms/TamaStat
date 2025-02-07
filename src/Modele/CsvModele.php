@@ -45,14 +45,16 @@ class CsvModele {
             (:reference, :denomination, :prix_ttc, :utilisateur_id)
         ');
 
-            $denomination = !empty($ligne[1]) ? $ligne[1] : 'Inconnu';
-            $denomination = mb_convert_encoding($denomination, 'UTF-8', 'auto');
-            $denomination = htmlspecialchars($denomination, ENT_QUOTES, 'UTF-8');
-
+            $reference = trim(mb_convert_encoding($ligne[0], 'UTF-8', 'auto'));
+            $denomination = trim(mb_convert_encoding($ligne[1], 'UTF-8', 'auto'));
             $prixTtc = floatval(str_replace(',', '.', $ligne[3]));
 
+            if (empty($denomination)) {
+                throw new Exception("Dénomination manquante pour la référence : $reference");
+            }
+
             $stmt->execute([
-                'reference' => $ligne[0],
+                'reference' => $reference,
                 'denomination' => $denomination,
                 'prix_ttc' => $prixTtc,
                 'utilisateur_id' => $utilisateurId
@@ -121,7 +123,8 @@ class CsvModele {
         }
     }
 
-    private function getBoxTypeIdByReference($reference, $utilisateurId) {
+    public function getBoxTypeIdByReference($reference, $utilisateurId) {
+        $reference = trim(mb_convert_encoding($reference, 'UTF-8', 'auto'));
         $stmt = $this->pdo->prepare('SELECT id FROM box_types WHERE reference = :reference AND utilisateur_id = :utilisateur_id');
         $stmt->execute(['reference' => $reference, 'utilisateur_id' => $utilisateurId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
