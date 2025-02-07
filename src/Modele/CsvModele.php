@@ -13,36 +13,44 @@ class CsvModele {
         $this->pdo = $connexion->getPdo();
     }
 
-    public function importerLocations($utilisateur_id, $ligne) {
+    public function importerBoxType($ligne) {
+        try {
+            $stmt = $this->pdo->prepare('
+            INSERT INTO box_types 
+            (reference, denomination, taille_m3, prix_ttc, couleur)
+            VALUES 
+            (:reference, :denomination, :taille_m3, :prix_ttc, :couleur)
+        ');
+
+            $stmt->execute([
+                'reference' => $ligne[0],
+                'denomination' => $ligne[1],
+                'taille_m3' => $ligne[2],
+                'prix_ttc' => $ligne[3],
+                'couleur' => $ligne[4]
+            ]);
+        } catch (\PDOException $e) {
+            throw new Exception("Erreur PDO : " . $e->getMessage());
+        }
+    }
+
+    public function importerLocation($utilisateurId, $ligne) {
         try {
             $stmt = $this->pdo->prepare('
             INSERT INTO locations 
-            (reference, centre, type_tiers, nom_societe, prenom, telephone, mail, nb_produits, total_ttc, date_location, utilisateur_id)
+            (reference_contrat, utilisateur_id, box_type_id, client_nom, date_debut, date_fin)
             VALUES 
-            (:reference, :centre, :type_tiers, :nom_societe, :prenom, :telephone, :mail, :nb_produits, :total_ttc, :date_location, :utilisateur_id)
+            (:reference_contrat, :utilisateur_id, :box_type_id, :client_nom, :date_debut, :date_fin)
         ');
 
-            $nb_produits = is_numeric($ligne[6]) ? (int)$ligne[6] : null;
-            $prix_ttc = preg_replace('/[^0-9.,]/', '', explode(' ', $ligne[10])[0]);
-
-            $date_location = \DateTime::createFromFormat('d/m/Y', $ligne[11]);
-            $date_location = $date_location ? $date_location->format('Y-m-d') : null;
-
-
             $stmt->execute([
-                'reference' => $ligne[1],
-                'centre' => $ligne[7],
-                'type_tiers' => $ligne[8],
-                'nom_societe' => $ligne[3],
-                'prenom' => $ligne[4],
-                'telephone' => $ligne[5],
-                'mail' => $ligne[6],
-                'nb_produits' => $nb_produits,
-                'total_ttc' => (float)str_replace(',', '.', $prix_ttc),
-                'date_location' => $date_location,
-                'utilisateur_id' => $utilisateur_id
+                'reference_contrat' => $ligne[0],
+                'utilisateur_id' => $utilisateurId,
+                'box_type_id' => $ligne[1],
+                'client_nom' => $ligne[2],
+                'date_debut' => $ligne[3],
+                'date_fin' => $ligne[4]
             ]);
-            echo "Ligne insérée avec succès.<br>";
         } catch (\PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
         }
