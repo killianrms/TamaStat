@@ -19,7 +19,8 @@ class ControleurCsv {
 
             while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                 if (count($data) >= 5) {
-                    $csvModele->importerBoxType($data);
+                    $utilisateurId = $_SESSION['user']['id'];
+                    $csvModele->importerBoxType($data, $utilisateurId);
                 }
             }
 

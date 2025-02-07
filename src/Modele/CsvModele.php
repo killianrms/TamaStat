@@ -36,7 +36,7 @@ class CsvModele {
         }
     }
 
-    private function importerBoxType($ligne, $utilisateurId) {
+    public function importerBoxType($ligne, $utilisateurId) {
         try {
             $stmt = $this->pdo->prepare('
             INSERT INTO box_types 
@@ -81,7 +81,7 @@ class CsvModele {
         }
     }
 
-    private function importerLocation($utilisateurId, $ligne) {
+    public function importerLocation($utilisateurId, $ligne) {
         try {
             $stmt = $this->pdo->prepare('
             INSERT INTO locations 
