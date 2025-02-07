@@ -51,7 +51,7 @@ $hasContrats = $stmt->fetchColumn() > 0;
             $boxTypes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
             foreach ($boxTypes as $boxType) {
-                echo '<label for="box_' . $boxType['id'] . '">Nombre de box ' . $boxType['denomination'] . ' (' . $boxType['taille_m3'] . 'm³) :</label>';
+                echo '<label for="box_' . $boxType['id'] . '">Nombre de box ' . $boxType['denomination'] . ' :</label>';
                 echo '<input type="number" id="box_' . $boxType['id'] . '" name="box_' . $boxType['id'] . '" min="0" required><br>';
             }
             ?>
