@@ -127,7 +127,7 @@ class CsvModele {
     public function getBoxTypeIdByReference($reference, $utilisateurId) {
         $reference = $this->normalizeString($reference);
 
-        $stmt = $this->pdo->prepare('SELECT id FROM box_types WHERE reference = :reference AND utilisateur_id = :utilisateur_id');
+        $stmt = $this->pdo->prepare('SELECT id FROM box_types WHERE TRIM(REPLACE(reference, " ", "")) = TRIM(REPLACE(:reference, " ", "")) AND utilisateur_id = :utilisateur_id');
         $stmt->execute(['reference' => $reference, 'utilisateur_id' => $utilisateurId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result ? $result['id'] : null;
@@ -138,6 +138,6 @@ class CsvModele {
         if (!mb_detect_encoding($string, 'UTF-8', true)) {
             $string = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $string);
         }
-        return str_replace(["°", "'", "`", "´"], "", $string);
+        return str_replace(["°", "'", "`", "´", " "], "", $string);
     }
 }
