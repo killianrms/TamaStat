@@ -40,22 +40,20 @@ class CsvModele {
         try {
             $stmt = $this->pdo->prepare('
             INSERT INTO box_types 
-            (reference, denomination, prix_ttc, utilisateur_id)
+            (denomination, prix_ttc, utilisateur_id)
             VALUES 
-            (:reference, :denomination, :prix_ttc, :utilisateur_id)
+            (:denomination, :prix_ttc, :utilisateur_id)
         ');
 
-            $reference = $this->normalizeString($ligne[0]);
             $denomination = $this->normalizeString($ligne[1]);
 
             if (empty($denomination)) {
-                throw new Exception("Dénomination manquante pour la référence : $reference");
+                throw new Exception("Dénomination manquante.");
             }
 
             $prixTtc = floatval(str_replace(',', '.', $ligne[3]));
 
             $stmt->execute([
-                'reference' => $reference,
                 'denomination' => $denomination,
                 'prix_ttc' => $prixTtc,
                 'utilisateur_id' => $utilisateurId
