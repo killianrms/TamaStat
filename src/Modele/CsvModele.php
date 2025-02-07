@@ -22,7 +22,7 @@ class CsvModele {
         $fileTmpName = $csvFile['tmp_name'];
 
         if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            fgetcsv($handle);
+            fgetcsv($handle, 1000, ';');
 
             while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                 if (count($data) >= 5) {
@@ -45,7 +45,7 @@ class CsvModele {
             (:reference, :denomination, :prix_ttc, :utilisateur_id)
         ');
 
-            $denomination = !empty($ligne[2]) ? $ligne[2] : $ligne[1];
+            $denomination = !empty($ligne[1]) ? $ligne[1] : 'Inconnu';
             $denomination = mb_convert_encoding($denomination, 'UTF-8', 'auto');
             $denomination = htmlspecialchars($denomination, ENT_QUOTES, 'UTF-8');
 
@@ -71,7 +71,7 @@ class CsvModele {
         $fileTmpName = $csvFile['tmp_name'];
 
         if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            fgetcsv($handle); // Ignorer l'en-tête
+            fgetcsv($handle);
 
             while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                 if (count($data) >= 12) {
