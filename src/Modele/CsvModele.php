@@ -13,28 +13,75 @@ class CsvModele {
         $this->pdo = $connexion->getPdo();
     }
 
-    public function importerBoxType($ligne) {
+    public function importerBoxTypes($csvFile, $utilisateurId) {
+        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
+        if ($fileExt !== 'csv') {
+            throw new Exception("Le fichier doit être au format CSV.");
+        }
+
+        $fileTmpName = $csvFile['tmp_name'];
+
+        if (($handle = fopen($fileTmpName, 'r')) !== false) {
+            fgetcsv($handle);
+
+            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+                if (count($data) >= 5) {
+                    $this->importerBoxType($data, $utilisateurId);
+                }
+            }
+
+            fclose($handle);
+        } else {
+            throw new Exception("Erreur lors de l'ouverture du fichier.");
+        }
+    }
+
+    private function importerBoxType($ligne, $utilisateurId) {
         try {
             $stmt = $this->pdo->prepare('
             INSERT INTO box_types 
-            (reference, denomination, taille_m3, prix_ttc, couleur)
+            (reference, denomination, taille_m3, prix_ttc, couleur, utilisateur_id)
             VALUES 
-            (:reference, :denomination, :taille_m3, :prix_ttc, :couleur)
+            (:reference, :denomination, :taille_m3, :prix_ttc, :couleur, :utilisateur_id)
         ');
 
             $stmt->execute([
                 'reference' => $ligne[0],
                 'denomination' => $ligne[1],
-                'taille_m3' => $ligne[2],
-                'prix_ttc' => $ligne[3],
-                'couleur' => $ligne[4]
+                'taille_m3' => floatval(str_replace(',', '.', $ligne[2])),
+                'prix_ttc' => floatval(str_replace(',', '.', $ligne[3])),
+                'couleur' => $ligne[4],
+                'utilisateur_id' => $utilisateurId
             ]);
         } catch (\PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
         }
     }
 
-    public function importerLocation($utilisateurId, $ligne) {
+    public function importerContrats($csvFile, $utilisateurId) {
+        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
+        if ($fileExt !== 'csv') {
+            throw new Exception("Le fichier doit être au format CSV.");
+        }
+
+        $fileTmpName = $csvFile['tmp_name'];
+
+        if (($handle = fopen($fileTmpName, 'r')) !== false) {
+            fgetcsv($handle); // Ignorer l'en-tête
+
+            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+                if (count($data) >= 12) {
+                    $this->importerLocation($utilisateurId, $data);
+                }
+            }
+
+            fclose($handle);
+        } else {
+            throw new Exception("Erreur lors de l'ouverture du fichier.");
+        }
+    }
+
+    private function importerLocation($utilisateurId, $ligne) {
         try {
             $stmt = $this->pdo->prepare('
             INSERT INTO locations 
@@ -44,21 +91,22 @@ class CsvModele {
         ');
 
             $stmt->execute([
-                'reference_contrat' => $ligne[0],
+                'reference_contrat' => $ligne[1],
                 'utilisateur_id' => $utilisateurId,
-                'box_type_id' => $ligne[1],
-                'client_nom' => $ligne[2],
-                'date_debut' => $ligne[3],
-                'date_fin' => $ligne[4]
+                'box_type_id' => $this->getBoxTypeIdByReference($ligne[8], $utilisateurId),
+                'client_nom' => $ligne[2] . ' ' . $ligne[3],
+                'date_debut' => \DateTime::createFromFormat('d/m/Y', $ligne[10])->format('Y-m-d'),
+                'date_fin' => $ligne[11] ? \DateTime::createFromFormat('d/m/Y', $ligne[11])->format('Y-m-d') : null
             ]);
         } catch (\PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
         }
     }
 
-    public function getLocationsByUser($utilisateur_id) {
-        $stmt = $this->pdo->prepare('SELECT * FROM locations WHERE utilisateur_id = :utilisateur_id');
-        $stmt->execute(['utilisateur_id' => $utilisateur_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    private function getBoxTypeIdByReference($reference, $utilisateurId) {
+        $stmt = $this->pdo->prepare('SELECT id FROM box_types WHERE reference = :reference AND utilisateur_id = :utilisateur_id');
+        $stmt->execute(['reference' => $reference, 'utilisateur_id' => $utilisateurId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? $result['id'] : null;
     }
 }

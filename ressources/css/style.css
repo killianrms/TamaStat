@@ -732,6 +732,51 @@ canvas {
     margin: 0;
 }
 
+.step {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.step h2 {
+    color: #0072bc;
+    margin-bottom: 15px;
+}
+
+.step label {
+    display: block;
+    margin-bottom: 10px;
+    color: #0072bc;
+    font-weight: bold;
+}
+
+.step input[type="file"],
+.step input[type="number"] {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+.step button {
+    background-color: #ff6600;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.step button:hover {
+    background-color: #e65c00;
+}
+
 @media (max-width: 768px) {
     h1 {
         font-size: 1.5rem;

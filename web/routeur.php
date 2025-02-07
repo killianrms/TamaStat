@@ -205,8 +205,8 @@ try {
             if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_box'])) {
                 $controleurCsv = new ControleurCsv();
                 try {
-                    $controleurCsv->importerBoxTypes($_FILES['csv_box']);
-                    header('Location: routeur.php?route=dashboard&etape=configurer-box');
+                    $controleurCsv->importerBoxTypes($_FILES['csv_box'], $_SESSION['user']['id']);
+                    header('Location: routeur.php?route=accueil');
                     exit;
                 } catch (Exception $e) {
                     echo "<div class='error-message'>Erreur : " . $e->getMessage() . "</div>";
@@ -234,7 +234,7 @@ try {
                     }
                 }
 
-                header('Location: routeur.php?route=dashboard&etape=importer-contrats');
+                header('Location: routeur.php?route=accueil');
                 exit;
             }
             break;
@@ -245,7 +245,7 @@ try {
                 $controleurCsv = new ControleurCsv();
                 try {
                     $controleurCsv->importerContrats($_FILES['csv_contrats'], $_SESSION['user']['id']);
-                    header('Location: routeur.php?route=dashboard&etape=stats');
+                    header('Location: routeur.php?route=accueil');
                     exit;
                 } catch (Exception $e) {
                     echo "<div class='error-message'>Erreur : " . $e->getMessage() . "</div>";

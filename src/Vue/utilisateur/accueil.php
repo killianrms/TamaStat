@@ -1,25 +1,25 @@
 <?php
-use App\Configuration\ConnexionBD;
+require_once __DIR__ . '/../../Configuration/ConnexionBD.php';
+require_once __DIR__ . '/../../Modele/CsvModele.php';
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
+$csvModele = new CsvModele();
 
-$stmt = $pdo->prepare('
-    SELECT box_type_id, quantite FROM utilisateur_boxes
-    WHERE utilisateur_id = :utilisateur_id
-');
-$stmt->bindParam(':utilisateur_id', $_SESSION['user']['id']);
-$stmt->execute();
-$boxesUtilisateur = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$utilisateurId = $_SESSION['user']['id'];
 
-$prixParM3 = $boxesUtilisateur[0]['prix_par_m3'] ?? null;
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM box_types WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasBoxes = $stmt->fetchColumn() > 0;
 
-$boxes = [];
-foreach ($boxesUtilisateur as $box) {
-    $boxes[(string)$box['taille']] = $box['nombre_box'];
-}
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM utilisateur_boxes WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasBoxesConfig = $stmt->fetchColumn() > 0;
 
-$taillesDisponibles = range(1, 12);
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM locations WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasContrats = $stmt->fetchColumn() > 0;
+
 ?>
 
 <!DOCTYPE html>
@@ -27,59 +27,48 @@ $taillesDisponibles = range(1, 12);
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion des Boxes</title>
+    <title>Accueil</title>
 </head>
 <body class="accueil-page">
+<h1>Configuration de vos données</h1>
 
-<h1>Gestion de vos boxes</h1>
-
-<div class="form-container">
-    <div class="form-column">
-        <form id="form1">
-            <label for="prix_par_m3">Prix par m³ (€) :</label>
-            <input type="number" id="prix_par_m3" name="prix_par_m3" step="0.01" value="<?= htmlspecialchars($prixParM3) ?>" required>
-            <br><br>
-
-            <?php foreach (array_slice($taillesDisponibles, 0, 6) as $tailleBox): ?>
-                <label for="box_<?= str_replace('.', '_', $tailleBox) ?>">Nombre de box <?= $tailleBox ?>m³ :</label>
-                <input type="number" name="box_<?= str_replace('.', '_', $tailleBox) ?>" id="box_<?= str_replace('.', '_', $tailleBox) ?>" value="<?= $boxes[(string)$tailleBox] ?? 0 ?>" min="0" required>
-                <br>
-            <?php endforeach; ?>
+<?php if (!$hasBoxes): ?>
+    <div class="step">
+        <h2>Étape 1 : Importer vos box</h2>
+        <form action="routeur.php?route=importer-box" method="POST" enctype="multipart/form-data">
+            <label for="csv_box">Importer un fichier CSV des box :</label>
+            <input type="file" id="csv_box" name="csv_box" accept=".csv" required>
+            <button type="submit">Importer</button>
         </form>
     </div>
+<?php elseif (!$hasBoxesConfig): ?>
+    <div class="step">
+        <h2>Étape 2 : Configurer vos box</h2>
+        <form action="routeur.php?route=configurer-box" method="POST">
+            <?php
+            $stmt = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
+            $stmt->execute([$utilisateurId]);
+            $boxTypes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    <div class="form-column">
-        <form id="form2" method="POST" action="routeur.php?route=ajouterDonneesAccueil">
-            <?php foreach (array_slice($taillesDisponibles, 6) as $tailleBox): ?>
-                <label for="box_<?= str_replace('.', '_', $tailleBox) ?>">Nombre de box <?= $tailleBox ?>m³ :</label>
-                <input type="number" name="box_<?= str_replace('.', '_', $tailleBox) ?>" id="box_<?= str_replace('.', '_', $tailleBox) ?>" value="<?= $boxes[(string)$tailleBox] ?? 0 ?>" min="0" required>
-                <br>
-            <?php endforeach; ?>
-            <br>
-            <button type="submit" onclick="fusionnerEtEnvoyer(event)">Enregistrer</button>
+            foreach ($boxTypes as $boxType) {
+                echo '<label for="box_' . $boxType['id'] . '">Nombre de box ' . $boxType['denomination'] . ' (' . $boxType['taille_m3'] . 'm³) :</label>';
+                echo '<input type="number" id="box_' . $boxType['id'] . '" name="box_' . $boxType['id'] . '" min="0" required><br>';
+            }
+            ?>
+            <button type="submit">Enregistrer</button>
         </form>
     </div>
-</div>
-
-<script>
-    function fusionnerEtEnvoyer(event) {
-        event.preventDefault();
-
-        let form1 = document.getElementById('form1');
-        let form2 = document.getElementById('form2');
-
-        let inputsForm1 = form1.querySelectorAll('input');
-        inputsForm1.forEach(input => {
-            let newInput = document.createElement('input');
-            newInput.type = 'hidden';
-            newInput.name = input.name;
-            newInput.value = input.value;
-            form2.appendChild(newInput);
-        });
-
-        form2.submit();
-    }
-</script>
-
+<?php elseif (!$hasContrats): ?>
+    <div class="step">
+        <h2>Étape 3 : Importer vos contrats</h2>
+        <form action="routeur.php?route=importer-contrats" method="POST" enctype="multipart/form-data">
+            <label for="csv_contrats">Importer un fichier CSV des contrats :</label>
+            <input type="file" id="csv_contrats" name="csv_contrats" accept=".csv" required>
+            <button type="submit">Importer</button>
+        </form>
+    </div>
+<?php else: ?>
+    <a href="routeur.php?route=stats" class="button">Voir les statistiques</a>
+<?php endif; ?>
 </body>
 </html>
