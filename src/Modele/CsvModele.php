@@ -45,9 +45,12 @@ class CsvModele {
             (:reference, :denomination, :taille_m3, :prix_ttc, :couleur, :utilisateur_id)
         ');
 
+            $denomination = mb_convert_encoding($ligne[1], 'UTF-8', 'auto');
+            $denomination = htmlspecialchars($denomination, ENT_QUOTES, 'UTF-8');
+
             $stmt->execute([
                 'reference' => $ligne[0],
-                'denomination' => $ligne[1],
+                'denomination' => $denomination,
                 'taille_m3' => floatval(str_replace(',', '.', $ligne[2])),
                 'prix_ttc' => floatval(str_replace(',', '.', $ligne[3])),
                 'couleur' => $ligne[4],
