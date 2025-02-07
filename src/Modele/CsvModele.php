@@ -84,17 +84,15 @@ class CsvModele {
 
     public function importerLocation($utilisateurId, $ligne) {
         try {
-            $dateDebut = \DateTime::createFromFormat('d/m/Y', $ligne[10]);
-            if (!$dateDebut) {
-                throw new Exception("Date invalide : " . $ligne[10]);
+            if (empty($ligne[10]) || !\DateTime::createFromFormat('d/m/Y', $ligne[10])) {
+                throw new Exception("Date invalide pour 'date_debut' : " . $ligne[10]);
             }
 
+            $dateDebut = \DateTime::createFromFormat('d/m/Y', $ligne[10]);
+
             $dateFin = null;
-            if (!empty($ligne[11]) && $ligne[11] !== '""') {
+            if (!empty($ligne[11]) && \DateTime::createFromFormat('d/m/Y', $ligne[11])) {
                 $dateFin = \DateTime::createFromFormat('d/m/Y', $ligne[11]);
-                if (!$dateFin) {
-                    throw new Exception("Date fin invalide : " . $ligne[11]);
-                }
             }
 
             $stmt = $this->pdo->prepare('
@@ -114,6 +112,8 @@ class CsvModele {
             ]);
         } catch (\PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
+        } catch (Exception $e) {
+            throw new Exception("Erreur de date : " . $e->getMessage());
         }
     }
 
