@@ -1,19 +1,23 @@
 <?php
+
 namespace App\Modele;
 
 use App\Configuration\ConnexionBD;
 use PDO;
 use Exception;
 
-class CsvModele {
+class CsvModele
+{
     private $pdo;
 
-    public function __construct() {
+    public function __construct()
+    {
         $connexion = new ConnexionBD();
         $this->pdo = $connexion->getPdo();
     }
 
-    public function importerBoxTypes($csvFile, $utilisateurId) {
+    public function importerBoxTypes($csvFile, $utilisateurId)
+    {
         $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
         if ($fileExt !== 'csv') {
             throw new Exception("Le fichier doit être au format CSV.");
@@ -36,7 +40,8 @@ class CsvModele {
         }
     }
 
-    public function importerBoxType($ligne, $utilisateurId) {
+    public function importerBoxType($ligne, $utilisateurId)
+    {
         try {
             $stmt = $this->pdo->prepare('
             INSERT INTO box_types 
@@ -62,45 +67,19 @@ class CsvModele {
         }
     }
 
-    public function importerContrats($csvFile, $utilisateurId) {
-        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
-        if ($fileExt !== 'csv') {
-            throw new Exception("Le fichier doit être au format CSV.");
-        }
-
-        $fileTmpName = $csvFile['tmp_name'];
-
-        if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            fgetcsv($handle);
-
-            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-                if (count($data) >= 12) {
-                    $this->importerLocation($utilisateurId, $data);
-                }
-            }
-
-            fclose($handle);
-        } else {
-            throw new Exception("Erreur lors de l'ouverture du fichier.");
-        }
-    }
-
-    public function importerLocation($utilisateurId, $ligne) {
+    public function importerLocation($utilisateurId, $ligne)
+    {
         try {
-            if (empty($ligne[10]) || !\DateTime::createFromFormat('d/m/Y', $ligne[10])) {
-                throw new Exception("Date invalide pour 'date_debut' : " . $ligne[10]);
+            $dateDebut = !empty($ligne[11]) && \DateTime::createFromFormat('d/m/Y', $ligne[11]) ? \DateTime::createFromFormat('d/m/Y', $ligne[11]) : null;
+            $dateFin = !empty($ligne[12]) && \DateTime::createFromFormat('d/m/Y', $ligne[12]) ? \DateTime::createFromFormat('d/m/Y', $ligne[12]) : null;
+
+            if (!$dateDebut) {
+                throw new Exception("Date invalide pour 'date_debut' : " . $ligne[11]);
             }
 
-            $dateDebut = \DateTime::createFromFormat('d/m/Y', $ligne[10]);
-
-            $dateFin = null;
-            if (!empty($ligne[11]) && \DateTime::createFromFormat('d/m/Y', $ligne[11])) {
-                $dateFin = \DateTime::createFromFormat('d/m/Y', $ligne[11]);
-            }
-
-            $boxTypeId = $this->getBoxTypeIdByReference($ligne[8], $utilisateurId);
+            $boxTypeId = $this->getBoxTypeIdByReference($ligne[9], $utilisateurId);
             if (!$boxTypeId) {
-                throw new Exception("Type de box non trouvé pour la référence : " . $ligne[8]);
+                throw new Exception("Type de box non trouvé pour la référence : " . $ligne[9]);
             }
 
             $stmt = $this->pdo->prepare('
@@ -123,12 +102,5 @@ class CsvModele {
         } catch (Exception $e) {
             throw new Exception("Erreur : " . $e->getMessage());
         }
-    }
-
-    private function getBoxTypeIdByReference($reference, $utilisateurId) {
-        $stmt = $this->pdo->prepare('SELECT id FROM box_types WHERE reference = :reference AND utilisateur_id = :utilisateur_id');
-        $stmt->execute(['reference' => $reference, 'utilisateur_id' => $utilisateurId]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ? $result['id'] : null;
     }
 }
