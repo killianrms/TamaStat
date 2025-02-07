@@ -22,7 +22,7 @@ class CsvModele {
         $fileTmpName = $csvFile['tmp_name'];
 
         if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            fgetcsv($handle, 1000, ';');
+            fgetcsv($handle, 1000, ';'); // Ignorer l'en-tête
 
             while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                 if (count($data) >= 5) {
@@ -127,7 +127,7 @@ class CsvModele {
     public function getBoxTypeIdByReference($reference, $utilisateurId) {
         $reference = $this->normalizeString($reference);
 
-        $stmt = $this->pdo->prepare('SELECT id FROM box_types WHERE TRIM(REPLACE(reference, " ", "")) = TRIM(REPLACE(:reference, " ", "")) AND utilisateur_id = :utilisateur_id');
+        $stmt = $this->pdo->prepare('SELECT id FROM box_types WHERE REPLACE(reference, "Â\xc2°\xc2\xb0", "°") = REPLACE(:reference, "Â\xc2°\xc2\xb0", "°") AND utilisateur_id = :utilisateur_id');
         $stmt->execute(['reference' => $reference, 'utilisateur_id' => $utilisateurId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result ? $result['id'] : null;
@@ -138,6 +138,7 @@ class CsvModele {
         if (!mb_detect_encoding($string, 'UTF-8', true)) {
             $string = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $string);
         }
-        return str_replace(["°", "'", "`", "´", " "], "", $string);
+        $string = str_replace(["\xc2\xb0", "Â\xc2°\xc2\xb0"], "°", $string);
+        return $string;
     }
 }
