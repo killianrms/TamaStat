@@ -45,13 +45,8 @@ class CsvModele {
             (:reference, :denomination, :prix_ttc, :utilisateur_id)
         ');
 
-            $reference = trim($ligne[0]);
-            $denomination = trim($ligne[1]);
-
-            if (!mb_detect_encoding($denomination, 'UTF-8', true)) {
-                $denomination = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $denomination);
-            }
-            $denomination = str_replace(["°", "'"], "", $denomination);
+            $reference = $this->normalizeString($ligne[0]);
+            $denomination = $this->normalizeString($ligne[1]);
 
             if (empty($denomination)) {
                 throw new Exception("Dénomination manquante pour la référence : $reference");
@@ -130,17 +125,19 @@ class CsvModele {
     }
 
     public function getBoxTypeIdByReference($reference, $utilisateurId) {
-        $reference = trim($reference);
-
-        if (!mb_detect_encoding($reference, 'UTF-8', true)) {
-            $reference = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $reference);
-        }
-
-        $reference = str_replace(["°", "'"], "", $reference);
+        $reference = $this->normalizeString($reference);
 
         $stmt = $this->pdo->prepare('SELECT id FROM box_types WHERE reference = :reference AND utilisateur_id = :utilisateur_id');
         $stmt->execute(['reference' => $reference, 'utilisateur_id' => $utilisateurId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
         return $result ? $result['id'] : null;
+    }
+
+    private function normalizeString($string) {
+        $string = trim($string);
+        if (!mb_detect_encoding($string, 'UTF-8', true)) {
+            $string = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $string);
+        }
+        return str_replace(["°", "'", "`", "´"], "", $string);
     }
 }
