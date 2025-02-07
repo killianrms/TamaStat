@@ -4,6 +4,8 @@ namespace App\Configuration;
 use PDO;
 use PDOException;
 
+use App\Configuration\ConfigurationBaseDeDonnees;
+
 class ConnexionBD
 {
     private $pdo;
