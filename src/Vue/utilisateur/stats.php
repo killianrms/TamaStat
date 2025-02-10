@@ -63,7 +63,6 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
-    <link rel="stylesheet" href="../ressources/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="stats-page">
@@ -102,11 +101,6 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     <div class="chart-card">
         <h3>Occupation par type de box</h3>
         <canvas id="occupationChart"></canvas>
-    </div>
-
-    <div class="chart-card">
-        <h3>Répartition des locations</h3>
-        <canvas id="repartitionChart"></canvas>
     </div>
 
     <div class="chart-card">
@@ -176,25 +170,7 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
         }
     });
 
-    // Graphique 3 : Répartition des locations
-    new Chart(document.getElementById('repartitionChart'), {
-        type: 'pie',
-        data: {
-            labels: boxLabels,
-            datasets: [{
-                data: occupationData,
-                backgroundColor: ['#0072bc', '#ff6600', '#2c3e50', '#4CAF50', '#9C27B0']
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' locations' } }
-            }
-        }
-    });
-
-    // Graphique 4 : Revenu mensuel
+    // Graphique 3 : Revenu mensuel
     new Chart(document.getElementById('revenuMensuelChart'), {
         type: 'line',
         data: {
@@ -215,7 +191,7 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
         }
     });
 
-    // Graphique 5 : Locations par mois
+    // Graphique 4 : Locations par mois
     new Chart(document.getElementById('locationsMensuellesChart'), {
         type: 'line',
         data: {
