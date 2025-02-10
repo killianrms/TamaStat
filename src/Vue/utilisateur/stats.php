@@ -23,6 +23,8 @@ $capaciteTotale = 0;
 $capaciteUtilisee = 0;
 $revenuParBox = [];
 $occupationParBox = [];
+$revenuMensuel = [];
+$locationsParMois = [];
 
 foreach ($boxTypes as $boxType) {
     $boxTypeId = $boxType['id'];
@@ -36,6 +38,13 @@ foreach ($boxTypes as $boxType) {
     $capaciteUtilisee += $revenuParBox[$boxTypeId];
 }
 
+// Calculer le revenu mensuel
+foreach ($locations as $location) {
+    $mois = date('Y-m', strtotime($location['date_debut']));
+    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $boxTypes[$location['box_type_id'] - 1]['prix_ttc'];
+    $locationsParMois[$mois] = ($locationsParMois[$mois] ?? 0) + 1;
+}
+
 $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capaciteTotale) * 100, 2) : 0;
 ?>
 
@@ -45,29 +54,11 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
+    <link rel="stylesheet" href="../ressources/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="stats-page">
 <h1>Statistiques de vos locations</h1>
-
-<!-- Filtres -->
-<div class="filters">
-    <label for="dateDebut">Date de début :</label>
-    <input type="date" id="dateDebut" name="dateDebut">
-
-    <label for="dateFin">Date de fin :</label>
-    <input type="date" id="dateFin" name="dateFin">
-
-    <label for="boxType">Type de box :</label>
-    <select id="boxType" name="boxType">
-        <option value="">Tous</option>
-        <?php foreach ($boxTypes as $boxType): ?>
-            <option value="<?= $boxType['id'] ?>"><?= $boxType['denomination'] ?></option>
-        <?php endforeach; ?>
-    </select>
-
-    <button onclick="appliquerFiltres()">Appliquer les filtres</button>
-</div>
 
 <!-- Statistiques globales -->
 <div class="stats-globales">
@@ -84,6 +75,11 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     <div class="stat-card">
         <h3>Capacité utilisée</h3>
         <div class="value"><?= $capaciteUtilisee ?> m³</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Nombre total de locations</h3>
+        <div class="value"><?= count($locations) ?></div>
     </div>
 </div>
 
@@ -103,6 +99,16 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
         <h3>Répartition des locations</h3>
         <canvas id="repartitionChart"></canvas>
     </div>
+
+    <div class="chart-card">
+        <h3>Revenu mensuel</h3>
+        <canvas id="revenuMensuelChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <h3>Locations par mois</h3>
+        <canvas id="locationsMensuellesChart"></canvas>
+    </div>
 </div>
 
 <script>
@@ -110,6 +116,10 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination')) ?>;
     const revenuData = <?= json_encode(array_values($revenuParBox)) ?>;
     const occupationData = <?= json_encode(array_values($occupationParBox)) ?>;
+
+    const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>;
+    const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>;
+    const locationsMensuellesData = <?= json_encode(array_values($locationsParMois)) ?>;
 
     // Graphique 1 : Revenu par type de box
     new Chart(document.getElementById('revenuChart'), {
@@ -175,15 +185,47 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
         }
     });
 
-    // Fonction pour appliquer les filtres
-    function appliquerFiltres() {
-        const dateDebut = document.getElementById('dateDebut').value;
-        const dateFin = document.getElementById('dateFin').value;
-        const boxType = document.getElementById('boxType').value;
+    // Graphique 4 : Revenu mensuel
+    new Chart(document.getElementById('revenuMensuelChart'), {
+        type: 'line',
+        data: {
+            labels: moisLabels,
+            datasets: [{
+                label: 'Revenu mensuel (€)',
+                data: revenuMensuelData,
+                borderColor: '#0072bc',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(2) + ' €' } }
+            },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
 
-        // Rediriger avec les filtres
-        window.location.href = `routeur.php?route=stats&dateDebut=${dateDebut}&dateFin=${dateFin}&boxType=${boxType}`;
-    }
+    // Graphique 5 : Locations par mois
+    new Chart(document.getElementById('locationsMensuellesChart'), {
+        type: 'line',
+        data: {
+            labels: moisLabels,
+            datasets: [{
+                label: 'Locations par mois',
+                data: locationsMensuellesData,
+                borderColor: '#ff6600',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' locations' } }
+            },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
 </script>
 </body>
 </html>
