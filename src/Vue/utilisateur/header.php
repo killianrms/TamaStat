@@ -4,8 +4,8 @@
 
         <div class="nav-links">
         <?php if (isset($_SESSION['user'])): ?>
-            <a href="routeur.php?route=accueil">Accueil</a>
-            <a href="routeur.php?route=stats">Stats</a>
+            <a href="routeur.php?route=accueil">Tableau de bord</a>
+        <a href="routeur.php?route=profil">Profil</a>
 
             <?php if ($_SESSION['user']['is_admin'] === 1): ?>
                 <a href="routeur.php?route=gestionUtilisateurs">Gestion Utilisateurs</a>

@@ -27,7 +27,6 @@ class ControleurUtilisateur
                 'id' => $utilisateur['id'],
                 'nom_utilisateur' => $utilisateur['nom_utilisateur'],
                 'email' => $utilisateur['email'],
-                'role' => $utilisateur['role'],
                 'is_admin' => isset($utilisateur['is_admin']) ? (int)$utilisateur['is_admin'] : 0,
             ];
             header('Location: routeur.php?route=accueil');
@@ -39,47 +38,38 @@ class ControleurUtilisateur
         }
     }
 
-    public function deconnexion()
-    {
-        session_destroy();
-        header('Location: routeur.php?route=connexion');
-        exit;
-    }
-
     public function getDonneesUtilisateur($userId)
     {
-        $stmt = $this->pdo->prepare("SELECT taille, prix_par_m3, nombre_box FROM boxes_utilisateur WHERE utilisateur_id = :userId");
+        $stmt = $this->pdo->prepare("SELECT box_type_id, quantite FROM utilisateur_boxes WHERE utilisateur_id = :userId");
         $stmt->execute(['userId' => $userId]);
         $result = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         return $result ?: [];
     }
 
-    public function mettreAJourDonneesUtilisateur($utilisateurId, $prixParM3, $boxes)
+    public function mettreAJourDonneesUtilisateur($utilisateurId, array $boxes)
     {
         if ($utilisateurId === null) {
-            echo "Erreur : l'ID utilisateur est manquant.";
-            exit;
+            throw new \Exception("Erreur : l'ID utilisateur est manquant.");
         }
 
         $pdo = $this->pdo;
 
-        $deleteQuery = "DELETE FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id";
+        $deleteQuery = "DELETE FROM utilisateur_boxes WHERE utilisateur_id = :utilisateur_id";
         $deleteStmt = $pdo->prepare($deleteQuery);
         $deleteStmt->execute([':utilisateur_id' => $utilisateurId]);
 
-        foreach ($boxes as $taille => $nombreBox) {
-            if ($nombreBox >= 0) {
-                $insertQuery = "INSERT INTO boxes_utilisateur (utilisateur_id, taille, nombre_box, prix_par_m3) VALUES (:utilisateur_id, :taille, :nombre_box, :prix_par_m3)";
-                $insertStmt = $pdo->prepare($insertQuery);
+        $insertQuery = "INSERT INTO utilisateur_boxes (utilisateur_id, box_type_id, quantite) VALUES (:utilisateur_id, :box_type_id, :quantite)";
+        $insertStmt = $pdo->prepare($insertQuery);
+
+        foreach ($boxes as $boxTypeId => $quantite) {
+            if ($quantite >= 0) {
                 $insertStmt->execute([
                     ':utilisateur_id' => $utilisateurId,
-                    ':taille' => $taille,
-                    ':nombre_box' => $nombreBox,
-                    ':prix_par_m3' => $prixParM3
+                    ':box_type_id' => $boxTypeId,
+                    ':quantite' => $quantite,
                 ]);
             }
         }
     }
 }
-

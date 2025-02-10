@@ -1,52 +1,57 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
-
-use App\Configuration\ConnexionBD;
-use App\Modele\CsvModele;
-use App\Controleur\Specifique\ControleurCsv;
+USE App\Configuration\ConnexionBD;
+USE App\Modele\CsvModele;
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
 $csvModele = new CsvModele();
 
-$locations = $csvModele->getLocationsByUser($_SESSION['user']['id']);
-$hasCSV = !empty($locations);
+$utilisateurId = $_SESSION['user']['id'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_file'])) {
-    $controleurCsv = new ControleurCsv();
-    try {
-        $controleurCsv->importerCsv($_FILES['csv_file'], $_SESSION['user']['id']);
-        header('Location: routeur.php?route=stats');
-        exit;
-    } catch (Exception $e) {
-        echo "<div class='error-message'>Erreur : " . $e->getMessage() . "</div>";
-    }
+// Récupérer les données pour les statistiques
+$boxTypes = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
+$boxTypes->execute([$utilisateurId]);
+$boxTypes = $boxTypes->fetchAll(PDO::FETCH_ASSOC);
+
+$boxTypesById = [];
+foreach ($boxTypes as $boxType) {
+    $boxTypesById[$boxType['id']] = $boxType;
 }
 
-$stmt = $pdo->prepare('SELECT taille, nombre_box, prix_par_m3 FROM boxes_utilisateur WHERE utilisateur_id = :utilisateur_id');
-$stmt->execute(['utilisateur_id' => $_SESSION['user']['id']]);
-$boxes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$locations = $pdo->prepare('SELECT * FROM locations WHERE utilisateur_id = ?');
+$locations->execute([$utilisateurId]);
+$locations = $locations->fetchAll(PDO::FETCH_ASSOC);
 
-$stats = [];
+// Calculer les statistiques
 $revenuTotal = 0;
 $capaciteTotale = 0;
 $capaciteUtilisee = 0;
+$revenuParBox = [];
+$occupationParBox = [];
+$revenuMensuel = [];
+$locationsParMois = [];
 
-foreach ($boxes as $box) {
-    $taille = $box['taille'];
-    $locationsTaille = array_filter($locations, fn($loc) => $loc['nb_produits'] == $taille);
+foreach ($boxTypes as $boxType) {
+    $boxTypeId = $boxType['id'];
+    $locationsBox = array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId);
 
-    $stats[$taille] = [
-        'total' => $box['nombre_box'],
-        'loues' => count($locationsTaille),
-        'revenu' => count($locationsTaille) * $taille * $box['prix_par_m3']
-    ];
+    $revenuParBox[$boxTypeId] = count($locationsBox) * $boxType['prix_ttc'];
+    $occupationParBox[$boxTypeId] = count($locationsBox);
 
-    $revenuTotal += $stats[$taille]['revenu'];
-    $capaciteTotale += $box['nombre_box'] * $taille;
-    $capaciteUtilisee += count($locationsTaille) * $taille;
+    $revenuTotal += $revenuParBox[$boxTypeId];
+    $capaciteTotale += $boxType['prix_ttc'];
+    $capaciteUtilisee += $revenuParBox[$boxTypeId];
+}
+
+// Calculer le revenu mensuel
+foreach ($locations as $location) {
+    $mois = date('Y-m', strtotime($location['date_debut']));
+    $boxTypeId = $location['box_type_id'];
+
+    $prixTTC = isset($boxTypesById[$boxTypeId]) ? $boxTypesById[$boxTypeId]['prix_ttc'] : 0;
+
+    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $prixTTC;
+    $locationsParMois[$mois] = ($locationsParMois[$mois] ?? 0) + 1;
 }
 
 $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capaciteTotale) * 100, 2) : 0;
@@ -58,57 +63,154 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
-    <link rel="stylesheet" href="../ressources/css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body class="stats-page">
 <h1>Statistiques de vos locations</h1>
 
-<?php if (!$hasCSV): ?>
-    <form action="routeur.php?route=stats" method="POST" enctype="multipart/form-data">
-        <label for="csv_file">Importer un fichier CSV :</label>
-        <input type="file" id="csv_file" name="csv_file" accept=".csv" required>
-        <button type="submit">Importer</button>
-    </form>
-<?php else: ?>
-    <div class="stats-container">
-        <a href="routeur.php?route=stats&reimport=1" class="button">Modifier CSV</a>
-
-        <div class="charts-grid">
-            <div class="chart-card">
-                <h3>Revenu par taille de box</h3>
-                <canvas id="revenueChart"></canvas>
-            </div>
-
-            <div class="chart-card">
-                <h3>Taux d'occupation</h3>
-                <canvas id="occupationChart"></canvas>
-            </div>
-
-            <div class="chart-card">
-                <h3>Répartition des locations</h3>
-                <canvas id="distributionChart"></canvas>
-            </div>
-
-            <div class="chart-card">
-                <h3>Capacité utilisée</h3>
-                <canvas id="capacityChart"></canvas>
-            </div>
-        </div>
+<!-- Statistiques globales -->
+<div class="stats-globales">
+    <div class="stat-card">
+        <h3>Revenu total</h3>
+        <div class="value"><?= $revenuTotal ?> €</div>
     </div>
 
-    <script>
-        const statsData = {
-            labels: <?= json_encode(array_keys($stats)) ?>,
-            revenus: <?= json_encode(array_column($stats, 'revenu')) ?>,
-            occupation: <?= json_encode(array_column($stats, 'loues')) ?>,
-            totalBoxes: <?= json_encode(array_column($stats, 'total')) ?>,
-            capaciteTotale: <?= $capaciteTotale ?>,
-            capaciteUtilisee: <?= $capaciteUtilisee ?>
-        };
-    </script>
+    <div class="stat-card">
+        <h3>Taux d'occupation</h3>
+        <div class="value"><?= $tauxOccupationGlobal ?> %</div>
+    </div>
 
-    <script src="../ressources/js/stats.js"></script>
-<?php endif; ?>
+    <div class="stat-card">
+        <h3>Capacité utilisée</h3>
+        <div class="value"><?= $capaciteUtilisee ?> m³</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Nombre total de locations</h3>
+        <div class="value"><?= count($locations) ?></div>
+    </div>
+</div>
+
+<!-- Graphiques -->
+<div class="charts-grid">
+    <div class="chart-card">
+        <h3>Revenu par type de box</h3>
+        <canvas id="revenuChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <h3>Occupation par type de box</h3>
+        <canvas id="occupationChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <h3>Revenu mensuel</h3>
+        <canvas id="revenuMensuelChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <h3>Locations par mois</h3>
+        <canvas id="locationsMensuellesChart"></canvas>
+    </div>
+</div>
+
+<script>
+    // Données pour les graphiques
+    const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination')) ?>;
+    const revenuData = <?= json_encode(array_values($revenuParBox)) ?>;
+    const occupationData = <?= json_encode(array_values($occupationParBox)) ?>;
+
+    const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>;
+    const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>;
+    const locationsMensuellesData = <?= json_encode(array_values($locationsParMois)) ?>;
+
+    // Graphique 1 : Revenu par type de box
+    new Chart(document.getElementById('revenuChart'), {
+        type: 'bar',
+        data: {
+            labels: boxLabels,
+            datasets: [{
+                label: 'Revenu (€)',
+                data: revenuData,
+                backgroundColor: '#0072bc',
+                borderColor: '#005f9e',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(2) + ' €' } }
+            },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Graphique 2 : Occupation par type de box
+    new Chart(document.getElementById('occupationChart'), {
+        type: 'bar',
+        data: {
+            labels: boxLabels,
+            datasets: [{
+                label: 'Occupation',
+                data: occupationData,
+                backgroundColor: '#ff6600',
+                borderColor: '#e65c00',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' locations' } }
+            },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Graphique 3 : Revenu mensuel
+    new Chart(document.getElementById('revenuMensuelChart'), {
+        type: 'line',
+        data: {
+            labels: moisLabels,
+            datasets: [{
+                label: 'Revenu mensuel (€)',
+                data: revenuMensuelData,
+                borderColor: '#0072bc',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(2) + ' €' } }
+            },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Graphique 4 : Locations par mois
+    new Chart(document.getElementById('locationsMensuellesChart'), {
+        type: 'line',
+        data: {
+            labels: moisLabels,
+            datasets: [{
+                label: 'Locations par mois',
+                data: locationsMensuellesData,
+                borderColor: '#ff6600',
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' locations' } }
+            },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+</script>
 </body>
 </html>

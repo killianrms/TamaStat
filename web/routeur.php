@@ -24,7 +24,8 @@ echo '<link rel="stylesheet" href="../ressources/css/style.css">';
 
 $pdo = (new ConnexionBD())->getPdo();
 
-function verifierConnexion() {
+function verifierConnexion()
+{
     if (!isset($_SESSION['user'])) {
         header('Location: routeur.php?route=connexion');
         exit;
@@ -52,11 +53,23 @@ try {
 
         case 'stats':
             verifierConnexion();
-            if (isset($_GET['reimport'])) {
-                $pdo->prepare('DELETE FROM locations WHERE utilisateur_id = ?')->execute([$_SESSION['user']['id']]);
-                header('Location: routeur.php?route=stats');
-                exit;
+            $dateDebut = $_GET['dateDebut'] ?? null;
+            $dateFin = $_GET['dateFin'] ?? null;
+            $boxType = $_GET['boxType'] ?? null;
+
+            $filtres = [];
+            if ($dateDebut) {
+                $filtres[] = "date_debut >= '$dateDebut'";
             }
+            if ($dateFin) {
+                $filtres[] = "date_debut <= '$dateFin'";
+            }
+            if ($boxType) {
+                $filtres[] = "box_type_id = $boxType";
+            }
+
+            $filtresSQL = $filtres ? ' AND ' . implode(' AND ', $filtres) : '';
+
             require_once __DIR__ . '/../src/Vue/utilisateur/stats.php';
             break;
 
@@ -194,6 +207,69 @@ try {
             require_once __DIR__ . '/../Legal/mentions-legales.php';
             break;
 
+        case 'dashboard':
+            verifierConnexion();
+            require_once __DIR__ . '/../src/Vue/utilisateur/dashboard.php';
+            break;
+
+        case 'importer-box':
+            verifierConnexion();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_box'])) {
+                $controleurCsv = new ControleurCsv();
+                try {
+                    $controleurCsv->importerBoxTypes($_FILES['csv_box'], $_SESSION['user']['id']);
+                    header('Location: routeur.php?route=accueil');
+                    exit;
+                } catch (Exception $e) {
+                    echo "<div class='error-message'>Erreur : " . $e->getMessage() . "</div>";
+                }
+            }
+            break;
+
+        case 'configurer-box':
+            verifierConnexion();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $utilisateurId = $_SESSION['user']['id'];
+                $pdo = (new ConnexionBD())->getPdo();
+
+                foreach ($_POST as $key => $value) {
+                    if (strpos($key, 'box_') === 0) {
+                        $boxTypeId = str_replace('box_', '', $key);
+                        $quantite = intval($value);
+
+                        $stmt = $pdo->prepare('INSERT INTO utilisateur_boxes (utilisateur_id, box_type_id, quantite) VALUES (:utilisateur_id, :box_type_id, :quantite)');
+                        $stmt->execute([
+                            ':utilisateur_id' => $utilisateurId,
+                            ':box_type_id' => $boxTypeId,
+                            ':quantite' => $quantite
+                        ]);
+                    }
+                }
+
+                header('Location: routeur.php?route=accueil');
+                exit;
+            }
+            break;
+
+        case 'importer-contrats':
+            verifierConnexion();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_contrats'])) {
+                $controleurCsv = new ControleurCsv();
+                try {
+                    $controleurCsv->importerContrats($_FILES['csv_contrats'], $_SESSION['user']['id']);
+                    header('Location: routeur.php?route=accueil');
+                    exit;
+                } catch (Exception $e) {
+                    echo "<div class='error-message'>Erreur : " . $e->getMessage() . "</div>";
+                }
+            }
+            break;
+
+        case 'profil':
+            verifierConnexion();
+            require_once __DIR__ . '/../src/Vue/utilisateur/profil.php';
+            break;
+
         default:
             http_response_code(404);
             echo '<h1>Erreur 404 : Page non trouvée</h1>';
@@ -207,7 +283,8 @@ try {
 
 include __DIR__ . '/../src/Vue/utilisateur/footer.php';
 
-function autoload($class) {
+function autoload($class)
+{
     $classPath = __DIR__ . '/../src/' . str_replace('\\', '/', $class) . '.php';
     if (file_exists($classPath)) {
         require_once $classPath;

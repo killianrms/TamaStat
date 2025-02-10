@@ -13,47 +13,135 @@ class CsvModele {
         $this->pdo = $connexion->getPdo();
     }
 
-    public function importerLocations($utilisateur_id, $ligne) {
+    public function importerBoxTypes($csvFile, $utilisateurId) {
+        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
+        if ($fileExt !== 'csv') {
+            throw new Exception("Le fichier doit être au format CSV.");
+        }
+
+        $fileTmpName = $csvFile['tmp_name'];
+
+        if (($handle = fopen($fileTmpName, 'r')) !== false) {
+            fgetcsv($handle, 1000, ';'); // Ignorer l'en-tête
+
+            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+                if (count($data) >= 5) {
+                    $this->importerBoxType($data, $utilisateurId);
+                }
+            }
+
+            fclose($handle);
+        } else {
+            throw new Exception("Erreur lors de l'ouverture du fichier.");
+        }
+    }
+
+    public function importerBoxType($ligne, $utilisateurId) {
         try {
             $stmt = $this->pdo->prepare('
-            INSERT INTO locations 
-            (reference, centre, box_reference, nom_societe, prenom, telephone, mail, nb_produits, total_ttc, date_location, utilisateur_id)
+            INSERT INTO box_types 
+            (denomination, prix_ttc, utilisateur_id)
             VALUES 
-            (:reference, :centre, :box_reference, :nom_societe, :prenom, :telephone, :mail, :nb_produits, :total_ttc, :date_location, :utilisateur_id)
+            (:denomination, :prix_ttc, :utilisateur_id)
         ');
 
-            $nb_produits = is_numeric($ligne[6]) ? (int)$ligne[6] : null;
-            $prix_ttc = preg_replace('/[^0-9.,]/', '', explode(' ', $ligne[10])[0]);
+            $denomination = $this->normalizeString($ligne[1]);
 
-            $date_location = \DateTime::createFromFormat('d/m/Y', $ligne[11]);
-            $date_location = $date_location ? $date_location->format('Y-m-d') : null;
+            if (empty($denomination)) {
+                throw new Exception("Dénomination manquante.");
+            }
 
-            $box_reference = $ligne[8];
+            $prixTtc = floatval(str_replace(',', '.', $ligne[3]));
 
             $stmt->execute([
-                'reference' => $ligne[1],
-                'centre' => $ligne[7],
-                'box_reference' => $box_reference,
-                'nom_societe' => $ligne[3],
-                'prenom' => $ligne[4],
-                'telephone' => $ligne[5],
-                'mail' => $ligne[6],
-                'nb_produits' => $nb_produits,
-                'total_ttc' => (float)str_replace(',', '.', $prix_ttc),
-                'date_location' => $date_location,
-                'utilisateur_id' => $utilisateur_id
+                'denomination' => $denomination,
+                'prix_ttc' => $prixTtc,
+                'utilisateur_id' => $utilisateurId
             ]);
-
-            echo "Ligne insérée avec succès.<br>";
         } catch (\PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
         }
     }
 
-    public function getLocationsByUser($utilisateur_id) {
-        $stmt = $this->pdo->prepare('SELECT * FROM locations WHERE utilisateur_id = :utilisateur_id');
-        $stmt->execute(['utilisateur_id' => $utilisateur_id]);
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    public function importerContrats($csvFile, $utilisateurId) {
+        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
+        if ($fileExt !== 'csv') {
+            throw new Exception("Le fichier doit être au format CSV.");
+        }
+
+        $fileTmpName = $csvFile['tmp_name'];
+
+        if (($handle = fopen($fileTmpName, 'r')) !== false) {
+            stream_filter_prepend($handle, 'convert.iconv.ISO-8859-1/UTF-8');
+            fgetcsv($handle);
+
+            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+                if (count($data) >= 12) {
+                    $this->importerLocation($utilisateurId, $data);
+                }
+            }
+
+            fclose($handle);
+        } else {
+            throw new Exception("Erreur lors de l'ouverture du fichier.");
+        }
+    }
+
+    public function importerLocation($utilisateurId, $ligne) {
+        try {
+            $dateDebut = !empty($ligne[11]) && \DateTime::createFromFormat('d/m/Y', $ligne[11]) ? \DateTime::createFromFormat('d/m/Y', $ligne[11]) : null;
+            $dateFin = !empty($ligne[12]) && \DateTime::createFromFormat('d/m/Y', $ligne[12]) ? \DateTime::createFromFormat('d/m/Y', $ligne[12]) : null;
+
+            if (!$dateDebut) {
+                throw new Exception("Date invalide pour 'date_debut' : " . $ligne[11]);
+            }
+
+            $boxTypeId = $this->getBoxTypeIdByReference($ligne[9], $utilisateurId);
+            if (!$boxTypeId) {
+                throw new Exception("Type de box non trouvé pour la référence : " . $ligne[9]);
+            }
+
+            $clientNom = mb_convert_encoding(trim($ligne[2] . ' ' . $ligne[3]), 'UTF-8', 'ISO-8859-1');
+
+            $stmt = $this->pdo->prepare('
+            INSERT INTO locations 
+            (reference_contrat, utilisateur_id, box_type_id, client_nom, date_debut, date_fin)
+            VALUES 
+            (:reference_contrat, :utilisateur_id, :box_type_id, :client_nom, :date_debut, :date_fin)
+        ');
+
+            $stmt->execute([
+                'reference_contrat' => $ligne[1],
+                'utilisateur_id' => $utilisateurId,
+                'box_type_id' => $boxTypeId,
+                'client_nom' => $clientNom, // Encodé en UTF-8
+                'date_debut' => $dateDebut->format('Y-m-d'),
+                'date_fin' => $dateFin ? $dateFin->format('Y-m-d') : null
+            ]);
+        } catch (\PDOException $e) {
+            throw new Exception("Erreur PDO : " . $e->getMessage());
+        } catch (Exception $e) {
+            throw new Exception("Erreur : " . $e->getMessage());
+        }
+    }
+
+
+    public function getBoxTypeIdByReference($denomination, $utilisateurId) {
+        $denomination = $this->normalizeString($denomination);
+
+        $stmt = $this->pdo->prepare('SELECT id FROM box_types WHERE TRIM(denomination) = TRIM(:denomination) AND utilisateur_id = :utilisateur_id');
+        $stmt->execute(['denomination' => $denomination, 'utilisateur_id' => $utilisateurId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? $result['id'] : null;
+    }
+
+    private function normalizeString($string) {
+        $string = trim($string);
+        if (!mb_detect_encoding($string, 'UTF-8', true)) {
+            $string = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $string);
+        }
+        $string = str_replace(["\xc2\xb0", "Â°"], "°", $string);
+        $string = preg_replace('/\s+/', ' ', $string);
+        return $string;
     }
 }
-?>
