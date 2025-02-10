@@ -8,207 +8,133 @@ $csvModele = new CsvModele();
 
 $utilisateurId = $_SESSION['user']['id'];
 
-// Récupérer les données pour les statistiques
-$boxTypes = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
+// Récupérer les données des box et locations
+$boxTypes = $pdo->prepare('SELECT id, denomination, prix_ttc, volume, quantite, actif FROM box_types WHERE utilisateur_id = ?');
 $boxTypes->execute([$utilisateurId]);
 $boxTypes = $boxTypes->fetchAll(PDO::FETCH_ASSOC);
 
 $boxTypesById = [];
-foreach ($boxTypes as $boxType) {
-    $boxTypesById[$boxType['id']] = $boxType;
+foreach ($boxTypes as $box) {
+    $boxTypesById[$box['id']] = $box;
 }
 
 $locations = $pdo->prepare('SELECT * FROM locations WHERE utilisateur_id = ?');
 $locations->execute([$utilisateurId]);
 $locations = $locations->fetchAll(PDO::FETCH_ASSOC);
 
-// Calculer les statistiques
-$revenuTotal = 0;
-$capaciteTotale = 0;
-$capaciteUtilisee = 0;
-$revenuParBox = [];
-$occupationParBox = [];
-$revenuMensuel = [];
-$locationsParMois = [];
+// Initialisation des statistiques
+$stats = [
+    'revenu_max' => 0,
+    'revenu_total' => 0,
+    'capacite_totale' => 0,
+    'capacite_utilisee' => 0,
+    'revenu_par_box' => [],
+    'occupation_par_box' => [],
+    'revenu_mensuel' => [],
+    'capacite_mensuelle' => []
+];
 
-foreach ($boxTypes as $boxType) {
-    $boxTypeId = $boxType['id'];
-    $locationsBox = array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId);
-
-    $revenuParBox[$boxTypeId] = count($locationsBox) * $boxType['prix_ttc'];
-    $occupationParBox[$boxTypeId] = count($locationsBox);
-
-    $revenuTotal += $revenuParBox[$boxTypeId];
-    $capaciteTotale += $boxType['prix_ttc'];
-    $capaciteUtilisee += $revenuParBox[$boxTypeId];
+// Calcul des statistiques globales
+foreach ($boxTypes as $box) {
+    if ($box['actif']) {
+        $stats['revenu_max'] += $box['prix_ttc'] * $box['quantite'];
+        $stats['capacite_totale'] += $box['volume'] * $box['quantite'];
+    }
+    $stats['revenu_par_box'][$box['id']] = 0;
+    $stats['occupation_par_box'][$box['id']] = 0;
 }
 
-// Calculer le revenu mensuel
+$currentMonth = date('Y-m');
+$stats['revenu_mensuel'][$currentMonth] = 0;
+$stats['capacite_mensuelle'][$currentMonth] = 0;
+
+// Calcul détaillé des statistiques
 foreach ($locations as $location) {
-    $mois = date('Y-m', strtotime($location['date_debut']));
     $boxTypeId = $location['box_type_id'];
+    if (!isset($boxTypesById[$boxTypeId])) continue;
 
-    $prixTTC = isset($boxTypesById[$boxTypeId]) ? $boxTypesById[$boxTypeId]['prix_ttc'] : 0;
+    $prixTTC = $boxTypesById[$boxTypeId]['prix_ttc'];
+    $volume = $boxTypesById[$boxTypeId]['volume'];
 
-    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $prixTTC;
-    $locationsParMois[$mois] = ($locationsParMois[$mois] ?? 0) + 1;
+    $start = new DateTime($location['date_debut']);
+    $end = $location['date_fin'] ? new DateTime($location['date_fin']) : null;
+    $current = clone $start;
+    $now = new DateTime();
+
+    while ($current <= ($end ?? $now)) {
+        $mois = $current->format('Y-m');
+
+        if (!isset($stats['revenu_mensuel'][$mois])) {
+            $stats['revenu_mensuel'][$mois] = 0;
+            $stats['capacite_mensuelle'][$mois] = 0;
+        }
+        $stats['revenu_mensuel'][$mois] += $prixTTC;
+        $stats['capacite_mensuelle'][$mois] += $volume;
+
+        $current->modify('+1 month');
+    }
+
+    $stats['revenu_total'] += $prixTTC;
+    $stats['revenu_par_box'][$boxTypeId] += $prixTTC;
+    $stats['occupation_par_box'][$boxTypeId]++;
+
+    if ((!$end || $end >= new DateTime()) && $start <= new DateTime()) {
+        $stats['capacite_utilisee'] += $volume;
+    }
 }
 
-$tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capaciteTotale) * 100, 2) : 0;
+ksort($stats['revenu_mensuel']);
+ksort($stats['capacite_mensuelle']);
+
+$tauxOccupationGlobal = ($stats['capacite_totale'] > 0) ? round(($stats['capacite_utilisee'] / $stats['capacite_totale']) * 100, 2) : 0;
 ?>
 
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="stats-page">
-<h1>Statistiques de vos locations</h1>
+<body>
+<h1>Statistiques</h1>
 
-<!-- Statistiques globales -->
 <div class="stats-globales">
-    <div class="stat-card">
-        <h3>Revenu total</h3>
-        <div class="value"><?= $revenuTotal ?> €</div>
-    </div>
-
-    <div class="stat-card">
-        <h3>Taux d'occupation</h3>
-        <div class="value"><?= $tauxOccupationGlobal ?> %</div>
-    </div>
-
-    <div class="stat-card">
-        <h3>Capacité utilisée</h3>
-        <div class="value"><?= $capaciteUtilisee ?> m³</div>
-    </div>
-
-    <div class="stat-card">
-        <h3>Nombre total de locations</h3>
-        <div class="value"><?= count($locations) ?></div>
-    </div>
+    <div class="stat-card"><h3>Revenu max théorique</h3><div class="value"><?= $stats['revenu_max'] ?> €/mois</div></div>
+    <div class="stat-card"><h3>Revenu actuel</h3><div class="value"><?= $stats['revenu_mensuel'][date('Y-m')] ?? 0 ?> €/mois</div></div>
+    <div class="stat-card"><h3>Capacité totale</h3><div class="value"><?= $stats['capacite_totale'] ?> m³</div></div>
+    <div class="stat-card"><h3>Capacité utilisée</h3><div class="value"><?= $stats['capacite_utilisee'] ?> m³</div></div>
 </div>
 
-<!-- Graphiques -->
 <div class="charts-grid">
-    <div class="chart-card">
-        <h3>Revenu par type de box</h3>
-        <canvas id="revenuChart"></canvas>
-    </div>
-
-    <div class="chart-card">
-        <h3>Occupation par type de box</h3>
-        <canvas id="occupationChart"></canvas>
-    </div>
-
-    <div class="chart-card">
-        <h3>Revenu mensuel</h3>
-        <canvas id="revenuMensuelChart"></canvas>
-    </div>
-
-    <div class="chart-card">
-        <h3>Locations par mois</h3>
-        <canvas id="locationsMensuellesChart"></canvas>
-    </div>
+    <canvas id="revenuMensuelChart"></canvas>
+    <canvas id="capaciteChart"></canvas>
 </div>
 
 <script>
-    // Données pour les graphiques
-    const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination')) ?>;
-    const revenuData = <?= json_encode(array_values($revenuParBox)) ?>;
-    const occupationData = <?= json_encode(array_values($occupationParBox)) ?>;
-
-    const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>;
-    const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>;
-    const locationsMensuellesData = <?= json_encode(array_values($locationsParMois)) ?>;
-
-    // Graphique 1 : Revenu par type de box
-    new Chart(document.getElementById('revenuChart'), {
-        type: 'bar',
-        data: {
-            labels: boxLabels,
-            datasets: [{
-                label: 'Revenu (€)',
-                data: revenuData,
-                backgroundColor: '#0072bc',
-                borderColor: '#005f9e',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(2) + ' €' } }
-            },
-            scales: { y: { beginAtZero: true } }
-        }
-    });
-
-    // Graphique 2 : Occupation par type de box
-    new Chart(document.getElementById('occupationChart'), {
-        type: 'bar',
-        data: {
-            labels: boxLabels,
-            datasets: [{
-                label: 'Occupation',
-                data: occupationData,
-                backgroundColor: '#ff6600',
-                borderColor: '#e65c00',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' locations' } }
-            },
-            scales: { y: { beginAtZero: true } }
-        }
-    });
-
-    // Graphique 3 : Revenu mensuel
     new Chart(document.getElementById('revenuMensuelChart'), {
         type: 'line',
         data: {
-            labels: moisLabels,
+            labels: <?= json_encode(array_keys($stats['revenu_mensuel'])) ?>,
             datasets: [{
-                label: 'Revenu mensuel (€)',
-                data: revenuMensuelData,
+                label: 'Revenu mensuel (TTC)',
+                data: <?= json_encode(array_values($stats['revenu_mensuel'])) ?>,
                 borderColor: '#0072bc',
                 fill: false
             }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(2) + ' €' } }
-            },
-            scales: { y: { beginAtZero: true } }
         }
     });
 
-    // Graphique 4 : Locations par mois
-    new Chart(document.getElementById('locationsMensuellesChart'), {
+    new Chart(document.getElementById('capaciteChart'), {
         type: 'line',
         data: {
-            labels: moisLabels,
+            labels: <?= json_encode(array_keys($stats['capacite_mensuelle'])) ?>,
             datasets: [{
-                label: 'Locations par mois',
-                data: locationsMensuellesData,
-                borderColor: '#ff6600',
+                label: 'Capacité utilisée (m³)',
+                data: <?= json_encode(array_values($stats['capacite_mensuelle'])) ?>,
+                borderColor: '#4CAF50',
                 fill: false
             }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' locations' } }
-            },
-            scales: { y: { beginAtZero: true } }
         }
     });
 </script>
