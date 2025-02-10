@@ -72,6 +72,7 @@ class CsvModele {
         $fileTmpName = $csvFile['tmp_name'];
 
         if (($handle = fopen($fileTmpName, 'r')) !== false) {
+            stream_filter_prepend($handle, 'convert.iconv.ISO-8859-1/UTF-8');
             fgetcsv($handle);
 
             while (($data = fgetcsv($handle, 1000, ';')) !== false) {
@@ -100,6 +101,8 @@ class CsvModele {
                 throw new Exception("Type de box non trouvé pour la référence : " . $ligne[9]);
             }
 
+            $clientNom = mb_convert_encoding(trim($ligne[2] . ' ' . $ligne[3]), 'UTF-8', 'ISO-8859-1');
+
             $stmt = $this->pdo->prepare('
             INSERT INTO locations 
             (reference_contrat, utilisateur_id, box_type_id, client_nom, date_debut, date_fin)
@@ -111,7 +114,7 @@ class CsvModele {
                 'reference_contrat' => $ligne[1],
                 'utilisateur_id' => $utilisateurId,
                 'box_type_id' => $boxTypeId,
-                'client_nom' => $ligne[2] . ' ' . $ligne[3],
+                'client_nom' => $clientNom, // Encodé en UTF-8
                 'date_debut' => $dateDebut->format('Y-m-d'),
                 'date_fin' => $dateFin ? $dateFin->format('Y-m-d') : null
             ]);
@@ -121,6 +124,7 @@ class CsvModele {
             throw new Exception("Erreur : " . $e->getMessage());
         }
     }
+
 
     public function getBoxTypeIdByReference($denomination, $utilisateurId) {
         $denomination = $this->normalizeString($denomination);
