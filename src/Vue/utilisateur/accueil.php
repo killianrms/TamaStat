@@ -20,6 +20,10 @@ $stmt = $pdo->prepare('SELECT COUNT(*) FROM locations WHERE utilisateur_id = ?')
 $stmt->execute([$utilisateurId]);
 $hasContrats = $stmt->fetchColumn() > 0;
 
+if ($hasBoxes && $hasBoxesConfig && $hasContrats) {
+    header("Location: routeur.php?route=stats");
+    exit;
+}
 ?>
 
 <!DOCTYPE html>
@@ -67,8 +71,7 @@ $hasContrats = $stmt->fetchColumn() > 0;
             <button type="submit">Importer</button>
         </form>
     </div>
-<?php else: ?>
-    <a href="routeur.php?route=stats" class="button">Voir les statistiques</a>
 <?php endif; ?>
+
 </body>
 </html>

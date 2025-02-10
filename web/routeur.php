@@ -53,11 +53,23 @@ try {
 
         case 'stats':
             verifierConnexion();
-            if (isset($_GET['reimport'])) {
-                $pdo->prepare('DELETE FROM locations WHERE utilisateur_id = ?')->execute([$_SESSION['user']['id']]);
-                header('Location: routeur.php?route=stats');
-                exit;
+            $dateDebut = $_GET['dateDebut'] ?? null;
+            $dateFin = $_GET['dateFin'] ?? null;
+            $boxType = $_GET['boxType'] ?? null;
+
+            $filtres = [];
+            if ($dateDebut) {
+                $filtres[] = "date_debut >= '$dateDebut'";
             }
+            if ($dateFin) {
+                $filtres[] = "date_debut <= '$dateFin'";
+            }
+            if ($boxType) {
+                $filtres[] = "box_type_id = $boxType";
+            }
+
+            $filtresSQL = $filtres ? ' AND ' . implode(' AND ', $filtres) : '';
+
             require_once __DIR__ . '/../src/Vue/utilisateur/stats.php';
             break;
 

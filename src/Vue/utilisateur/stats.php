@@ -1,106 +1,190 @@
 <?php
+session_start();
+require_once __DIR__ . '/../../Configuration/ConnexionBD.php';
+require_once __DIR__ . '/../../Modele/CsvModele.php';
 
-use App\Configuration\ConnexionBD;
-
-$userId = $_SESSION['user']['id'];
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
+$csvModele = new CsvModele();
 
-$dateDebut = $_GET['date_debut'] ?? date('Y-m-01');
-$dateFin = $_GET['date_fin'] ?? date('Y-m-t');
-$typeBox = $_GET['type_box'] ?? '';
+$utilisateurId = $_SESSION['user']['id'];
 
-$query = "SELECT DATE_FORMAT(l.date_location, '%Y-%m') AS mois, SUM(l.prix) AS revenu_actuel
-          FROM locations l 
-          JOIN boxes b ON l.box_id = b.id
-          WHERE l.utilisateur_id = :userId 
-          AND l.date_location BETWEEN :dateDebut AND :dateFin" . ($typeBox ? " AND b.type = :typeBox" : "") . "
-          GROUP BY mois
-          ORDER BY mois ASC";
+// Récupérer les données pour les statistiques
+$boxTypes = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
+$boxTypes->execute([$utilisateurId]);
+$boxTypes = $boxTypes->fetchAll(PDO::FETCH_ASSOC);
 
-$stmt = $pdo->prepare($query);
-$stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
-$stmt->bindParam(':dateDebut', $dateDebut);
-$stmt->bindParam(':dateFin', $dateFin);
-if ($typeBox) {
-    $stmt->bindParam(':typeBox', $typeBox);
+$locations = $pdo->prepare('SELECT * FROM locations WHERE utilisateur_id = ?');
+$locations->execute([$utilisateurId]);
+$locations = $locations->fetchAll(PDO::FETCH_ASSOC);
+
+// Calculer les statistiques
+$revenuTotal = 0;
+$capaciteTotale = 0;
+$capaciteUtilisee = 0;
+$revenuParBox = [];
+$occupationParBox = [];
+
+foreach ($boxTypes as $boxType) {
+    $boxTypeId = $boxType['id'];
+    $locationsBox = array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId);
+
+    $revenuParBox[$boxTypeId] = count($locationsBox) * $boxType['prix_ttc'];
+    $occupationParBox[$boxTypeId] = count($locationsBox);
+
+    $revenuTotal += $revenuParBox[$boxTypeId];
+    $capaciteTotale += $boxType['prix_ttc'];
+    $capaciteUtilisee += $revenuParBox[$boxTypeId];
 }
-$stmt->execute();
-$revenus = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-$queryMax = "SELECT SUM(b.prix_max) AS revenu_max FROM boxes b WHERE b.utilisateur_id = :userId";
-$stmtMax = $pdo->prepare($queryMax);
-$stmtMax->bindParam(':userId', $userId, PDO::PARAM_INT);
-$stmtMax->execute();
-$revenuMax = $stmtMax->fetch(PDO::FETCH_ASSOC)['revenu_max'];
-
-$queryEspace = "SELECT SUM(b.surface) AS total_surface, 
-                        SUM(CASE WHEN l.id IS NOT NULL THEN b.surface ELSE 0 END) AS espace_occupe
-                FROM boxes b 
-                LEFT JOIN locations l ON b.id = l.box_id AND l.utilisateur_id = :userId
-                WHERE b.utilisateur_id = :userId";
-$stmtEspace = $pdo->prepare($queryEspace);
-$stmtEspace->bindParam(':userId', $userId, PDO::PARAM_INT);
-$stmtEspace->execute();
-$espace = $stmtEspace->fetch(PDO::FETCH_ASSOC);
-$espaceTotal = $espace['total_surface'];
-$espaceOccupe = $espace['espace_occupe'];
-$espaceDisponible = $espaceTotal - $espaceOccupe;
+$tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capaciteTotale) * 100, 2) : 0;
 ?>
 
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
-<h1>Statistiques</h1>
-<form method="GET">
-    <label>Date début : <input type="date" name="date_debut" value="<?= $dateDebut ?>"></label>
-    <label>Date fin : <input type="date" name="date_fin" value="<?= $dateFin ?>"></label>
-    <label>Type de box :
-        <select name="type_box">
-            <option value="">Tous</option>
-            <option value="small">Petit</option>
-            <option value="medium">Moyen</option>
-            <option value="large">Grand</option>
-        </select>
-    </label>
-    <button type="submit">Filtrer</button>
-</form>
+<body class="stats-page">
+<h1>Statistiques de vos locations</h1>
 
-<h2>Revenus</h2>
-<canvas id="revenusChart"></canvas>
+<!-- Filtres -->
+<div class="filters">
+    <label for="dateDebut">Date de début :</label>
+    <input type="date" id="dateDebut" name="dateDebut">
 
-<h2>Espace disponible vs occupé</h2>
-<canvas id="espaceChart"></canvas>
+    <label for="dateFin">Date de fin :</label>
+    <input type="date" id="dateFin" name="dateFin">
+
+    <label for="boxType">Type de box :</label>
+    <select id="boxType" name="boxType">
+        <option value="">Tous</option>
+        <?php foreach ($boxTypes as $boxType): ?>
+            <option value="<?= $boxType['id'] ?>"><?= $boxType['denomination'] ?></option>
+        <?php endforeach; ?>
+    </select>
+
+    <button onclick="appliquerFiltres()">Appliquer les filtres</button>
+</div>
+
+<!-- Statistiques globales -->
+<div class="stats-globales">
+    <div class="stat-card">
+        <h3>Revenu total</h3>
+        <div class="value"><?= $revenuTotal ?> €</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Taux d'occupation</h3>
+        <div class="value"><?= $tauxOccupationGlobal ?> %</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Capacité utilisée</h3>
+        <div class="value"><?= $capaciteUtilisee ?> m³</div>
+    </div>
+</div>
+
+<!-- Graphiques -->
+<div class="charts-grid">
+    <div class="chart-card">
+        <h3>Revenu par type de box</h3>
+        <canvas id="revenuChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <h3>Occupation par type de box</h3>
+        <canvas id="occupationChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <h3>Répartition des locations</h3>
+        <canvas id="repartitionChart"></canvas>
+    </div>
+</div>
 
 <script>
-    const revenusData = {
-        labels: [<?= implode(',', array_map(fn($r) => "'" . $r['mois'] . "'", $revenus)) ?>],
-        datasets: [{
-            label: 'Revenu Actuel',
-            data: [<?= implode(',', array_map(fn($r) => $r['revenu_actuel'], $revenus)) ?>],
-            backgroundColor: 'rgba(54, 162, 235, 0.5)',
-            borderColor: 'rgba(54, 162, 235, 1)',
-            borderWidth: 1
-        }]
-    };
+    // Données pour les graphiques
+    const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination')) ?>;
+    const revenuData = <?= json_encode(array_values($revenuParBox)) ?>;
+    const occupationData = <?= json_encode(array_values($occupationParBox)) ?>;
 
-    const espaceData = {
-        labels: ['Espace Occupé', 'Espace Disponible'],
-        datasets: [{
-            label: 'Espace en m²',
-            data: [<?= $espaceOccupe ?>, <?= $espaceDisponible ?>],
-            backgroundColor: ['rgba(255, 99, 132, 0.5)', 'rgba(75, 192, 192, 0.5)'],
-            borderColor: ['rgba(255, 99, 132, 1)', 'rgba(75, 192, 192, 1)'],
-            borderWidth: 1
-        }]
-    };
+    // Graphique 1 : Revenu par type de box
+    new Chart(document.getElementById('revenuChart'), {
+        type: 'bar',
+        data: {
+            labels: boxLabels,
+            datasets: [{
+                label: 'Revenu (€)',
+                data: revenuData,
+                backgroundColor: '#0072bc',
+                borderColor: '#005f9e',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(2) + ' €' } }
+            },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
 
-    new Chart(document.getElementById('revenusChart'), { type: 'line', data: revenusData });
-    new Chart(document.getElementById('espaceChart'), { type: 'doughnut', data: espaceData });
+    // Graphique 2 : Occupation par type de box
+    new Chart(document.getElementById('occupationChart'), {
+        type: 'bar',
+        data: {
+            labels: boxLabels,
+            datasets: [{
+                label: 'Occupation',
+                data: occupationData,
+                backgroundColor: '#ff6600',
+                borderColor: '#e65c00',
+                borderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' locations' } }
+            },
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+
+    // Graphique 3 : Répartition des locations
+    new Chart(document.getElementById('repartitionChart'), {
+        type: 'pie',
+        data: {
+            labels: boxLabels,
+            datasets: [{
+                data: occupationData,
+                backgroundColor: ['#0072bc', '#ff6600', '#2c3e50', '#4CAF50', '#9C27B0']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' locations' } }
+            }
+        }
+    });
+
+    // Fonction pour appliquer les filtres
+    function appliquerFiltres() {
+        const dateDebut = document.getElementById('dateDebut').value;
+        const dateFin = document.getElementById('dateFin').value;
+        const boxType = document.getElementById('boxType').value;
+
+        // Rediriger avec les filtres
+        window.location.href = `routeur.php?route=stats&dateDebut=${dateDebut}&dateFin=${dateFin}&boxType=${boxType}`;
+    }
 </script>
 </body>
 </html>
