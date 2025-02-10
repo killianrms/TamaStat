@@ -1,7 +1,6 @@
 <?php
-session_start();
-require_once __DIR__ . '/../../Configuration/ConnexionBD.php';
-require_once __DIR__ . '/../../Modele/CsvModele.php';
+USE App\Configuration\ConnexionBD;
+USE App\Modele\CsvModele;
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
