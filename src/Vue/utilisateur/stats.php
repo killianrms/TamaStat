@@ -13,6 +13,11 @@ $boxTypes = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
 $boxTypes->execute([$utilisateurId]);
 $boxTypes = $boxTypes->fetchAll(PDO::FETCH_ASSOC);
 
+$boxTypesById = [];
+foreach ($boxTypes as $boxType) {
+    $boxTypesById[$boxType['id']] = $boxType;
+}
+
 $locations = $pdo->prepare('SELECT * FROM locations WHERE utilisateur_id = ?');
 $locations->execute([$utilisateurId]);
 $locations = $locations->fetchAll(PDO::FETCH_ASSOC);
@@ -41,7 +46,11 @@ foreach ($boxTypes as $boxType) {
 // Calculer le revenu mensuel
 foreach ($locations as $location) {
     $mois = date('Y-m', strtotime($location['date_debut']));
-    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $boxTypes[$location['box_type_id'] - 1]['prix_ttc'];
+    $boxTypeId = $location['box_type_id'];
+
+    $prixTTC = isset($boxTypesById[$boxTypeId]) ? $boxTypesById[$boxTypeId]['prix_ttc'] : 0;
+
+    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $prixTTC;
     $locationsParMois[$mois] = ($locationsParMois[$mois] ?? 0) + 1;
 }
 
