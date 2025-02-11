@@ -38,17 +38,17 @@ class CsvModele {
 
     public function importerFacture($utilisateurId, $ligne) {
         try {
-            $dateFacture = DateTime::createFromFormat('d/m/Y', $ligne[9]);
+            $dateFacture = \DateTime::createFromFormat('d/m/Y', $ligne[9]);
             if (!$dateFacture) {
                 throw new Exception("Date de facture invalide : " . $ligne[9]);
             }
 
             $stmt = $this->pdo->prepare('
-            INSERT INTO factures 
-            (reference_contrat, utilisateur_id, titre, parc, client_nom, client_prenom, total_ht, tva, total_ttc, date_facture, adresse, code_postal, ville)
-            VALUES 
-            (:reference_contrat, :utilisateur_id, :titre, :parc, :client_nom, :client_prenom, :total_ht, :tva, :total_ttc, :date_facture, :adresse, :code_postal, :ville)
-        ');
+                INSERT INTO factures 
+                (reference_contrat, utilisateur_id, titre, parc, client_nom, client_prenom, total_ht, tva, total_ttc, date_facture, adresse, code_postal, ville)
+                VALUES 
+                (:reference_contrat, :utilisateur_id, :titre, :parc, :client_nom, :client_prenom, :total_ht, :tva, :total_ttc, :date_facture, :adresse, :code_postal, :ville)
+            ');
 
             $stmt->execute([
                 ':reference_contrat' => $ligne[0],
