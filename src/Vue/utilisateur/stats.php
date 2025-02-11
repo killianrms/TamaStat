@@ -22,6 +22,12 @@ $locations = $pdo->prepare('SELECT * FROM locations WHERE utilisateur_id = ?');
 $locations->execute([$utilisateurId]);
 $locations = $locations->fetchAll(PDO::FETCH_ASSOC);
 
+$factures = $pdo->prepare('SELECT * FROM factures WHERE utilisateur_id = ?');
+$factures->execute([$utilisateurId]);
+$factures = $factures->fetchAll(PDO::FETCH_ASSOC);
+
+$revenuTotalFactures = array_sum(array_column($factures, 'total_ttc'));
+
 // Calculer les statistiques
 $revenuTotal = 0;
 $capaciteTotale = 0;

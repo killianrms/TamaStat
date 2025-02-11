@@ -78,6 +78,20 @@ try {
             require_once __DIR__ . '/../src/Vue/utilisateur/accueil.php';
             break;
 
+        case 'importer-factures':
+            verifierConnexion();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_factures'])) {
+                $controleurCsv = new ControleurCsv();
+                try {
+                    $controleurCsv->importerFactures($_FILES['csv_factures'], $_SESSION['user']['id']);
+                    header('Location: routeur.php?route=accueil');
+                    exit;
+                } catch (Exception $e) {
+                    echo "<div class='error-message'>Erreur : " . $e->getMessage() . "</div>";
+                }
+            }
+            break;
+
         case 'ajouterUtilisateur':
             verifierConnexion();
             if ($_SESSION['user']['is_admin'] !== 1) {

@@ -13,6 +13,63 @@ class CsvModele {
         $this->pdo = $connexion->getPdo();
     }
 
+    public function importerFactures($csvFile, $utilisateurId) {
+        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
+        if ($fileExt !== 'csv') {
+            throw new Exception("Le fichier doit être au format CSV.");
+        }
+
+        $fileTmpName = $csvFile['tmp_name'];
+
+        if (($handle = fopen($fileTmpName, 'r')) !== false) {
+            fgetcsv($handle);
+
+            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+                if (count($data) >= 13) {
+                    $this->importerFacture($utilisateurId, $data);
+                }
+            }
+
+            fclose($handle);
+        } else {
+            throw new Exception("Erreur lors de l'ouverture du fichier.");
+        }
+    }
+
+    public function importerFacture($utilisateurId, $ligne) {
+        try {
+            $dateFacture = DateTime::createFromFormat('d/m/Y', $ligne[9]);
+            if (!$dateFacture) {
+                throw new Exception("Date de facture invalide : " . $ligne[9]);
+            }
+
+            $stmt = $this->pdo->prepare('
+            INSERT INTO factures 
+            (reference_contrat, utilisateur_id, titre, parc, client_nom, client_prenom, total_ht, tva, total_ttc, date_facture, adresse, code_postal, ville)
+            VALUES 
+            (:reference_contrat, :utilisateur_id, :titre, :parc, :client_nom, :client_prenom, :total_ht, :tva, :total_ttc, :date_facture, :adresse, :code_postal, :ville)
+        ');
+
+            $stmt->execute([
+                ':reference_contrat' => $ligne[0],
+                ':utilisateur_id' => $utilisateurId,
+                ':titre' => $ligne[1],
+                ':parc' => $ligne[2],
+                ':client_nom' => $ligne[3],
+                ':client_prenom' => $ligne[4],
+                ':total_ht' => str_replace(',', '.', $ligne[5]),
+                ':tva' => str_replace(',', '.', $ligne[6]),
+                ':total_ttc' => str_replace(',', '.', $ligne[7]),
+                ':date_facture' => $dateFacture->format('Y-m-d'),
+                ':adresse' => $ligne[10],
+                ':code_postal' => $ligne[11],
+                ':ville' => $ligne[12]
+            ]);
+        } catch (PDOException $e) {
+            throw new Exception("Erreur PDO : " . $e->getMessage());
+        }
+    }
+
     public function importerBoxTypes($csvFile, $utilisateurId) {
         $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
         if ($fileExt !== 'csv') {

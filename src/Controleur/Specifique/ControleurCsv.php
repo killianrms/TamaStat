@@ -5,6 +5,31 @@ use App\Modele\CsvModele;
 use Exception;
 
 class ControleurCsv {
+
+    public function importerFactures($csvFile, $utilisateurId) {
+        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
+        if ($fileExt !== 'csv') {
+            throw new Exception("Le fichier doit être au format CSV.");
+        }
+
+        $fileTmpName = $csvFile['tmp_name'];
+        $csvModele = new CsvModele();
+
+        if (($handle = fopen($fileTmpName, 'r')) !== false) {
+            fgetcsv($handle);
+
+            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+                if (count($data) >= 13) {
+                    $csvModele->importerFacture($utilisateurId, $data);
+                }
+            }
+
+            fclose($handle);
+        } else {
+            throw new Exception("Erreur lors de l'ouverture du fichier.");
+        }
+    }
+
     public function importerBoxTypes($csvFile) {
         $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
         if ($fileExt !== 'csv') {
