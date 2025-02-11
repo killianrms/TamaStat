@@ -5,6 +5,11 @@ use App\Modele\CsvModele;
 use Exception;
 
 class ControleurCsv {
+    private $csvModele;
+
+    public function __construct() {
+        $this->csvModele = new CsvModele();
+    }
 
     public function importerFactures($csvFile, $utilisateurId) {
         $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
