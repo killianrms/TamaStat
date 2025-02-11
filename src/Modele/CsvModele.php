@@ -36,24 +36,36 @@ class CsvModele {
         }
     }
 
-    public function importerFacture($utilisateurId, $ligne) {
+    private function importerFacture($utilisateurId, $ligne) {
         try {
+            $titre = $ligne[1];
+            preg_match('/"([A-Z0-9]+)"/', $titre, $matches);
+            $referenceContrat = $matches[1] ?? null;
+
+            if (!$referenceContrat) {
+                throw new Exception("Numéro de contrat introuvable dans le titre : " . $titre);
+            }
+
+            if (!$this->contratExiste($referenceContrat, $utilisateurId)) {
+                throw new Exception("Le contrat $referenceContrat n'existe pas dans la table des locations.");
+            }
+
             $dateFacture = \DateTime::createFromFormat('d/m/Y', $ligne[9]);
             if (!$dateFacture) {
                 throw new Exception("Date de facture invalide : " . $ligne[9]);
             }
 
             $stmt = $this->pdo->prepare('
-                INSERT INTO factures 
-                (reference_contrat, utilisateur_id, titre, parc, client_nom, client_prenom, total_ht, tva, total_ttc, date_facture, adresse, code_postal, ville)
-                VALUES 
-                (:reference_contrat, :utilisateur_id, :titre, :parc, :client_nom, :client_prenom, :total_ht, :tva, :total_ttc, :date_facture, :adresse, :code_postal, :ville)
-            ');
+            INSERT INTO factures 
+            (reference_contrat, utilisateur_id, titre, parc, client_nom, client_prenom, total_ht, tva, total_ttc, date_facture, adresse, code_postal, ville)
+            VALUES 
+            (:reference_contrat, :utilisateur_id, :titre, :parc, :client_nom, :client_prenom, :total_ht, :tva, :total_ttc, :date_facture, :adresse, :code_postal, :ville)
+        ');
 
             $stmt->execute([
-                ':reference_contrat' => $ligne[0],
+                ':reference_contrat' => $referenceContrat,
                 ':utilisateur_id' => $utilisateurId,
-                ':titre' => $ligne[1],
+                ':titre' => $titre,
                 ':parc' => $ligne[2],
                 ':client_nom' => $ligne[3],
                 ':client_prenom' => $ligne[4],
@@ -68,6 +80,19 @@ class CsvModele {
         } catch (PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
         }
+    }
+
+    public function contratExiste($referenceContrat, $utilisateurId) {
+        $stmt = $this->pdo->prepare('
+        SELECT COUNT(*) 
+        FROM locations 
+        WHERE reference_contrat = :reference_contrat AND utilisateur_id = :utilisateur_id
+    ');
+        $stmt->execute([
+            ':reference_contrat' => $referenceContrat,
+            ':utilisateur_id' => $utilisateurId
+        ]);
+        return $stmt->fetchColumn() > 0;
     }
 
     public function importerBoxTypes($csvFile, $utilisateurId) {
