@@ -36,7 +36,7 @@ class CsvModele {
         }
     }
 
-    private function importerFacture($utilisateurId, $ligne) {
+    public function importerFacture($utilisateurId, $ligne) {
         try {
             $titre = $ligne[1];
             preg_match('/"([A-Z0-9]+)"/', $titre, $matches);
