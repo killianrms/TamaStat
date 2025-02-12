@@ -13,36 +13,11 @@ class CsvModele {
         $this->pdo = $connexion->getPdo();
     }
 
-    public function importerFactures($csvFile, $utilisateurId) {
-        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
-        if ($fileExt !== 'csv') {
-            throw new Exception("Le fichier doit être au format CSV.");
-        }
-
-        $fileTmpName = $csvFile['tmp_name'];
-
-        if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            fgetcsv($handle);
-
-            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-                if (count($data) >= 13) {
-                    $this->importerFacture($utilisateurId, $data);
-                }
-            }
-
-            fclose($handle);
-        } else {
-            throw new Exception("Erreur lors de l'ouverture du fichier.");
-        }
-    }
-
-    private function importerFacture($utilisateurId, $ligne) {
+    public function importerFacture($utilisateurId, $ligne) {
         try {
             $titre = $ligne[1];
             preg_match('/"([A-Z0-9]+)"/', $titre, $matches);
             $referenceContrat = $matches[1] ?? null;
-
-            $estLieContrat = $referenceContrat && $this->contratExiste($referenceContrat, $utilisateurId);
 
             $dateFacture = \DateTime::createFromFormat('d/m/Y', $ligne[9]);
             if (!$dateFacture) {
@@ -51,13 +26,13 @@ class CsvModele {
 
             $stmt = $this->pdo->prepare('
             INSERT INTO factures 
-            (reference_contrat, utilisateur_id, titre, parc, client_nom, client_prenom, total_ht, tva, total_ttc, date_facture, adresse, code_postal, ville, est_lie_contrat)
+            (reference_contrat, utilisateur_id, titre, parc, client_nom, client_prenom, total_ht, tva, total_ttc, date_facture, adresse, code_postal, ville)
             VALUES 
-            (:reference_contrat, :utilisateur_id, :titre, :parc, :client_nom, :client_prenom, :total_ht, :tva, :total_ttc, :date_facture, :adresse, :code_postal, :ville, :est_lie_contrat)
+            (:reference_contrat, :utilisateur_id, :titre, :parc, :client_nom, :client_prenom, :total_ht, :tva, :total_ttc, :date_facture, :adresse, :code_postal, :ville)
         ');
 
             $stmt->execute([
-                ':reference_contrat' => $referenceContrat,
+                ':reference_contrat' => $referenceContrat, // Peut être null
                 ':utilisateur_id' => $utilisateurId,
                 ':titre' => $titre,
                 ':parc' => $ligne[2],
@@ -69,8 +44,7 @@ class CsvModele {
                 ':date_facture' => $dateFacture->format('Y-m-d'),
                 ':adresse' => $ligne[10],
                 ':code_postal' => $ligne[11],
-                ':ville' => $ligne[12],
-                ':est_lie_contrat' => $estLieContrat ? 1 : 0
+                ':ville' => $ligne[12]
             ]);
         } catch (PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
@@ -92,29 +66,6 @@ class CsvModele {
             ':utilisateur_id' => $utilisateurId
         ]);
         return $stmt->fetchColumn() > 0;
-    }
-
-    public function importerBoxTypes($csvFile, $utilisateurId) {
-        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
-        if ($fileExt !== 'csv') {
-            throw new Exception("Le fichier doit être au format CSV.");
-        }
-
-        $fileTmpName = $csvFile['tmp_name'];
-
-        if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            fgetcsv($handle, 1000, ';'); // Ignorer l'en-tête
-
-            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-                if (count($data) >= 5) {
-                    $this->importerBoxType($data, $utilisateurId);
-                }
-            }
-
-            fclose($handle);
-        } else {
-            throw new Exception("Erreur lors de l'ouverture du fichier.");
-        }
     }
 
     public function importerBoxType($ligne, $utilisateurId) {
@@ -144,29 +95,6 @@ class CsvModele {
         }
     }
 
-    public function importerContrats($csvFile, $utilisateurId) {
-        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
-        if ($fileExt !== 'csv') {
-            throw new Exception("Le fichier doit être au format CSV.");
-        }
-
-        $fileTmpName = $csvFile['tmp_name'];
-
-        if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            stream_filter_prepend($handle, 'convert.iconv.ISO-8859-1/UTF-8');
-            fgetcsv($handle);
-
-            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-                if (count($data) >= 12) {
-                    $this->importerLocation($utilisateurId, $data);
-                }
-            }
-
-            fclose($handle);
-        } else {
-            throw new Exception("Erreur lors de l'ouverture du fichier.");
-        }
-    }
 
     public function importerLocation($utilisateurId, $ligne) {
         try {

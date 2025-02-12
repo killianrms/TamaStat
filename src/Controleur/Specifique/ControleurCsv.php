@@ -18,15 +18,15 @@ class ControleurCsv {
         }
 
         $fileTmpName = $csvFile['tmp_name'];
+        $csvModele = new CsvModele();
 
         if (($handle = fopen($fileTmpName, 'r')) !== false) {
             stream_filter_append($handle, 'convert.iconv.ISO-8859-1/UTF-8');
-
             fgetcsv($handle);
 
             while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                 if (count($data) >= 13) {
-                    $this->csvModele->importerFacture($utilisateurId, $data);
+                    $csvModele->importerFacture($utilisateurId, $data);
                 }
             }
 
@@ -35,7 +35,6 @@ class ControleurCsv {
             throw new Exception("Erreur lors de l'ouverture du fichier.");
         }
     }
-
 
     public function importerBoxTypes($csvFile) {
         $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
