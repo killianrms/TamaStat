@@ -25,7 +25,7 @@ class ControleurCsv {
             fgetcsv($handle);
 
             while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-                if (count($data) >= 13) {
+                if (count($data) >= 10) {
                     $csvModele->importerFacture($utilisateurId, $data);
                 }
             }
