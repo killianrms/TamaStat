@@ -36,19 +36,13 @@ class CsvModele {
         }
     }
 
-    public function importerFacture($utilisateurId, $ligne) {
+    private function importerFacture($utilisateurId, $ligne) {
         try {
             $titre = $ligne[1];
             preg_match('/"([A-Z0-9]+)"/', $titre, $matches);
             $referenceContrat = $matches[1] ?? null;
 
-            if (!$referenceContrat) {
-                throw new Exception("Numéro de contrat introuvable dans le titre : " . $titre);
-            }
-
-            if (!$this->contratExiste($referenceContrat, $utilisateurId)) {
-                throw new Exception("Le contrat $referenceContrat n'existe pas dans la table des locations.");
-            }
+            $estLieContrat = $referenceContrat && $this->contratExiste($referenceContrat, $utilisateurId);
 
             $dateFacture = \DateTime::createFromFormat('d/m/Y', $ligne[9]);
             if (!$dateFacture) {
@@ -57,9 +51,9 @@ class CsvModele {
 
             $stmt = $this->pdo->prepare('
             INSERT INTO factures 
-            (reference_contrat, utilisateur_id, titre, parc, client_nom, client_prenom, total_ht, tva, total_ttc, date_facture, adresse, code_postal, ville)
+            (reference_contrat, utilisateur_id, titre, parc, client_nom, client_prenom, total_ht, tva, total_ttc, date_facture, adresse, code_postal, ville, est_lie_contrat)
             VALUES 
-            (:reference_contrat, :utilisateur_id, :titre, :parc, :client_nom, :client_prenom, :total_ht, :tva, :total_ttc, :date_facture, :adresse, :code_postal, :ville)
+            (:reference_contrat, :utilisateur_id, :titre, :parc, :client_nom, :client_prenom, :total_ht, :tva, :total_ttc, :date_facture, :adresse, :code_postal, :ville, :est_lie_contrat)
         ');
 
             $stmt->execute([
@@ -75,7 +69,8 @@ class CsvModele {
                 ':date_facture' => $dateFacture->format('Y-m-d'),
                 ':adresse' => $ligne[10],
                 ':code_postal' => $ligne[11],
-                ':ville' => $ligne[12]
+                ':ville' => $ligne[12],
+                ':est_lie_contrat' => $estLieContrat ? 1 : 0
             ]);
         } catch (PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
@@ -83,6 +78,10 @@ class CsvModele {
     }
 
     public function contratExiste($referenceContrat, $utilisateurId) {
+        if (!$referenceContrat) {
+            return false;
+        }
+
         $stmt = $this->pdo->prepare('
         SELECT COUNT(*) 
         FROM locations 
