@@ -9,7 +9,11 @@ $csvModele = new CsvModele();
 $utilisateurId = $_SESSION['user']['id'];
 
 // Récupérer les données pour les statistiques
-$boxTypes = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
+$boxTypes = $pdo->prepare('
+    SELECT bt.*, ub.quantite 
+    FROM box_types bt
+    LEFT JOIN utilisateur_boxes ub ON bt.id = ub.box_type_id AND ub.utilisateur_id = ?
+');
 $boxTypes->execute([$utilisateurId]);
 $boxTypes = $boxTypes->fetchAll(PDO::FETCH_ASSOC);
 
@@ -22,6 +26,34 @@ $locations = $pdo->prepare('SELECT * FROM locations WHERE utilisateur_id = ?');
 $locations->execute([$utilisateurId]);
 $locations = $locations->fetchAll(PDO::FETCH_ASSOC);
 
+$boxStatus = [];
+foreach ($boxTypes as $boxType) {
+    $totalLoue = 0;
+
+    foreach ($locations as $location) {
+        if ($location['box_type_id'] == $boxType['id']) {
+            $facture = $pdo->prepare('
+                SELECT MAX(date_facture) AS derniere_facture 
+                FROM factures 
+                WHERE reference_contrat = ? 
+                AND utilisateur_id = ?
+                AND date_facture >= DATE_SUB(NOW(), INTERVAL 1 MONTH)
+            ');
+            $facture->execute([$location['reference_contrat'], $utilisateurId]);
+
+            if ($facture->fetchColumn()) {
+                $totalLoue++;
+            }
+        }
+    }
+
+    $boxStatus[$boxType['id']] = [
+        'quantite' => $boxType['quantite'] ?? 0,
+        'loue' => $totalLoue,
+        'disponible' => ($boxType['quantite'] ?? 0) - $totalLoue
+    ];
+}
+
 $factures = $pdo->prepare('SELECT * FROM factures WHERE utilisateur_id = ?');
 $factures->execute([$utilisateurId]);
 $factures = $factures->fetchAll(PDO::FETCH_ASSOC);
@@ -30,6 +62,17 @@ $factures = $factures->fetchAll(PDO::FETCH_ASSOC);
 $revenuTotalHT = array_sum(array_column($factures, 'total_ht'));
 $revenuTotalTVA = array_sum(array_column($factures, 'tva'));
 $revenuTotalTTC = array_sum(array_column($factures, 'total_ttc'));
+
+$statsGlobales = [
+    'capacite_totale' => array_sum(array_column($boxTypes, 'quantite')),
+    'total_loue' => array_sum(array_column($boxStatus, 'loue')),
+    'taux_occupation' => 0
+];
+
+if ($statsGlobales['capacite_totale'] > 0) {
+    $statsGlobales['taux_occupation'] =
+        round(($statsGlobales['total_loue'] / $statsGlobales['capacite_totale']) * 100, 2);
+}
 
 // Calculer le nombre total de box disponibles
 $totalBoxDisponibles = 0;
