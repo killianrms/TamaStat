@@ -144,8 +144,18 @@ foreach ($boxTypes as $boxType) {
     </div>
 
     <div class="stat-card">
+        <h3>Capacité totale</h3>
+        <div class="value"><?= $statsGlobales['capacite_totale'] ?></div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Box loués</h3>
+        <div class="value"><?= $statsGlobales['total_loue'] ?></div>
+    </div>
+
+    <div class="stat-card">
         <h3>Taux d'occupation</h3>
-        <div class="value"><?= $tauxOccupationGlobal ?> %</div>
+        <div class="value"><?= $statsGlobales['taux_occupation'] ?>%</div>
     </div>
 
     <div class="stat-card">
@@ -175,6 +185,27 @@ foreach ($boxTypes as $boxType) {
         <h3>Nouveaux contrats par mois</h3>
         <canvas id="nouveauxContratsChart"></canvas>
     </div>
+    <?php foreach ($boxTypes as $boxType): ?>
+        <div class="chart-card">
+            <h3><?= htmlspecialchars($boxType['denomination']) ?></h3>
+            <canvas id="chart-<?= $boxType['id'] ?>"></canvas>
+            <script>
+                new Chart(document.getElementById('chart-<?= $boxType['id'] ?>'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Loué', 'Disponible'],
+                        datasets: [{
+                            data: [
+                                <?= $boxStatus[$boxType['id']]['loue'] ?>,
+                                <?= $boxStatus[$boxType['id']]['disponible'] ?>
+                            ],
+                            backgroundColor: ['#ff6600', '#0072bc']
+                        }]
+                    }
+                });
+            </script>
+        </div>
+    <?php endforeach; ?>
 </div>
 
 <script>
