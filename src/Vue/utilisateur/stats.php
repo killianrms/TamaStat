@@ -26,7 +26,11 @@ $utilisateurBoxes->execute([$utilisateurId]);
 $utilisateurBoxes = $utilisateurBoxes->fetchAll(PDO::FETCH_ASSOC);
 
 // Associer les quantites aux boxTypes
+$boxTypesById = [];
 $boxQuantites = [];
+foreach ($boxTypes as $boxType) {
+    $boxTypesById[$boxType['id']] = $boxType;
+}
 foreach ($utilisateurBoxes as $box) {
     $boxQuantites[$box['box_type_id']] = $box['quantite'];
 }
@@ -72,26 +76,3 @@ foreach ($boxTypes as $boxType) {
     $maxBoxParType[$boxTypeId] = $boxQuantites[$boxTypeId] ?? 0;
 }
 ?>
-
-<!-- Graphiques -->
-<div class="charts-grid">
-    <div class="chart-card">
-        <h3>Revenu par type de box</h3>
-        <canvas id="revenuChart"></canvas>
-    </div>
-
-    <div class="chart-card">
-        <h3>Occupation par type de box</h3>
-        <canvas id="occupationChart"></canvas>
-    </div>
-
-    <div class="chart-card">
-        <h3>Revenu mensuel</h3>
-        <canvas id="revenuMensuelChart"></canvas>
-    </div>
-
-    <div class="chart-card">
-        <h3>Nouveaux contrats par mois</h3>
-        <canvas id="nouveauxContratsChart"></canvas>
-    </div>
-</div>
