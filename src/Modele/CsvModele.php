@@ -13,27 +13,57 @@ class CsvModele {
         $this->pdo = $connexion->getPdo();
     }
 
-    public function importerBoxTypes($csvFile, $utilisateurId) {
-        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
-        if ($fileExt !== 'csv') {
-            throw new Exception("Le fichier doit être au format CSV.");
-        }
+    public function importerFacture($utilisateurId, $ligne) {
+        try {
+            $titre = $ligne[1];
+            preg_match('/"([A-Z0-9]+)"/', $titre, $matches);
+            $referenceContrat = $matches[1] ?? null;
 
-        $fileTmpName = $csvFile['tmp_name'];
+            $estLieContrat = $referenceContrat && $this->contratExiste($referenceContrat, $utilisateurId);
 
-        if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            fgetcsv($handle, 1000, ';'); // Ignorer l'en-tête
-
-            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-                if (count($data) >= 5) {
-                    $this->importerBoxType($data, $utilisateurId);
-                }
+            $dateFacture = \DateTime::createFromFormat('d/m/Y', $ligne[9]);
+            if (!$dateFacture) {
+                throw new Exception("Date de facture invalide : " . $ligne[9]);
             }
 
-            fclose($handle);
-        } else {
-            throw new Exception("Erreur lors de l'ouverture du fichier.");
+            $stmt = $this->pdo->prepare('
+            INSERT INTO factures 
+            (reference_contrat, utilisateur_id, titre, parc, total_ht, tva, total_ttc, date_facture, est_lie_contrat)
+            VALUES 
+            (:reference_contrat, :utilisateur_id, :titre, :parc, :total_ht, :tva, :total_ttc, :date_facture, :est_lie_contrat)
+        ');
+
+            $stmt->execute([
+                ':reference_contrat' => $referenceContrat,
+                ':utilisateur_id' => $utilisateurId,
+                ':titre' => $titre,
+                ':parc' => $ligne[2],
+                ':total_ht' => str_replace(',', '.', $ligne[5]),
+                ':tva' => str_replace(',', '.', $ligne[6]),
+                ':total_ttc' => str_replace(',', '.', $ligne[7]),
+                ':date_facture' => $dateFacture->format('Y-m-d'),
+                ':est_lie_contrat' => $estLieContrat ? 1 : 0
+            ]);
+        } catch (PDOException $e) {
+            throw new Exception("Erreur PDO : " . $e->getMessage());
         }
+    }
+
+    public function contratExiste($referenceContrat, $utilisateurId) {
+        if (!$referenceContrat) {
+            return false;
+        }
+
+        $stmt = $this->pdo->prepare('
+        SELECT COUNT(*) 
+        FROM locations 
+        WHERE reference_contrat = :reference_contrat AND utilisateur_id = :utilisateur_id
+    ');
+        $stmt->execute([
+            ':reference_contrat' => $referenceContrat,
+            ':utilisateur_id' => $utilisateurId
+        ]);
+        return $stmt->fetchColumn() > 0;
     }
 
     public function importerBoxType($ligne, $utilisateurId) {
@@ -63,29 +93,6 @@ class CsvModele {
         }
     }
 
-    public function importerContrats($csvFile, $utilisateurId) {
-        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
-        if ($fileExt !== 'csv') {
-            throw new Exception("Le fichier doit être au format CSV.");
-        }
-
-        $fileTmpName = $csvFile['tmp_name'];
-
-        if (($handle = fopen($fileTmpName, 'r')) !== false) {
-            stream_filter_prepend($handle, 'convert.iconv.ISO-8859-1/UTF-8');
-            fgetcsv($handle);
-
-            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-                if (count($data) >= 12) {
-                    $this->importerLocation($utilisateurId, $data);
-                }
-            }
-
-            fclose($handle);
-        } else {
-            throw new Exception("Erreur lors de l'ouverture du fichier.");
-        }
-    }
 
     public function importerLocation($utilisateurId, $ligne) {
         try {

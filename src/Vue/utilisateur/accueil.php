@@ -20,7 +20,11 @@ $stmt = $pdo->prepare('SELECT COUNT(*) FROM locations WHERE utilisateur_id = ?')
 $stmt->execute([$utilisateurId]);
 $hasContrats = $stmt->fetchColumn() > 0;
 
-if ($hasBoxes && $hasBoxesConfig && $hasContrats) {
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM factures WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasFactures = $stmt->fetchColumn() > 0;
+
+if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures) {
     header("Location: routeur.php?route=stats");
     exit;
 }
@@ -38,7 +42,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats) {
 
 <?php if (!$hasBoxes): ?>
     <div class="step">
-        <h2>Étape 1 : Importer vos box</h2>
+        <h2>Étape 1/4 : Importer vos box</h2>
         <form action="routeur.php?route=importer-box" method="POST" enctype="multipart/form-data">
             <label for="csv_box">Importer un fichier CSV des box :</label>
             <input type="file" id="csv_box" name="csv_box" accept=".csv" required>
@@ -47,7 +51,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats) {
     </div>
 <?php elseif (!$hasBoxesConfig): ?>
     <div class="step">
-        <h2>Étape 2 : Configurer vos box</h2>
+        <h2>Étape 2/4 : Configurer vos box</h2>
         <form action="routeur.php?route=configurer-box" method="POST">
             <?php
             $stmt = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
@@ -64,7 +68,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats) {
     </div>
 <?php elseif (!$hasContrats): ?>
     <div class="step">
-        <h2>Étape 3 : Importer vos contrats</h2>
+        <h2>Étape 3/4 : Importer vos contrats</h2>
         <form action="routeur.php?route=importer-contrats" method="POST" enctype="multipart/form-data">
             <label for="csv_contrats">Importer un fichier CSV des contrats :</label>
             <input type="file" id="csv_contrats" name="csv_contrats" accept=".csv" required>
@@ -73,5 +77,15 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats) {
     </div>
 <?php endif; ?>
 
+<?php if (!$hasFactures): ?>
+    <div class="step">
+        <h2>Étape 4/4 : Importer vos factures</h2>
+        <form action="routeur.php?route=importer-factures" method="POST" enctype="multipart/form-data">
+            <label for="csv_factures">Importer un fichier CSV des factures :</label>
+            <input type="file" id="csv_factures" name="csv_factures" accept=".csv" required>
+            <button type="submit">Importer</button>
+        </form>
+    </div>
+<?php endif; ?>
 </body>
 </html>

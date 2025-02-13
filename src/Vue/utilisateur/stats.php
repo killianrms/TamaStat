@@ -22,6 +22,29 @@ $locations = $pdo->prepare('SELECT * FROM locations WHERE utilisateur_id = ?');
 $locations->execute([$utilisateurId]);
 $locations = $locations->fetchAll(PDO::FETCH_ASSOC);
 
+$factures = $pdo->prepare('SELECT * FROM factures WHERE utilisateur_id = ?');
+$factures->execute([$utilisateurId]);
+$factures = $factures->fetchAll(PDO::FETCH_ASSOC);
+
+
+$facturesLieesContrats = $pdo->prepare('
+    SELECT SUM(total_ttc) 
+    FROM factures 
+    WHERE utilisateur_id = ? AND est_lie_contrat = 1
+');
+$facturesLieesContrats->execute([$utilisateurId]);
+$revenuLieContrats = $facturesLieesContrats->fetchColumn();
+
+$facturesNonLieesContrats = $pdo->prepare('
+    SELECT SUM(total_ttc) 
+    FROM factures 
+    WHERE utilisateur_id = ? AND est_lie_contrat = 0
+');
+$facturesNonLieesContrats->execute([$utilisateurId]);
+$revenuNonLieContrats = $facturesNonLieesContrats->fetchColumn();
+
+$revenuTotalFactures = array_sum(array_column($factures, 'total_ttc'));
+
 // Calculer les statistiques
 $revenuTotal = 0;
 $capaciteTotale = 0;
@@ -191,13 +214,13 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
         }
     });
 
-    // Graphique 4 : Locations par mois
+    // Graphique 4 : Nouveau contrat mensuel
     new Chart(document.getElementById('locationsMensuellesChart'), {
         type: 'line',
         data: {
             labels: moisLabels,
             datasets: [{
-                label: 'Locations par mois',
+                label: 'Nouveau contrat mensuel',
                 data: locationsMensuellesData,
                 borderColor: '#ff6600',
                 fill: false
