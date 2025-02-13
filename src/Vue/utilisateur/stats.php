@@ -26,47 +26,26 @@ $factures = $pdo->prepare('SELECT * FROM factures WHERE utilisateur_id = ?');
 $factures->execute([$utilisateurId]);
 $factures = $factures->fetchAll(PDO::FETCH_ASSOC);
 
+// Calculer les revenus HT, TVA et TTC
+$revenuTotalHT = array_sum(array_column($factures, 'total_ht'));
+$revenuTotalTVA = array_sum(array_column($factures, 'tva'));
+$revenuTotalTTC = array_sum(array_column($factures, 'total_ttc'));
 
-$facturesLieesContrats = $pdo->prepare('
-    SELECT SUM(total_ttc) 
-    FROM factures 
-    WHERE utilisateur_id = ? AND est_lie_contrat = 1
-');
-$facturesLieesContrats->execute([$utilisateurId]);
-$revenuLieContrats = $facturesLieesContrats->fetchColumn();
-
-$facturesNonLieesContrats = $pdo->prepare('
-    SELECT SUM(total_ttc) 
-    FROM factures 
-    WHERE utilisateur_id = ? AND est_lie_contrat = 0
-');
-$facturesNonLieesContrats->execute([$utilisateurId]);
-$revenuNonLieContrats = $facturesNonLieesContrats->fetchColumn();
-
-$revenuTotalFactures = array_sum(array_column($factures, 'total_ttc'));
-
-// Calculer les statistiques
-$revenuTotal = 0;
-$capaciteTotale = 0;
-$capaciteUtilisee = 0;
-$revenuParBox = [];
-$occupationParBox = [];
-$revenuMensuel = [];
-$locationsParMois = [];
-
+// Calculer le nombre total de box disponibles
+$totalBoxDisponibles = 0;
 foreach ($boxTypes as $boxType) {
-    $boxTypeId = $boxType['id'];
-    $locationsBox = array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId);
-
-    $revenuParBox[$boxTypeId] = count($locationsBox) * $boxType['prix_ttc'];
-    $occupationParBox[$boxTypeId] = count($locationsBox);
-
-    $revenuTotal += $revenuParBox[$boxTypeId];
-    $capaciteTotale += $boxType['prix_ttc'];
-    $capaciteUtilisee += $revenuParBox[$boxTypeId];
+    $totalBoxDisponibles += $boxType['quantite'];
 }
 
+// Calculer le nombre de box loués
+$totalBoxLoues = count($locations);
+
+// Calculer le taux d'occupation
+$tauxOccupationGlobal = ($totalBoxDisponibles > 0) ? round(($totalBoxLoues / $totalBoxDisponibles) * 100, 2) : 0;
+
 // Calculer le revenu mensuel
+$revenuMensuel = [];
+$nouveauxContratsParMois = [];
 foreach ($locations as $location) {
     $mois = date('Y-m', strtotime($location['date_debut']));
     $boxTypeId = $location['box_type_id'];
@@ -74,10 +53,23 @@ foreach ($locations as $location) {
     $prixTTC = isset($boxTypesById[$boxTypeId]) ? $boxTypesById[$boxTypeId]['prix_ttc'] : 0;
 
     $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $prixTTC;
-    $locationsParMois[$mois] = ($locationsParMois[$mois] ?? 0) + 1;
+    $nouveauxContratsParMois[$mois] = ($nouveauxContratsParMois[$mois] ?? 0) + 1;
 }
 
-$tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capaciteTotale) * 100, 2) : 0;
+// Préparer les données pour les graphiques
+$boxLabels = array_column($boxTypes, 'denomination');
+$revenuParBox = [];
+$occupationParBox = [];
+$maxBoxParType = [];
+
+foreach ($boxTypes as $boxType) {
+    $boxTypeId = $boxType['id'];
+    $locationsBox = array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId);
+
+    $revenuParBox[$boxTypeId] = count($locationsBox) * $boxType['prix_ttc'];
+    $occupationParBox[$boxTypeId] = count($locationsBox);
+    $maxBoxParType[$boxTypeId] = $boxType['quantite'];
+}
 ?>
 
 <!DOCTYPE html>
@@ -94,8 +86,18 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
 <!-- Statistiques globales -->
 <div class="stats-globales">
     <div class="stat-card">
-        <h3>Revenu total</h3>
-        <div class="value"><?= $revenuTotal ?> €</div>
+        <h3>Revenu total HT</h3>
+        <div class="value"><?= $revenuTotalHT ?> €</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Revenu total TVA</h3>
+        <div class="value"><?= $revenuTotalTVA ?> €</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Revenu total TTC</h3>
+        <div class="value"><?= $revenuTotalTTC ?> €</div>
     </div>
 
     <div class="stat-card">
@@ -104,13 +106,8 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     </div>
 
     <div class="stat-card">
-        <h3>Capacité utilisée</h3>
-        <div class="value"><?= $capaciteUtilisee ?> m³</div>
-    </div>
-
-    <div class="stat-card">
         <h3>Nombre total de locations</h3>
-        <div class="value"><?= count($locations) ?></div>
+        <div class="value"><?= $totalBoxLoues ?></div>
     </div>
 </div>
 
@@ -132,20 +129,21 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     </div>
 
     <div class="chart-card">
-        <h3>Locations par mois</h3>
-        <canvas id="locationsMensuellesChart"></canvas>
+        <h3>Nouveaux contrats par mois</h3>
+        <canvas id="nouveauxContratsChart"></canvas>
     </div>
 </div>
 
 <script>
     // Données pour les graphiques
-    const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination')) ?>;
+    const boxLabels = <?= json_encode($boxLabels) ?>;
     const revenuData = <?= json_encode(array_values($revenuParBox)) ?>;
     const occupationData = <?= json_encode(array_values($occupationParBox)) ?>;
+    const maxBoxData = <?= json_encode(array_values($maxBoxParType)) ?>;
 
     const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>;
     const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>;
-    const locationsMensuellesData = <?= json_encode(array_values($locationsParMois)) ?>;
+    const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>;
 
     // Graphique 1 : Revenu par type de box
     new Chart(document.getElementById('revenuChart'), {
@@ -175,19 +173,28 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
         type: 'bar',
         data: {
             labels: boxLabels,
-            datasets: [{
-                label: 'Occupation',
-                data: occupationData,
-                backgroundColor: '#ff6600',
-                borderColor: '#e65c00',
-                borderWidth: 2
-            }]
+            datasets: [
+                {
+                    label: 'Box loués',
+                    data: occupationData,
+                    backgroundColor: '#ff6600',
+                    borderColor: '#e65c00',
+                    borderWidth: 2
+                },
+                {
+                    label: 'Box disponibles',
+                    data: maxBoxData,
+                    backgroundColor: '#0072bc',
+                    borderColor: '#005f9e',
+                    borderWidth: 2
+                }
+            ]
         },
         options: {
             responsive: true,
             plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' locations' } }
+                legend: { display: true },
+                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' box' } }
             },
             scales: { y: { beginAtZero: true } }
         }
@@ -214,14 +221,14 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
         }
     });
 
-    // Graphique 4 : Locations par mois
-    new Chart(document.getElementById('locationsMensuellesChart'), {
+    // Graphique 4 : Nouveaux contrats par mois
+    new Chart(document.getElementById('nouveauxContratsChart'), {
         type: 'line',
         data: {
             labels: moisLabels,
             datasets: [{
-                label: 'Locations par mois',
-                data: locationsMensuellesData,
+                label: 'Nouveaux contrats',
+                data: nouveauxContratsData,
                 borderColor: '#ff6600',
                 fill: false
             }]
@@ -229,7 +236,7 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
         options: {
             responsive: true,
             plugins: {
-                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' locations' } }
+                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' contrats' } }
             },
             scales: { y: { beginAtZero: true } }
         }
