@@ -13,11 +13,6 @@ $boxTypes = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
 $boxTypes->execute([$utilisateurId]);
 $boxTypes = $boxTypes->fetchAll(PDO::FETCH_ASSOC);
 
-$boxTypesById = [];
-foreach ($boxTypes as $boxType) {
-    $boxTypesById[$boxType['id']] = $boxType;
-}
-
 $locations = $pdo->prepare('SELECT * FROM locations WHERE utilisateur_id = ?');
 $locations->execute([$utilisateurId]);
 $locations = $locations->fetchAll(PDO::FETCH_ASSOC);
@@ -26,16 +21,23 @@ $factures = $pdo->prepare('SELECT * FROM factures WHERE utilisateur_id = ?');
 $factures->execute([$utilisateurId]);
 $factures = $factures->fetchAll(PDO::FETCH_ASSOC);
 
+$utilisateurBoxes = $pdo->prepare('SELECT * FROM utilisateur_boxes WHERE utilisateur_id = ?');
+$utilisateurBoxes->execute([$utilisateurId]);
+$utilisateurBoxes = $utilisateurBoxes->fetchAll(PDO::FETCH_ASSOC);
+
+// Associer les quantites aux boxTypes
+$boxQuantites = [];
+foreach ($utilisateurBoxes as $box) {
+    $boxQuantites[$box['box_type_id']] = $box['quantite'];
+}
+
 // Calculer les revenus HT, TVA et TTC
 $revenuTotalHT = array_sum(array_column($factures, 'total_ht'));
 $revenuTotalTVA = array_sum(array_column($factures, 'tva'));
 $revenuTotalTTC = array_sum(array_column($factures, 'total_ttc'));
 
 // Calculer le nombre total de box disponibles
-$totalBoxDisponibles = 0;
-foreach ($boxTypes as $boxType) {
-    $totalBoxDisponibles += $boxType['quantite'];
-}
+$totalBoxDisponibles = array_sum($boxQuantites);
 
 // Calculer le nombre de box loués
 $totalBoxLoues = count($locations);
@@ -49,7 +51,6 @@ $nouveauxContratsParMois = [];
 foreach ($locations as $location) {
     $mois = date('Y-m', strtotime($location['date_debut']));
     $boxTypeId = $location['box_type_id'];
-
     $prixTTC = isset($boxTypesById[$boxTypeId]) ? $boxTypesById[$boxTypeId]['prix_ttc'] : 0;
 
     $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $prixTTC;
@@ -68,48 +69,9 @@ foreach ($boxTypes as $boxType) {
 
     $revenuParBox[$boxTypeId] = count($locationsBox) * $boxType['prix_ttc'];
     $occupationParBox[$boxTypeId] = count($locationsBox);
-    $maxBoxParType[$boxTypeId] = $boxType['quantite'];
+    $maxBoxParType[$boxTypeId] = $boxQuantites[$boxTypeId] ?? 0;
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Statistiques</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="stats-page">
-<h1>Statistiques de vos locations</h1>
-
-<!-- Statistiques globales -->
-<div class="stats-globales">
-    <div class="stat-card">
-        <h3>Revenu total HT</h3>
-        <div class="value"><?= $revenuTotalHT ?> €</div>
-    </div>
-
-    <div class="stat-card">
-        <h3>Revenu total TVA</h3>
-        <div class="value"><?= $revenuTotalTVA ?> €</div>
-    </div>
-
-    <div class="stat-card">
-        <h3>Revenu total TTC</h3>
-        <div class="value"><?= $revenuTotalTTC ?> €</div>
-    </div>
-
-    <div class="stat-card">
-        <h3>Taux d'occupation</h3>
-        <div class="value"><?= $tauxOccupationGlobal ?> %</div>
-    </div>
-
-    <div class="stat-card">
-        <h3>Nombre total de locations</h3>
-        <div class="value"><?= $totalBoxLoues ?></div>
-    </div>
-</div>
 
 <!-- Graphiques -->
 <div class="charts-grid">
@@ -133,114 +95,3 @@ foreach ($boxTypes as $boxType) {
         <canvas id="nouveauxContratsChart"></canvas>
     </div>
 </div>
-
-<script>
-    // Données pour les graphiques
-    const boxLabels = <?= json_encode($boxLabels) ?>;
-    const revenuData = <?= json_encode(array_values($revenuParBox)) ?>;
-    const occupationData = <?= json_encode(array_values($occupationParBox)) ?>;
-    const maxBoxData = <?= json_encode(array_values($maxBoxParType)) ?>;
-
-    const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>;
-    const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>;
-    const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>;
-
-    // Graphique 1 : Revenu par type de box
-    new Chart(document.getElementById('revenuChart'), {
-        type: 'bar',
-        data: {
-            labels: boxLabels,
-            datasets: [{
-                label: 'Revenu (€)',
-                data: revenuData,
-                backgroundColor: '#0072bc',
-                borderColor: '#005f9e',
-                borderWidth: 2
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: false },
-                tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(2) + ' €' } }
-            },
-            scales: { y: { beginAtZero: true } }
-        }
-    });
-
-    // Graphique 2 : Occupation par type de box
-    new Chart(document.getElementById('occupationChart'), {
-        type: 'bar',
-        data: {
-            labels: boxLabels,
-            datasets: [
-                {
-                    label: 'Box loués',
-                    data: occupationData,
-                    backgroundColor: '#ff6600',
-                    borderColor: '#e65c00',
-                    borderWidth: 2
-                },
-                {
-                    label: 'Box disponibles',
-                    data: maxBoxData,
-                    backgroundColor: '#0072bc',
-                    borderColor: '#005f9e',
-                    borderWidth: 2
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                legend: { display: true },
-                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' box' } }
-            },
-            scales: { y: { beginAtZero: true } }
-        }
-    });
-
-    // Graphique 3 : Revenu mensuel
-    new Chart(document.getElementById('revenuMensuelChart'), {
-        type: 'line',
-        data: {
-            labels: moisLabels,
-            datasets: [{
-                label: 'Revenu mensuel (€)',
-                data: revenuMensuelData,
-                borderColor: '#0072bc',
-                fill: false
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                tooltip: { callbacks: { label: (ctx) => ctx.raw.toFixed(2) + ' €' } }
-            },
-            scales: { y: { beginAtZero: true } }
-        }
-    });
-
-    // Graphique 4 : Nouveaux contrats par mois
-    new Chart(document.getElementById('nouveauxContratsChart'), {
-        type: 'line',
-        data: {
-            labels: moisLabels,
-            datasets: [{
-                label: 'Nouveaux contrats',
-                data: nouveauxContratsData,
-                borderColor: '#ff6600',
-                fill: false
-            }]
-        },
-        options: {
-            responsive: true,
-            plugins: {
-                tooltip: { callbacks: { label: (ctx) => ctx.raw + ' contrats' } }
-            },
-            scales: { y: { beginAtZero: true } }
-        }
-    });
-</script>
-</body>
-</html>
