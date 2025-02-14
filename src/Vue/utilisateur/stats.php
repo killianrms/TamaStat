@@ -18,13 +18,16 @@ $filtreParc = ($parcSelectionne !== 'Tous') ? "AND parc = :parc" : "";
 
 // Requêtes avec filtre parc
 $params = [':utilisateur_id' => $utilisateurId];
-if($parcSelectionne !== 'Tous') $params[':parc'] = $parcSelectionne;
+if ($parcSelectionne !== 'Tous') {
+    $params[':parc'] = $parcSelectionne;
+}
 
 // 1. Revenu mensuel total (toutes factures)
 $revenuMensuel = $pdo->prepare("
     SELECT 
         DATE_FORMAT(date_facture, '%Y-%m') AS mois, 
-        SUM(total_ttc) AS total 
+        SUM(total_ht) AS total_ht,
+        SUM(total_ttc) AS total_ttc
     FROM factures 
     WHERE utilisateur_id = :utilisateur_id 
     $filtreParc
@@ -32,7 +35,7 @@ $revenuMensuel = $pdo->prepare("
     ORDER BY mois
 ");
 $revenuMensuel->execute($params);
-$revenuMensuelData = $revenuMensuel->fetchAll(PDO::FETCH_KEY_PAIR);
+$revenuMensuelData = $revenuMensuel->fetchAll(PDO::FETCH_ASSOC);
 
 // 2. Nouveaux contrats par mois
 $nouveauxContrats = $pdo->prepare("
@@ -62,14 +65,14 @@ $totalBox = $pdo->prepare("
     WHERE ub.utilisateur_id = :utilisateur_id
     GROUP BY bt.id
 ");
-$totalBox->execute([':utilisateur_id' => $utilisateurId]);
-$boxStats = $totalBox->fetchAll(PDO::FETCH_GROUP|PDO::FETCH_UNIQUE);
+$totalBox->execute($params); // Utilisation des mêmes paramètres pour le filtre parc
+$boxStats = $totalBox->fetchAll(PDO::FETCH_GROUP | PDO::FETCH_UNIQUE);
 
 // 4. Taux d'occupation
 $tauxOccupation = [];
-foreach($boxStats as $type => $stats) {
+foreach ($boxStats as $type => $stats) {
     $taux = ($stats['total'] > 0) ? round(($stats['loues'] / $stats['total']) * 100, 2) : 0;
-    $tauxOccupation[$type] = $taux;
+    $tauxOccupation[$type] = $taux . '%';
 }
 
 // 5. Dernière date de paiement par contrat
@@ -99,6 +102,18 @@ $contratsActifs = $dernieresFactures->fetchAll(PDO::FETCH_KEY_PAIR);
             padding: 15px;
             background: #f5f5f5;
             border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .filters label {
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .filters select {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
         }
         .stats-container {
             display: grid;
@@ -122,7 +137,7 @@ $contratsActifs = $dernieresFactures->fetchAll(PDO::FETCH_KEY_PAIR);
         <label>Centre :
             <select name="parc" onchange="this.form.submit()">
                 <option value="Tous">Tous les centres</option>
-                <?php foreach($parcs as $parc): ?>
+                <?php foreach ($parcs as $parc): ?>
                     <option value="<?= htmlspecialchars($parc) ?>" <?= $parc === $parcSelectionne ? 'selected' : '' ?>>
                         <?= htmlspecialchars($parc) ?>
                     </option>
@@ -139,7 +154,7 @@ $contratsActifs = $dernieresFactures->fetchAll(PDO::FETCH_KEY_PAIR);
     </div>
 
     <div class="chart-card">
-        <h3>Nouveaux contrats</h3>
+        <h3>Nouveaux contrats mensuels</h3>
         <canvas id="contratsChart"></canvas>
     </div>
 
@@ -159,10 +174,15 @@ $contratsActifs = $dernieresFactures->fetchAll(PDO::FETCH_KEY_PAIR);
     new Chart(document.getElementById('revenuChart'), {
         type: 'line',
         data: {
-            labels: <?= json_encode(array_keys($revenuMensuelData)) ?>,
+            labels: <?= json_encode(array_column($revenuMensuelData, 'mois')) ?>,
             datasets: [{
+                label: 'Revenu HT',
+                data: <?= json_encode(array_column($revenuMensuelData, 'total_ht')) ?>,
+                borderColor: '#36A2EB',
+                tension: 0.1
+            }, {
                 label: 'Revenu TTC',
-                data: <?= json_encode(array_values($revenuMensuelData)) ?>,
+                data: <?= json_encode(array_column($revenuMensuelData, 'total_ttc')) ?>,
                 borderColor: '#4CAF50',
                 tension: 0.1
             }]
@@ -189,7 +209,9 @@ $contratsActifs = $dernieresFactures->fetchAll(PDO::FETCH_KEY_PAIR);
             labels: <?= json_encode(array_keys($tauxOccupation)) ?>,
             datasets: [{
                 data: <?= json_encode(array_values($tauxOccupation)) ?>,
-                backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56']
+                backgroundColor: [
+                    '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF', '#FF9F40', '#C9CBCF', '#FFCD56', '#4CAF50', '#F7464A'
+                ]
             }]
         }
     });
