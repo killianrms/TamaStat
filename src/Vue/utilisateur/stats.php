@@ -36,7 +36,7 @@ $nouveauxContratsData = $nouveauxContrats->fetchAll(PDO::FETCH_KEY_PAIR);
 
 // 3. Statistiques des box
 $totalBox = $pdo->prepare("SELECT bt.denomination, SUM(ub.quantite) AS total, COUNT(l.id) AS loues FROM utilisateur_boxes ub JOIN box_types bt ON ub.box_type_id = bt.id LEFT JOIN locations l ON ub.box_type_id = l.box_type_id AND l.utilisateur_id = :utilisateur_id $filtreParc WHERE ub.utilisateur_id = :utilisateur_id GROUP BY bt.id");
-totalBox->execute([':utilisateur_id' => $utilisateurId]);
+$totalBox->execute([':utilisateur_id' => $utilisateurId]);
 $boxStats = $totalBox->fetchAll(PDO::FETCH_GROUP | PDO::FETCH_UNIQUE);
 
 // 4. Taux d'occupation (en pourcentage)
