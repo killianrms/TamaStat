@@ -75,9 +75,8 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures) {
             <button type="submit">Importer</button>
         </form>
     </div>
-<?php endif; ?>
 
-<?php if (!$hasFactures): ?>
+<?php elseif (!$hasFactures): ?>
     <div class="step">
         <h2>Étape 4/4 : Importer vos factures</h2>
         <form action="routeur.php?route=importer-factures" method="POST" enctype="multipart/form-data">
