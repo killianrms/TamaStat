@@ -12,6 +12,13 @@ include __DIR__ . '/../src/Vue/utilisateur/header.php';
 use App\Controleur\Specifique\ControleurUtilisateur;
 use App\Controleur\Specifique\ControleurCsv;
 use App\Configuration\ConnexionBD;
+use App\Controller\StatistiquesController;
+
+if ($_SERVER['REQUEST_URI'] === '/api/revenuMensuel' && $_SERVER['REQUEST_METHOD'] === 'GET') {
+    $controller = new StatistiquesController();
+    $controller->filtrerRevenuMensuel();
+    exit;
+}
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -24,6 +31,7 @@ echo '<link rel="stylesheet" href="../ressources/css/style.css">';
 
 $pdo = (new ConnexionBD())->getPdo();
 
+
 function verifierConnexion()
 {
     if (!isset($_SESSION['user'])) {
@@ -35,6 +43,7 @@ function verifierConnexion()
 
 try {
     switch ($route) {
+
         case 'connexion':
             if (isset($_SESSION['user'])) {
                 header('Location: routeur.php?route=accueil');
