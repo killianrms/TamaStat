@@ -1,6 +1,6 @@
 <?php
-USE App\Configuration\ConnexionBD;
-USE App\Modele\CsvModele;
+use App\Configuration\ConnexionBD;
+use App\Modele\CsvModele;
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
@@ -65,7 +65,13 @@ foreach ($boxTypes as $boxType) {
     $capaciteUtilisee += $nbBoxLoues;
 }
 
-// Calculer le revenu mensuel
+// Calculer le revenu mensuel et les nouveaux contrats par mois
+$nouveauxContratsParMois = [];
+foreach ($locations as $location) {
+    $mois = date('Y-m', strtotime($location['date_debut']));
+    $nouveauxContratsParMois[$mois] = ($nouveauxContratsParMois[$mois] ?? 0) + 1;
+}
+
 foreach ($factures as $facture) {
     $mois = date('Y-m', strtotime($facture['date_facture']));
     $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $facture['total_ttc'];
@@ -82,6 +88,8 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
+    <script src="https://cdn.jsdelivr.net/npm/luxon"></script>
 </head>
 <body class="stats-page">
 <h1>Statistiques de vos locations</h1>
@@ -124,6 +132,14 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     <div class="chart-card">
         <h3>Revenu mensuel</h3>
         <canvas id="revenuMensuelChart"></canvas>
+        <input type="date" id="dateDebut" name="dateDebut">
+        <input type="date" id="dateFin" name="dateFin">
+        <button onclick="filtrerRevenuMensuel()">Filtrer</button>
+    </div>
+
+    <div class="chart-card">
+        <h3>Nouveaux contrats par mois</h3>
+        <canvas id="nouveauxContratsChart"></canvas>
     </div>
 </div>
 
@@ -133,7 +149,9 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     const occupationData = <?= json_encode(array_values($occupationParBox)) ?>;
     const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>;
     const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>;
+    const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>;
 
+    // Graphique 1 : Revenu par type de box
     new Chart(document.getElementById('revenuChart'), {
         type: 'bar',
         data: {
@@ -146,6 +164,7 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
         }
     });
 
+    // Graphique 2 : Occupation par type de box
     new Chart(document.getElementById('occupationChart'), {
         type: 'bar',
         data: {
@@ -158,7 +177,8 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
         }
     });
 
-    new Chart(document.getElementById('revenuMensuelChart'), {
+    // Graphique 3 : Revenu mensuel
+    const revenuMensuelChart = new Chart(document.getElementById('revenuMensuelChart'), {
         type: 'line',
         data: {
             labels: moisLabels,
@@ -169,6 +189,32 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
             }]
         }
     });
+
+    // Graphique 4 : Nouveaux contrats par mois
+    new Chart(document.getElementById('nouveauxContratsChart'), {
+        type: 'bar',
+        data: {
+            labels: moisLabels,
+            datasets: [{
+                label: 'Nouveaux contrats',
+                data: nouveauxContratsData,
+                backgroundColor: '#00cc66'
+            }]
+        }
+    });
+
+    function filtrerRevenuMensuel() {
+        const dateDebut = document.getElementById('dateDebut').value;
+        const dateFin = document.getElementById('dateFin').value;
+
+        fetch(`/api/revenuMensuel?dateDebut=${dateDebut}&dateFin=${dateFin}`)
+            .then(response => response.json())
+            .then(data => {
+                revenuMensuelChart.data.labels = data.labels;
+                revenuMensuelChart.data.datasets[0].data = data.values;
+                revenuMensuelChart.update();
+            });
+    }
 </script>
 </body>
 </html>
