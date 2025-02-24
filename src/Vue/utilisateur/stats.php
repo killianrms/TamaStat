@@ -28,16 +28,6 @@ $factures = $pdo->prepare('SELECT * FROM factures WHERE utilisateur_id = ?');
 $factures->execute([$utilisateurId]);
 $factures = $factures->fetchAll(PDO::FETCH_ASSOC);
 
-// Gestion des filtres de période pour le revenu
-$dateDebut = $_GET['date_debut'] ?? null;
-$dateFin = $_GET['date_fin'] ?? null;
-
-// Filtre pour les factures
-$filtreDateFactures = '';
-if ($dateDebut && $dateFin) {
-    $filtreDateFactures = "AND date_facture BETWEEN :date_debut AND :date_fin";
-}
-
 // Calcul des revenus cumulés
 $revenuTotal = 0;
 $revenuMensuel = [];
@@ -77,9 +67,6 @@ foreach ($boxTypes as $boxType) {
 
 // Calculer le revenu total et mensuel
 foreach ($factures as $facture) {
-    if ($dateDebut && $dateFin && ($facture['date_facture'] < $dateDebut || $facture['date_facture'] > $dateFin)) {
-        continue; // Ignorer les factures hors période
-    }
     $revenuTotal += $facture['total_ttc'];
     $mois = date('Y-m', strtotime($facture['date_facture']));
     $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $facture['total_ttc'];
@@ -137,36 +124,10 @@ foreach ($locations as $location) {
             border-radius: 8px;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .filters {
-            margin-bottom: 20px;
-        }
-        .filters label {
-            margin-right: 10px;
-        }
-        .filters input {
-            padding: 5px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
     </style>
 </head>
 <body class="stats-page">
 <h1>Statistiques de vos locations</h1>
-
-<!-- Filtres pour le revenu -->
-<div class="filters">
-    <form method="GET">
-        <h3>Filtrer le revenu par période</h3>
-        <label>Date de début :
-            <input type="date" name="date_debut" value="<?= $dateDebut ?>">
-        </label>
-        <label>Date de fin :
-            <input type="date" name="date_fin" value="<?= $dateFin ?>">
-        </label>
-        <button type="submit">Appliquer</button>
-        <button type="button" onclick="window.location.href = window.location.pathname;">Réinitialiser</button>
-    </form>
-</div>
 
 <!-- Statistiques globales -->
 <div class="stats-globales">
