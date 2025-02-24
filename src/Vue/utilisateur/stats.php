@@ -1,6 +1,6 @@
 <?php
-USE App\Configuration\ConnexionBD;
-USE App\Modele\CsvModele;
+use App\Configuration\ConnexionBD;
+use App\Modele\CsvModele;
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
@@ -28,11 +28,10 @@ $factures = $pdo->prepare('SELECT * FROM factures WHERE utilisateur_id = ?');
 $factures->execute([$utilisateurId]);
 $factures = $factures->fetchAll(PDO::FETCH_ASSOC);
 
-// Calcul des revenus liés aux contrats
+// Calcul des revenus cumulés
 $revenuTotal = 0;
 $revenuMensuel = [];
 $occupationParBox = [];
-$revenuParBox = [];
 $capaciteTotale = 0;
 $capaciteUtilisee = 0;
 
@@ -49,30 +48,39 @@ foreach ($boxTypes as $boxType) {
     // Nombre de box disponibles
     $totalBoxDispo = $boxDisponibles[$boxTypeId] ?? 0;
 
-    // Nombre de box actuellement loués
+    // Nombre de box actuellement loués (un box ne compte qu'une fois par mois)
     $locationsBox = array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId);
-    $nbBoxLoues = count($locationsBox);
+    $locationsBoxParMois = [];
+    foreach ($locationsBox as $loc) {
+        $mois = date('Y-m', strtotime($loc['date_debut']));
+        $locationsBoxParMois[$mois] = true; // Un box ne compte qu'une fois par mois
+    }
+    $nbBoxLoues = count($locationsBoxParMois);
 
-    // Calcul du revenu par type de box
-    $revenuParBox[$boxTypeId] = $nbBoxLoues * $boxType['prix_ttc'];
-
-    // Occupation par type de box
-    $occupationParBox[$boxTypeId] = ($totalBoxDispo > 0) ? round(($nbBoxLoues / $totalBoxDispo) * 100, 2) : 0;
+    // Occupation par type de box (inclure même les box à 0%)
+    $occupationParBox[$boxTypeId] = ($totalBoxDispo > 0) ? min(100, round(($nbBoxLoues / $totalBoxDispo) * 100, 2)) : 0;
 
     // Mise à jour des valeurs globales
-    $revenuTotal += $revenuParBox[$boxTypeId];
     $capaciteTotale += $totalBoxDispo;
     $capaciteUtilisee += $nbBoxLoues;
 }
 
-// Calculer le revenu mensuel
+// Calculer le revenu total et mensuel
 foreach ($factures as $facture) {
+    $revenuTotal += $facture['total_ttc'];
     $mois = date('Y-m', strtotime($facture['date_facture']));
     $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $facture['total_ttc'];
 }
 
 // Calculer le taux d'occupation global
-$tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capaciteTotale) * 100, 2) : 0;
+$tauxOccupationGlobal = ($capaciteTotale > 0) ? min(100, round(($capaciteUtilisee / $capaciteTotale) * 100, 2)) : 0;
+
+// Nouveaux contrats par mois
+$nouveauxContratsParMois = [];
+foreach ($locations as $location) {
+    $mois = date('Y-m', strtotime($location['date_debut']));
+    $nouveauxContratsParMois[$mois] = ($nouveauxContratsParMois[$mois] ?? 0) + 1;
+}
 ?>
 
 <!DOCTYPE html>
@@ -82,6 +90,41 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .stats-globales {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        .chart-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+    </style>
 </head>
 <body class="stats-page">
 <h1>Statistiques de vos locations</h1>
@@ -95,53 +138,61 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
 
     <div class="stat-card">
         <h3>Taux d'occupation</h3>
-        <div class="value"><?= min(100, $tauxOccupationGlobal) ?> %</div>
+        <div class="value"><?= $tauxOccupationGlobal ?> %</div>
     </div>
 
     <div class="stat-card">
         <h3>Capacité utilisée</h3>
         <div class="value"><?= $capaciteUtilisee ?> box loués</div>
     </div>
-
-    <div class="stat-card">
-        <h3>Nombre total de locations</h3>
-        <div class="value"><?= count($locations) ?></div>
-    </div>
 </div>
 
 <!-- Graphiques -->
 <div class="charts-grid">
     <div class="chart-card">
-        <h3>Revenu par type de box</h3>
-        <canvas id="revenuChart"></canvas>
+        <h3>Revenu mensuel</h3>
+        <canvas id="revenuMensuelChart"></canvas>
+    </div>
+
+    <div class="chart-card">
+        <h3>Nouveaux contrats par mois</h3>
+        <canvas id="nouveauxContratsChart"></canvas>
     </div>
 
     <div class="chart-card">
         <h3>Occupation par type de box</h3>
         <canvas id="occupationChart"></canvas>
     </div>
-
-    <div class="chart-card">
-        <h3>Revenu mensuel</h3>
-        <canvas id="revenuMensuelChart"></canvas>
-    </div>
 </div>
 
 <script>
-    const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination')) ?>;
-    const revenuData = <?= json_encode(array_values($revenuParBox)) ?>;
-    const occupationData = <?= json_encode(array_values($occupationParBox)) ?>;
     const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>;
     const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>;
+    const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>;
+    const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination')) ?>;
+    const occupationData = <?= json_encode(array_values($occupationParBox)) ?>;
 
-    new Chart(document.getElementById('revenuChart'), {
+    new Chart(document.getElementById('revenuMensuelChart'), {
+        type: 'line',
+        data: {
+            labels: moisLabels,
+            datasets: [{
+                label: 'Revenu mensuel (€)',
+                data: revenuMensuelData,
+                borderColor: '#0072bc',
+                tension: 0.1
+            }]
+        }
+    });
+
+    new Chart(document.getElementById('nouveauxContratsChart'), {
         type: 'bar',
         data: {
-            labels: boxLabels,
+            labels: moisLabels,
             datasets: [{
-                label: 'Revenu (€)',
-                data: revenuData,
-                backgroundColor: '#0072bc'
+                label: 'Nouveaux contrats',
+                data: nouveauxContratsData,
+                backgroundColor: '#ff6600'
             }]
         }
     });
@@ -153,19 +204,7 @@ $tauxOccupationGlobal = ($capaciteTotale > 0) ? round(($capaciteUtilisee / $capa
             datasets: [{
                 label: 'Occupation (%)',
                 data: occupationData,
-                backgroundColor: '#ff6600'
-            }]
-        }
-    });
-
-    new Chart(document.getElementById('revenuMensuelChart'), {
-        type: 'line',
-        data: {
-            labels: moisLabels,
-            datasets: [{
-                label: 'Revenu mensuel (€)',
-                data: revenuMensuelData,
-                borderColor: '#0072bc'
+                backgroundColor: '#36A2EB'
             }]
         }
     });
