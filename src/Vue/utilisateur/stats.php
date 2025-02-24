@@ -28,7 +28,7 @@ $factures = $pdo->prepare('SELECT * FROM factures WHERE utilisateur_id = ?');
 $factures->execute([$utilisateurId]);
 $factures = $factures->fetchAll(PDO::FETCH_ASSOC);
 
-// Gestion des filtres de période
+// Gestion des filtres de période pour le revenu
 $dateDebut = $_GET['date_debut'] ?? null;
 $dateFin = $_GET['date_fin'] ?? null;
 
@@ -67,7 +67,7 @@ foreach ($boxTypes as $boxType) {
     }
     $nbBoxLoues = count($locationsBoxParMois);
 
-    // Occupation par type de box
+    // Occupation par type de box (inclure même les box à 0%)
     $occupationParBox[$boxTypeId] = ($totalBoxDispo > 0) ? min(100, round(($nbBoxLoues / $totalBoxDispo) * 100, 2)) : 0;
 
     // Mise à jour des valeurs globales
@@ -153,16 +153,18 @@ foreach ($locations as $location) {
 <body class="stats-page">
 <h1>Statistiques de vos locations</h1>
 
-<!-- Filtres -->
+<!-- Filtres pour le revenu -->
 <div class="filters">
     <form method="GET">
+        <h3>Filtrer le revenu par période</h3>
         <label>Date de début :
             <input type="date" name="date_debut" value="<?= $dateDebut ?>">
         </label>
         <label>Date de fin :
             <input type="date" name="date_fin" value="<?= $dateFin ?>">
         </label>
-        <button type="submit">Filtrer</button>
+        <button type="submit">Appliquer</button>
+        <button type="button" onclick="window.location.href = window.location.pathname;">Réinitialiser</button>
     </form>
 </div>
 
