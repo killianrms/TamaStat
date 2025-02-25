@@ -31,12 +31,16 @@ class ControleurCsv {
                 }
 
                 fclose($handle);
+                // Retourne une réponse JSON directement après l'importation
                 echo json_encode(['status' => 'success', 'message' => 'Fichier importé avec succès.']);
+                exit; // Assurez-vous d'arrêter l'exécution après avoir renvoyé la réponse
             } else {
                 throw new Exception("Erreur lors de l'ouverture du fichier.");
             }
         } catch (Exception $e) {
+            // Retourne une erreur en JSON en cas d'exception
             echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            exit; // Assurez-vous d'arrêter l'exécution après avoir renvoyé l'erreur
         }
     }
 
@@ -60,12 +64,16 @@ class ControleurCsv {
                 }
 
                 fclose($handle);
+                // Retourne une réponse JSON directement après l'importation
                 echo json_encode(['status' => 'success', 'message' => 'Fichier importé avec succès.']);
+                exit; // Assurez-vous d'arrêter l'exécution après avoir renvoyé la réponse
             } else {
                 throw new Exception("Erreur lors de l'ouverture du fichier.");
             }
         } catch (Exception $e) {
+            // Retourne une erreur en JSON en cas d'exception
             echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            exit; // Assurez-vous d'arrêter l'exécution après avoir renvoyé l'erreur
         }
     }
 
@@ -88,12 +96,16 @@ class ControleurCsv {
                 }
 
                 fclose($handle);
+                // Retourne une réponse JSON directement après l'importation
                 echo json_encode(['status' => 'success', 'message' => 'Fichier importé avec succès.']);
+                exit; // Assurez-vous d'arrêter l'exécution après avoir renvoyé la réponse
             } else {
                 throw new Exception("Erreur lors de l'ouverture du fichier.");
             }
         } catch (Exception $e) {
+            // Retourne une erreur en JSON en cas d'exception
             echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            exit; // Assurez-vous d'arrêter l'exécution après avoir renvoyé l'erreur
         }
     }
 }

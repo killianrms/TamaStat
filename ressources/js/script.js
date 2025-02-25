@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .then(data => {
                     if (data.status === 'success') {
-                        alert('Fichier importé avec succès');
+                        alert(data.message); // Affiche le message de succès
                         window.location.reload(); // Recharge la page si succès
                     } else {
                         alert("Erreur : " + data.message); // Affiche le message d'erreur
