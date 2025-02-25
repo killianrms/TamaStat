@@ -26,22 +26,21 @@ class ControleurCsv {
             }
 
             $fileTmpName = $csvFile['tmp_name'];
-            if (($handle = fopen($fileTmpName, 'r')) === false) {
-                throw new Exception("Erreur lors de l'ouverture du fichier.");
-            }
+            $csvModele = new CsvModele();
 
-            fgetcsv($handle);
 
-            // Traitement des lignes
-            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-                if (count($data) >= 10) {
-                    $this->csvModele->importerFacture($utilisateurId, $data);
+            if (($handle = fopen($fileTmpName, 'r')) !== false) {
+                stream_filter_append($handle, 'convert.iconv.ISO-8859-1/UTF-8');
+                fgetcsv($handle);
+
+                while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+                    if (count($data) >= 10) {
+                        $csvModele->importerFacture($utilisateurId, $data);
+                    }
                 }
+                echo json_encode(['status' => 'success', 'message' => 'Factures importées avec succès.']);
+                fclose($handle);
             }
-
-            fclose($handle);
-
-            echo json_encode(['status' => 'success', 'message' => 'Factures importées avec succès.']);
         } catch (Exception $e) {
             echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
         }
