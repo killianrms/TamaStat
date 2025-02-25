@@ -36,6 +36,22 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Accueil</title>
+    <style>
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 2s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body class="accueil-page">
 <h1>Configuration de vos données</h1>
@@ -43,16 +59,17 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures) {
 <?php if (!$hasBoxes): ?>
     <div class="step">
         <h2>Étape 1/4 : Importer vos box</h2>
-        <form action="routeur.php?route=importer-box" method="POST" enctype="multipart/form-data">
+        <form id="importBoxForm" action="routeur.php?route=importer-box" method="POST" enctype="multipart/form-data">
             <label for="csv_box">Importer un fichier CSV des box :</label>
             <input type="file" id="csv_box" name="csv_box" accept=".csv" required>
-            <button type="submit">Importer</button>
+            <button type="submit" id="submitBtn">Importer</button>
+            <div class="loader" id="loader"></div>
         </form>
     </div>
 <?php elseif (!$hasBoxesConfig): ?>
     <div class="step">
         <h2>Étape 2/4 : Configurer vos box</h2>
-        <form action="routeur.php?route=configurer-box" method="POST">
+        <form id="configBoxForm" action="routeur.php?route=configurer-box" method="POST">
             <?php
             $stmt = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
             $stmt->execute([$utilisateurId]);
@@ -63,28 +80,46 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures) {
                 echo '<input type="number" id="box_' . $boxType['id'] . '" name="box_' . $boxType['id'] . '" min="0" required><br>';
             }
             ?>
-            <button type="submit">Enregistrer</button>
+            <button type="submit" id="submitBtn">Enregistrer</button>
+            <div class="loader" id="loader"></div>
         </form>
     </div>
 <?php elseif (!$hasContrats): ?>
     <div class="step">
         <h2>Étape 3/4 : Importer vos contrats</h2>
-        <form action="routeur.php?route=importer-contrats" method="POST" enctype="multipart/form-data">
+        <form id="importContratsForm" action="routeur.php?route=importer-contrats" method="POST" enctype="multipart/form-data">
             <label for="csv_contrats">Importer un fichier CSV des contrats :</label>
             <input type="file" id="csv_contrats" name="csv_contrats" accept=".csv" required>
-            <button type="submit">Importer</button>
+            <button type="submit" id="submitBtn">Importer</button>
+            <div class="loader" id="loader"></div>
         </form>
     </div>
-
 <?php elseif (!$hasFactures): ?>
     <div class="step">
         <h2>Étape 4/4 : Importer vos factures</h2>
-        <form action="routeur.php?route=importer-factures" method="POST" enctype="multipart/form-data">
+        <form id="importFacturesForm" action="routeur.php?route=importer-factures" method="POST" enctype="multipart/form-data">
             <label for="csv_factures">Importer un fichier CSV des factures :</label>
             <input type="file" id="csv_factures" name="csv_factures" accept=".csv" required>
-            <button type="submit">Importer</button>
+            <button type="submit" id="submitBtn">Importer</button>
+            <div class="loader" id="loader"></div>
         </form>
     </div>
 <?php endif; ?>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const forms = document.querySelectorAll('form');
+        forms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                const submitBtn = form.querySelector('#submitBtn');
+                const loader = form.querySelector('#loader');
+
+                submitBtn.disabled = true;
+                loader.style.display = 'block';
+            });
+        });
+    });
+</script>
+<script src="../../../ressources/js/script.js"></script>
 </body>
 </html>
