@@ -24,12 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     return response.json(); // Attendre la réponse JSON
                 })
                 .then(data => {
-                    if (data.status === 'success') {
-                        // Recharge la page si succès
-                        window.location.reload();
-                    } else {
-                        alert("Erreur : " + data.message); // Affiche le message d'erreur si besoin
-                    }
+                    // Quel que soit le statut (success ou error), on recharge la page
+                    window.location.reload();
                 })
                 .catch(error => {
                     alert("Erreur : " + error.message); // Affiche l'erreur si la requête échoue

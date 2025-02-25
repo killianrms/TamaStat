@@ -23,7 +23,7 @@ class ControleurCsv {
 
             if (($handle = fopen($fileTmpName, 'r')) !== false) {
                 stream_filter_append($handle, 'convert.iconv.ISO-8859-1/UTF-8');
-                fgetcsv($handle);
+                fgetcsv($handle); // Ignore la première ligne (en-têtes)
 
                 while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                     if (count($data) >= 10) {
@@ -32,15 +32,18 @@ class ControleurCsv {
                 }
 
                 fclose($handle);
-                echo json_encode(['status' => 'success']);
-                exit;
             } else {
                 throw new Exception("Erreur lors de l'ouverture du fichier.");
             }
         } catch (Exception $e) {
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            // Nous n'enverrons pas de message d'erreur ou de succès ici
+            echo json_encode(['status' => 'error']);
             exit;
         }
+
+        // Pas de vérification ou message de confirmation, simplement l'importation.
+        echo json_encode(['status' => 'success']);
+        exit;
     }
 
     // Importation des types de box
@@ -54,7 +57,7 @@ class ControleurCsv {
             $fileTmpName = $csvFile['tmp_name'];
 
             if (($handle = fopen($fileTmpName, 'r')) !== false) {
-                fgetcsv($handle);
+                fgetcsv($handle); // Ignore la première ligne (en-têtes)
 
                 while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                     if (count($data) >= 5) {
@@ -64,15 +67,18 @@ class ControleurCsv {
                 }
 
                 fclose($handle);
-                echo json_encode(['status' => 'success']);
-                exit;
             } else {
                 throw new Exception("Erreur lors de l'ouverture du fichier.");
             }
         } catch (Exception $e) {
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            // Pas de message d'erreur ici
+            echo json_encode(['status' => 'error']);
             exit;
         }
+
+        // Pas de message de confirmation ici non plus, juste un signal de succès.
+        echo json_encode(['status' => 'success']);
+        exit;
     }
 
     // Importation des contrats
@@ -86,7 +92,7 @@ class ControleurCsv {
             $fileTmpName = $csvFile['tmp_name'];
 
             if (($handle = fopen($fileTmpName, 'r')) !== false) {
-                fgetcsv($handle);
+                fgetcsv($handle); // Ignore la première ligne (en-têtes)
 
                 while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                     if (count($data) >= 6) {
@@ -95,16 +101,18 @@ class ControleurCsv {
                 }
 
                 fclose($handle);
-                echo json_encode(['status' => 'success']);
-                exit;
             } else {
                 throw new Exception("Erreur lors de l'ouverture du fichier.");
             }
         } catch (Exception $e) {
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+            // Pas de message d'erreur ici
+            echo json_encode(['status' => 'error']);
             exit;
         }
+
+        // Pas de message de confirmation ici non plus, juste un signal de succès.
+        echo json_encode(['status' => 'success']);
+        exit;
     }
 }
-
 ?>
