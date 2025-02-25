@@ -21,13 +21,14 @@ document.addEventListener('DOMContentLoaded', function() {
             })
                 .then(response => {
                     if (!response.ok) throw new Error("Erreur réseau");
-                    return response.json();
+                    return response.json(); // Attendre la réponse JSON
                 })
                 .then(data => {
                     if (data.status === 'success') {
+                        alert('Fichier importé avec succès');
                         window.location.reload(); // Recharge la page si succès
                     } else {
-                        alert("Erreur : " + data.message);
+                        alert("Erreur : " + data.message); // Affiche le message d'erreur
                     }
                 })
                 .catch(error => {
