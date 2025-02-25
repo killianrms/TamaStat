@@ -26,9 +26,9 @@ class CsvModele {
                 throw new Exception("Date de facture invalide : " . $ligne[9]);
             }
 
-            $totalHt = str_replace(',', '.', $ligne[5]);
-            $tva = str_replace(',', '.', $ligne[6]);
-            $totalTtc = str_replace(',', '.', $ligne[7]);
+            $totalHt = str_replace(',', '.', $ligne[6]);
+            $tva = str_replace(',', '.', $ligne[7]);
+            $totalTtc = str_replace(',', '.', $ligne[8]);
 
             $stmt = $this->pdo->prepare('
             INSERT INTO factures 
