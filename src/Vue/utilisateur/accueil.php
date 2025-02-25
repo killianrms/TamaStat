@@ -23,11 +23,6 @@ $hasContrats = $stmt->fetchColumn() > 0;
 $stmt = $pdo->prepare('SELECT COUNT(*) FROM factures WHERE utilisateur_id = ?');
 $stmt->execute([$utilisateurId]);
 $hasFactures = $stmt->fetchColumn() > 0;
-
-if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures) {
-    header("Location: routeur.php?route=stats");
-    exit;
-}
 ?>
 
 <!DOCTYPE html>

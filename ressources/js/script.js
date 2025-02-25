@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return response.json(); // Attendre la réponse JSON
                 })
                 .then(data => {
-                    // Quel que soit le statut (success ou error), on recharge la page
+                    // Recharge la page pour passer à l'étape suivante après l'importation
                     window.location.reload();
                 })
                 .catch(error => {
