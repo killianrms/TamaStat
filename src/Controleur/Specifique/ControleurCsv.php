@@ -20,22 +20,19 @@ class ControleurCsv {
      */
     public function importerFactures($csvFile, $utilisateurId) {
         try {
-            // Vérifie l'extension du fichier
             $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
             if ($fileExt !== 'csv') {
                 throw new Exception("Le fichier doit être au format CSV.");
             }
 
-            // Ouvre le fichier CSV
             $fileTmpName = $csvFile['tmp_name'];
             if (($handle = fopen($fileTmpName, 'r')) === false) {
                 throw new Exception("Erreur lors de l'ouverture du fichier.");
             }
 
-            // Ignore la première ligne (en-têtes)
             fgetcsv($handle);
 
-            // Traite chaque ligne du fichier
+            // Traitement des lignes
             while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                 if (count($data) >= 10) {
                     $this->csvModele->importerFacture($utilisateurId, $data);
@@ -44,10 +41,8 @@ class ControleurCsv {
 
             fclose($handle);
 
-            // Retourne une réponse JSON en cas de succès
             echo json_encode(['status' => 'success', 'message' => 'Factures importées avec succès.']);
         } catch (Exception $e) {
-            // Retourne une réponse JSON en cas d'erreur
             echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
         }
     }
