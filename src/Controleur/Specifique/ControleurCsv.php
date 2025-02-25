@@ -11,6 +11,7 @@ class ControleurCsv {
         $this->csvModele = new CsvModele();
     }
 
+    // Importation des factures
     public function importerFactures($csvFile, $utilisateurId) {
         try {
             $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
@@ -37,12 +38,12 @@ class ControleurCsv {
                 throw new Exception("Erreur lors de l'ouverture du fichier.");
             }
         } catch (Exception $e) {
-            // Retourne une erreur en JSON en cas d'exception
             echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
             exit;
         }
     }
 
+    // Importation des types de box
     public function importerBoxTypes($csvFile) {
         try {
             $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
@@ -63,19 +64,18 @@ class ControleurCsv {
                 }
 
                 fclose($handle);
-                // Retourne une réponse JSON directement après l'importation
                 echo json_encode(['status' => 'success']);
-                exit; // Assurez-vous d'arrêter l'exécution après avoir renvoyé la réponse
+                exit;
             } else {
                 throw new Exception("Erreur lors de l'ouverture du fichier.");
             }
         } catch (Exception $e) {
-            // Retourne une erreur en JSON en cas d'exception
             echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-            exit; // Assurez-vous d'arrêter l'exécution après avoir renvoyé l'erreur
+            exit;
         }
     }
 
+    // Importation des contrats
     public function importerContrats($csvFile, $utilisateurId) {
         try {
             $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
@@ -95,16 +95,14 @@ class ControleurCsv {
                 }
 
                 fclose($handle);
-                // Retourne une réponse JSON directement après l'importation
                 echo json_encode(['status' => 'success']);
-                exit; // Assurez-vous d'arrêter l'exécution après avoir renvoyé la réponse
+                exit;
             } else {
                 throw new Exception("Erreur lors de l'ouverture du fichier.");
             }
         } catch (Exception $e) {
-            // Retourne une erreur en JSON en cas d'exception
             echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
-            exit; // Assurez-vous d'arrêter l'exécution après avoir renvoyé l'erreur
+            exit;
         }
     }
 }

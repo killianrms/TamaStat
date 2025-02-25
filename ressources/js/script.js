@@ -25,14 +25,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .then(data => {
                     if (data.status === 'success') {
-                        // Recharge la page pour passer à l'étape suivante si succès
+                        // Recharge la page si succès
                         window.location.reload();
                     } else {
                         alert("Erreur : " + data.message); // Affiche le message d'erreur si besoin
                     }
                 })
                 .catch(error => {
-                    alert("Erreur : " + error.message);
+                    alert("Erreur : " + error.message); // Affiche l'erreur si la requête échoue
                 })
                 .finally(() => {
                     submitBtn.disabled = false;
