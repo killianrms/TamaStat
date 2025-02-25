@@ -1,29 +1,3 @@
-<?php
-USE App\Configuration\ConnexionBD;
-
-$connexion = new ConnexionBD();
-$pdo = $connexion->getPdo();
-
-$utilisateurId = $_SESSION['user']['id'];
-
-// Vérifications de l'existence des données (boxes, config, contrats, factures)
-$stmt = $pdo->prepare('SELECT COUNT(*) FROM box_types WHERE utilisateur_id = ?');
-$stmt->execute([$utilisateurId]);
-$hasBoxes = $stmt->fetchColumn() > 0;
-
-$stmt = $pdo->prepare('SELECT COUNT(*) FROM utilisateur_boxes WHERE utilisateur_id = ?');
-$stmt->execute([$utilisateurId]);
-$hasBoxesConfig = $stmt->fetchColumn() > 0;
-
-$stmt = $pdo->prepare('SELECT COUNT(*) FROM locations WHERE utilisateur_id = ?');
-$stmt->execute([$utilisateurId]);
-$hasContrats = $stmt->fetchColumn() > 0;
-
-$stmt = $pdo->prepare('SELECT COUNT(*) FROM factures WHERE utilisateur_id = ?');
-$stmt->execute([$utilisateurId]);
-$hasFactures = $stmt->fetchColumn() > 0;
-?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -64,7 +38,16 @@ $hasFactures = $stmt->fetchColumn() > 0;
     <div class="step">
         <h2>Étape 2/4 : Configurer vos box</h2>
         <form id="configBoxForm" action="routeur.php?route=configurer-box" method="POST">
-            <!-- Configuration des box -->
+            <?php
+            $stmt = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
+            $stmt->execute([$utilisateurId]);
+            $boxTypes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($boxTypes as $boxType) {
+                echo '<label for="box_' . $boxType['id'] . '">Nombre de box ' . $boxType['denomination'] . ' :</label>';
+                echo '<input type="number" id="box_' . $boxType['id'] . '" name="box_' . $boxType['id'] . '" min="0" required><br>';
+            }
+            ?>
             <button type="submit" id="submitBtn">Enregistrer</button>
             <div class="loader" id="loader"></div>
         </form>
@@ -101,10 +84,14 @@ $hasFactures = $stmt->fetchColumn() > 0;
 
                 submitBtn.disabled = true;
                 loader.style.display = 'block';
+
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    loader.style.display = 'none';
+                }, 30000); // 30 seconds timeout
             });
         });
     });
 </script>
-<script src="../../../ressources/js/script.js"></script>
 </body>
 </html>

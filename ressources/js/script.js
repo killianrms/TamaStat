@@ -1,3 +1,4 @@
+// js/script.js
 document.addEventListener('DOMContentLoaded', function() {
     const forms = document.querySelectorAll('form');
 
@@ -21,14 +22,17 @@ document.addEventListener('DOMContentLoaded', function() {
             })
                 .then(response => {
                     if (!response.ok) throw new Error("Erreur réseau");
-                    return response.json(); // Attendre la réponse JSON
+                    return response.json();
                 })
                 .then(data => {
-                    // Recharge la page après l'importation, même si tout est ok
-                    window.location.reload();
+                    if (data.status === 'success') {
+                        window.location.reload(); // Recharge la page si succès
+                    } else {
+                        alert("Erreur : " + data.message);
+                    }
                 })
                 .catch(error => {
-                    alert("Erreur : " + error.message); // Affiche l'erreur si la requête échoue
+                    alert("Erreur : " + error.message);
                 })
                 .finally(() => {
                     submitBtn.disabled = false;
