@@ -1,13 +1,12 @@
 <?php
 USE App\Configuration\ConnexionBD;
-USE App\Modele\CsvModele;
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
-$csvModele = new CsvModele();
 
 $utilisateurId = $_SESSION['user']['id'];
 
+// Vérifications de l'existence des données (boxes, config, contrats, factures)
 $stmt = $pdo->prepare('SELECT COUNT(*) FROM box_types WHERE utilisateur_id = ?');
 $stmt->execute([$utilisateurId]);
 $hasBoxes = $stmt->fetchColumn() > 0;
@@ -65,16 +64,7 @@ $hasFactures = $stmt->fetchColumn() > 0;
     <div class="step">
         <h2>Étape 2/4 : Configurer vos box</h2>
         <form id="configBoxForm" action="routeur.php?route=configurer-box" method="POST">
-            <?php
-            $stmt = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
-            $stmt->execute([$utilisateurId]);
-            $boxTypes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            foreach ($boxTypes as $boxType) {
-                echo '<label for="box_' . $boxType['id'] . '">Nombre de box ' . $boxType['denomination'] . ' :</label>';
-                echo '<input type="number" id="box_' . $boxType['id'] . '" name="box_' . $boxType['id'] . '" min="0" required><br>';
-            }
-            ?>
+            <!-- Configuration des box -->
             <button type="submit" id="submitBtn">Enregistrer</button>
             <div class="loader" id="loader"></div>
         </form>
