@@ -1,3 +1,29 @@
+<?php
+USE App\Configuration\ConnexionBD;
+
+$connexion = new ConnexionBD();
+$pdo = $connexion->getPdo();
+
+$utilisateurId = $_SESSION['user']['id'];
+
+// Vérifications de l'existence des données (boxes, config, contrats, factures)
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM box_types WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasBoxes = $stmt->fetchColumn() > 0;
+
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM utilisateur_boxes WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasBoxesConfig = $stmt->fetchColumn() > 0;
+
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM locations WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasContrats = $stmt->fetchColumn() > 0;
+
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM factures WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasFactures = $stmt->fetchColumn() > 0;
+?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
