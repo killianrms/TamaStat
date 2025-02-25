@@ -25,10 +25,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 })
                 .then(data => {
                     if (data.status === 'success') {
-                        alert(data.message); // Affiche le message de succès
-                        window.location.reload(); // Recharge la page si succès
+                        // Recharge la page pour passer à l'étape suivante si succès
+                        window.location.reload();
                     } else {
-                        alert("Erreur : " + data.message); // Affiche le message d'erreur
+                        alert("Erreur : " + data.message); // Affiche le message d'erreur si besoin
                     }
                 })
                 .catch(error => {
