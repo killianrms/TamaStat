@@ -12,36 +12,29 @@ class ControleurCsv {
     }
 
     public function importerFactures($csvFile, $utilisateurId) {
-        try {
-            $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
-            if ($fileExt !== 'csv') {
-                throw new Exception("Le fichier doit être au format CSV.");
-            }
+        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
+        if ($fileExt !== 'csv') {
+            throw new Exception("Le fichier doit être au format CSV.");
+        }
 
-            $fileTmpName = $csvFile['tmp_name'];
-            $csvModele = new CsvModele();
+        $fileTmpName = $csvFile['tmp_name'];
+        $csvModele = new CsvModele();
 
-            if (($handle = fopen($fileTmpName, 'r')) !== false) {
-                stream_filter_append($handle, 'convert.iconv.ISO-8859-1/UTF-8');
-                fgetcsv($handle);
+        if (($handle = fopen($fileTmpName, 'r')) !== false) {
+            stream_filter_append($handle, 'convert.iconv.ISO-8859-1/UTF-8');
+            fgetcsv($handle);
 
-                while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-                    if (count($data) >= 10) {
-                        $csvModele->importerFacture($utilisateurId, $data);
-                    }
+            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+                if (count($data) >= 10) {
+                    $csvModele->importerFacture($utilisateurId, $data);
                 }
-
-                fclose($handle);
-                echo json_encode(['status' => 'success', 'message' => 'Factures importées avec succès.']);
-            } else {
-                throw new Exception("Erreur lors de l'ouverture du fichier.");
             }
-        } catch (Exception $e) {
-            echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+
+            fclose($handle);
+        } else {
+            throw new Exception("Erreur lors de l'ouverture du fichier.");
         }
     }
-
-// Répétez la même structure pour `importerBoxTypes` et `importerContrats`
 
     public function importerBoxTypes($csvFile) {
         $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
