@@ -13,6 +13,31 @@ class CsvModele {
         $this->pdo = $connexion->getPdo();
     }
 
+    /**
+     * Vérifie si une facture existe déjà avant l'insertion.
+     */
+    private function factureExiste($utilisateurId, $referenceContrat, $titre, $totalTtc, $dateFacture) {
+        $stmt = $this->pdo->prepare('
+            SELECT COUNT(*) FROM factures 
+            WHERE utilisateur_id = :utilisateur_id 
+            AND reference_contrat = :reference_contrat
+            AND titre = :titre
+            AND total_ttc = :total_ttc
+            AND date_facture = :date_facture
+        ');
+        $stmt->execute([
+            ':utilisateur_id' => $utilisateurId,
+            ':reference_contrat' => $referenceContrat,
+            ':titre' => $titre,
+            ':total_ttc' => $totalTtc,
+            ':date_facture' => $dateFacture
+        ]);
+        return $stmt->fetchColumn() > 0;
+    }
+
+    /**
+     * Importe une facture si elle n'existe pas déjà.
+     */
     public function importerFacture($utilisateurId, $ligne) {
         try {
             $titre = $ligne[1];
@@ -30,9 +55,8 @@ class CsvModele {
             $tva = str_replace(',', '.', $ligne[7]);
             $totalTtc = str_replace(',', '.', $ligne[8]);
 
-            // Vérification si la facture existe déjà dans la BD
             if ($this->factureExiste($utilisateurId, $referenceContrat, $titre, $totalTtc, $dateFacture->format('Y-m-d'))) {
-                return; // Si elle existe, on ne l'insère pas
+                return;
             }
 
             $stmt = $this->pdo->prepare('
@@ -58,68 +82,53 @@ class CsvModele {
         }
     }
 
-    private function factureExiste($utilisateurId, $referenceContrat, $titre, $totalTtc, $dateFacture) {
+    /**
+     * Vérifie si un type de box existe déjà avant l'insertion.
+     */
+    private function boxTypeExiste($denomination, $utilisateurId) {
         $stmt = $this->pdo->prepare('
-            SELECT COUNT(*) FROM factures 
-            WHERE utilisateur_id = :utilisateur_id 
-            AND reference_contrat = :reference_contrat
-            AND titre = :titre
-            AND total_ttc = :total_ttc
-            AND date_facture = :date_facture
+            SELECT COUNT(*) FROM box_types 
+            WHERE denomination = :denomination AND utilisateur_id = :utilisateur_id
         ');
         $stmt->execute([
-            ':utilisateur_id' => $utilisateurId,
-            ':reference_contrat' => $referenceContrat,
-            ':titre' => $titre,
-            ':total_ttc' => $totalTtc,
-            ':date_facture' => $dateFacture
+            ':denomination' => $denomination,
+            ':utilisateur_id' => $utilisateurId
         ]);
         return $stmt->fetchColumn() > 0;
     }
 
-    public function importerLocation($utilisateurId, $ligne) {
+    /**
+     * Importe un type de box si il n'existe pas déjà.
+     */
+    public function importerBoxType($ligne, $utilisateurId) {
         try {
-            $dateDebut = !empty($ligne[11]) && \DateTime::createFromFormat('d/m/Y', $ligne[11]) ? \DateTime::createFromFormat('d/m/Y', $ligne[11]) : null;
-            $dateFin = !empty($ligne[12]) && \DateTime::createFromFormat('d/m/Y', $ligne[12]) ? \DateTime::createFromFormat('d/m/Y', $ligne[12]) : null;
+            $denomination = $this->normalizeString($ligne[1]);
+            $prixTtc = floatval(str_replace(',', '.', $ligne[3]));
 
-            if (!$dateDebut) {
-                throw new Exception("Date invalide pour 'date_debut' : " . $ligne[11]);
-            }
-
-            $boxTypeId = $this->getBoxTypeIdByReference($ligne[9], $utilisateurId);
-            if (!$boxTypeId) {
-                throw new Exception("Type de box non trouvé pour la référence : " . $ligne[9]);
-            }
-
-            $clientNom = mb_convert_encoding(trim($ligne[2] . ' ' . $ligne[3]), 'UTF-8', 'ISO-8859-1');
-
-            // Vérification si la location existe déjà dans la BD
-            if ($this->locationExiste($utilisateurId, $ligne[1], $boxTypeId, $clientNom, $dateDebut->format('Y-m-d'), $dateFin ? $dateFin->format('Y-m-d') : null)) {
-                return; // Si elle existe, on ne l'insère pas
+            if ($this->boxTypeExiste($denomination, $utilisateurId)) {
+                return;
             }
 
             $stmt = $this->pdo->prepare('
-                INSERT INTO locations 
-                (reference_contrat, utilisateur_id, box_type_id, client_nom, date_debut, date_fin)
+                INSERT INTO box_types 
+                (denomination, prix_ttc, utilisateur_id)
                 VALUES 
-                (:reference_contrat, :utilisateur_id, :box_type_id, :client_nom, :date_debut, :date_fin)
+                (:denomination, :prix_ttc, :utilisateur_id)
             ');
 
             $stmt->execute([
-                'reference_contrat' => $ligne[1],
-                'utilisateur_id' => $utilisateurId,
-                'box_type_id' => $boxTypeId,
-                'client_nom' => $clientNom,
-                'date_debut' => $dateDebut->format('Y-m-d'),
-                'date_fin' => $dateFin ? $dateFin->format('Y-m-d') : null
+                ':denomination' => $denomination,
+                ':prix_ttc' => $prixTtc,
+                ':utilisateur_id' => $utilisateurId
             ]);
         } catch (\PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
-        } catch (Exception $e) {
-            throw new Exception("Erreur : " . $e->getMessage());
         }
     }
 
+    /**
+     * Vérifie si une location existe déjà avant l'insertion.
+     */
     private function locationExiste($utilisateurId, $referenceContrat, $boxTypeId, $clientNom, $dateDebut, $dateFin) {
         $stmt = $this->pdo->prepare('
             SELECT COUNT(*) FROM locations 
@@ -141,22 +150,46 @@ class CsvModele {
         return $stmt->fetchColumn() > 0;
     }
 
-    public function getBoxTypeIdByReference($denomination, $utilisateurId) {
-        $denomination = $this->normalizeString($denomination);
+    /**
+     * Importe une location si elle n'existe pas déjà.
+     */
+    public function importerLocation($utilisateurId, $ligne) {
+        try {
+            $dateDebut = \DateTime::createFromFormat('d/m/Y', $ligne[11]) ?: null;
+            $dateFin = \DateTime::createFromFormat('d/m/Y', $ligne[12]) ?: null;
 
-        $stmt = $this->pdo->prepare('SELECT id FROM box_types WHERE TRIM(denomination) = TRIM(:denomination) AND utilisateur_id = :utilisateur_id');
-        $stmt->execute(['denomination' => $denomination, 'utilisateur_id' => $utilisateurId]);
-        $result = $stmt->fetch(PDO::FETCH_ASSOC);
-        return $result ? $result['id'] : null;
-    }
+            if (!$dateDebut) {
+                throw new Exception("Date invalide pour 'date_debut' : " . $ligne[11]);
+            }
 
-    private function normalizeString($string) {
-        $string = trim($string);
-        if (!mb_detect_encoding($string, 'UTF-8', true)) {
-            $string = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $string);
+            $boxTypeId = $this->getBoxTypeIdByReference($ligne[9], $utilisateurId);
+            if (!$boxTypeId) {
+                throw new Exception("Type de box non trouvé pour la référence : " . $ligne[9]);
+            }
+
+            $clientNom = trim($ligne[2] . ' ' . $ligne[3]);
+
+            if ($this->locationExiste($utilisateurId, $ligne[1], $boxTypeId, $clientNom, $dateDebut->format('Y-m-d'), $dateFin ? $dateFin->format('Y-m-d') : null)) {
+                return;
+            }
+
+            $stmt = $this->pdo->prepare('
+                INSERT INTO locations 
+                (reference_contrat, utilisateur_id, box_type_id, client_nom, date_debut, date_fin)
+                VALUES 
+                (:reference_contrat, :utilisateur_id, :box_type_id, :client_nom, :date_debut, :date_fin)
+            ');
+
+            $stmt->execute([
+                'reference_contrat' => $ligne[1],
+                'utilisateur_id' => $utilisateurId,
+                'box_type_id' => $boxTypeId,
+                'client_nom' => $clientNom,
+                'date_debut' => $dateDebut->format('Y-m-d'),
+                'date_fin' => $dateFin ? $dateFin->format('Y-m-d') : null
+            ]);
+        } catch (\PDOException $e) {
+            throw new Exception("Erreur PDO : " . $e->getMessage());
         }
-        $string = str_replace(["\xc2\xb0", "Â°"], "°", $string);
-        $string = preg_replace('/\s+/', ' ', $string);
-        return $string;
     }
 }
