@@ -192,4 +192,23 @@ class CsvModele {
             throw new Exception("Erreur PDO : " . $e->getMessage());
         }
     }
+
+    public function getBoxTypeIdByReference($denomination, $utilisateurId) {
+        $denomination = $this->normalizeString($denomination);
+
+        $stmt = $this->pdo->prepare('SELECT id FROM box_types WHERE TRIM(denomination) = TRIM(:denomination) AND utilisateur_id = :utilisateur_id');
+        $stmt->execute(['denomination' => $denomination, 'utilisateur_id' => $utilisateurId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $result ? $result['id'] : null;
+    }
+
+    private function normalizeString($string) {
+        $string = trim($string);
+        if (!mb_detect_encoding($string, 'UTF-8', true)) {
+            $string = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $string);
+        }
+        $string = str_replace(["\xc2\xb0", "Â°"], "°", $string);
+        $string = preg_replace('/\s+/', ' ', $string);
+        return $string;
+    }
 }
