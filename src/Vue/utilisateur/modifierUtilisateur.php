@@ -53,10 +53,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <form method="POST" onsubmit="return verifierFormulaire()">
     <label for="nom_utilisateur">Nom d'utilisateur :</label>
-    <input type="text" id="nom_utilisateur" name="nom_utilisateur" value="<?= htmlspecialchars($utilisateur['nom_utilisateur']) ?>" required><br>
+    <input type="text" id="nom_utilisateur" name="nom_utilisateur"
+           value="<?= htmlspecialchars($utilisateur['nom_utilisateur']) ?>" required><br>
 
     <label for="email">Email :</label>
-    <input type="email" id="email" name="email" value="<?= htmlspecialchars($utilisateur['email']) ?>" required onkeyup="verifierEmail()">
+    <input type="email" id="email" name="email" value="<?= htmlspecialchars($utilisateur['email']) ?>" required
+           onkeyup="verifierEmail()">
     <p id="message-email" class="invalid">❌ Email invalide</p>
 
     <label for="is_admin">Administrateur :</label>
@@ -68,33 +70,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <button type="submit" id="submitModif" disabled>Enregistrer les modifications</button>
 </form>
 <script>
-    function updateRequirement(element, condition) {
-        if (condition) {
-            element.classList.add("valid");
-            element.classList.remove("invalid");
-            element.innerHTML = "✔ " + element.innerHTML.slice(2);
-        } else {
-            element.classList.add("invalid");
-            element.classList.remove("valid");
-            element.innerHTML = "❌ " + element.innerHTML.slice(2);
-        }
-    }
+    document.addEventListener("DOMContentLoaded", function() {
+        verifierEmail();
+    });
 
     function verifierEmail() {
-        const email = document.getElementById("email").value;
+        const emailInput = document.getElementById("email");
         const messageEmail = document.getElementById("message-email");
         const regexEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
-        updateRequirement(messageEmail, regexEmail.test(email));
+        if (regexEmail.test(emailInput.value)) {
+            messageEmail.classList.add("valid");
+            messageEmail.classList.remove("invalid");
+            messageEmail.innerHTML = "✔ Email valide";
+        } else {
+            messageEmail.classList.add("invalid");
+            messageEmail.classList.remove("valid");
+            messageEmail.innerHTML = "❌ Email invalide";
+        }
 
         verifierFormulaire();
     }
 
     function verifierFormulaire() {
         const isEmailValide = document.getElementById("message-email").classList.contains("valid");
-
         document.getElementById("submitModif").disabled = !isEmailValide;
     }
+
+    document.getElementById("email").addEventListener("input", verifierEmail);
+
 </script>
 
 </body>
