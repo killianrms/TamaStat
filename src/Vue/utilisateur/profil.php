@@ -87,10 +87,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="password" id="nouveau_mdp" name="nouveau_mdp" required onkeyup="verifierMdp()">
 
         <ul class="password-requirements">
-            <li id="min8">✔ Au moins 8 caractères</li>
-            <li id="majuscule">✔ Une majuscule</li>
-            <li id="chiffre">✔ Un chiffre</li>
-            <li id="special">✔ Un caractère spécial (!@#$%^&*)</li>
+            <li id="min8">❌ Au moins 8 caractères</li>
+            <li id="majuscule">❌ Une majuscule</li>
+            <li id="chiffre">❌ Un chiffre</li>
+            <li id="special">❌ Un caractère spécial (!@#$%^&*)</li>
         </ul>
 
         <label for="confirmer_mdp">Confirmer le nouveau mot de passe :</label>
