@@ -94,9 +94,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <div style="color: green;"><?= htmlspecialchars($succes) ?></div>
 <?php endif; ?>
 
+<div class="etape-card">
+    <h3 class="etape-title">Changer le mot de passe</h3>
+    <form action="routeur.php?route=changer-mdp" method="POST">
+        <label for="ancien_mdp">Ancien mot de passe :</label>
+        <input type="password" id="ancien_mdp" name="ancien_mdp" required>
+
+        <label for="nouveau_mdp">Nouveau mot de passe :</label>
+        <input type="password" id="nouveau_mdp" name="nouveau_mdp" required onkeyup="verifierMdp()">
+
+        <ul class="password-requirements">
+            <li id="min8">✔ Au moins 8 caractères</li>
+            <li id="majuscule">✔ Une majuscule</li>
+            <li id="chiffre">✔ Un chiffre</li>
+            <li id="special">✔ Un caractère spécial (!@#$%^&*)</li>
+        </ul>
+
+        <label for="confirmer_mdp">Confirmer le nouveau mot de passe :</label>
+        <input type="password" id="confirmer_mdp" name="confirmer_mdp" required>
+
+        <button type="submit" id="submitMdp" disabled>Changer le mot de passe</button>
+    </form>
+</div>
+
 <!-- Étape 1 : Import des box -->
 <h2>Étape 1 : Import des box</h2>
-<p><?= $hasBoxes ? 'Données importées' : 'Données non importées' ?></p>
 <form id="importBoxForm" action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
     <input type="file" name="csv_box" accept=".csv">
     <input type="hidden" name="confirm_reimport" value="true">
@@ -107,11 +129,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!-- Étape 2 : Configuration des box -->
 <h2>Étape 2 : Configuration des box</h2>
-<p><?= $hasBoxesConfig ? 'Configuration effectuée' : 'Configuration non effectuée' ?></p>
+<div class="etape-card <?= $hasBoxesConfig ? 'etape-complete' : '' ?>">
+    <h3 class="etape-title">Étape 2 : Configuration des box</h3>
+    <p><?= $hasBoxesConfig ? 'Configuration effectuée' : 'Configuration non effectuée' ?></p>
+    <?php if ($hasBoxesConfig): ?>
+        <a href="routeur.php?route=modifier-boxes" class="btn">Modifier la configuration</a>
+    <?php endif; ?>
+</div>
+
 
 <!-- Étape 3 : Import des contrats -->
 <h2>Étape 3 : Import des contrats</h2>
-<p><?= $hasContrats ? 'Données importées' : 'Données non importées' ?></p>
 <form id="importContratsForm" action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
     <input type="file" name="csv_contrats" accept=".csv">
     <input type="hidden" name="confirm_reimport" value="true">
@@ -122,11 +150,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <!-- Étape 4 : Import des factures -->
 <h2>Étape 4 : Import des factures</h2>
-<p><?= $hasFactures ? 'Données importées' : 'Données non importées' ?></p>
 <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
     <input type="file" name="csv_factures" accept=".csv">
     <button type="submit"><?= $hasFactures ? 'Réimporter' : 'Importer' ?></button>
 </form>
+<script>
+    function verifierMdp() {
+        const mdp = document.getElementById("nouveau_mdp").value;
+        const min8 = document.getElementById("min8");
+        const majuscule = document.getElementById("majuscule");
+        const chiffre = document.getElementById("chiffre");
+        const special = document.getElementById("special");
+        const bouton = document.getElementById("submitMdp");
 
+        const regMajuscule = /[A-Z]/;
+        const regChiffre = /[0-9]/;
+        const regSpecial = /[!@#$%^&*]/;
+
+        min8.classList.toggle("valid", mdp.length >= 8);
+        majuscule.classList.toggle("valid", regMajuscule.test(mdp));
+        chiffre.classList.toggle("valid", regChiffre.test(mdp));
+        special.classList.toggle("valid", regSpecial.test(mdp));
+
+        bouton.disabled = !(mdp.length >= 8 && regMajuscule.test(mdp) && regChiffre.test(mdp) && regSpecial.test(mdp));
+    }
+</script>
 </body>
 </html>

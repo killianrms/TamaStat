@@ -151,6 +151,49 @@ try {
             }
             break;
 
+        case 'modifier-boxes':
+            verifierConnexion();
+            require_once __DIR__ . '/../src/Vue/utilisateur/modifier-boxes.php';
+            break;
+
+        case 'changer-mdp':
+            verifierConnexion();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $utilisateurId = $_SESSION['user']['id'];
+                $ancienMdp = $_POST['ancien_mdp'];
+                $nouveauMdp = $_POST['nouveau_mdp'];
+                $confirmerMdp = $_POST['confirmer_mdp'];
+
+                $pdo = (new ConnexionBD())->getPdo();
+                $stmt = $pdo->prepare('SELECT mot_de_passe FROM utilisateurs WHERE id = ?');
+                $stmt->execute([$utilisateurId]);
+                $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if (password_verify($ancienMdp, $utilisateur['mot_de_passe'])) {
+                    if ($nouveauMdp === $confirmerMdp &&
+                        preg_match('/[A-Z]/', $nouveauMdp) &&
+                        preg_match('/[0-9]/', $nouveauMdp) &&
+                        preg_match('/[!@#$%^&*]/', $nouveauMdp) &&
+                        strlen($nouveauMdp) >= 8
+                    ) {
+                        $nouveauMdpHash = password_hash($nouveauMdp, PASSWORD_DEFAULT);
+                        $stmt = $pdo->prepare('UPDATE utilisateurs SET mot_de_passe = ? WHERE id = ?');
+                        $stmt->execute([$nouveauMdpHash, $utilisateurId]);
+
+                        $_SESSION['success_message'] = "Mot de passe changé avec succès.";
+                    } else {
+                        $_SESSION['error_message'] = "Le mot de passe ne respecte pas les critères.";
+                    }
+                } else {
+                    $_SESSION['error_message'] = "Ancien mot de passe incorrect.";
+                }
+
+                header('Location: routeur.php?route=profil');
+                exit;
+            }
+            break;
+
+
         case 'modifierUtilisateur':
             verifierConnexion();
             if ($_SESSION['user']['is_admin'] !== 1) {
