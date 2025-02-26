@@ -53,23 +53,6 @@ try {
 
         case 'stats':
             verifierConnexion();
-            $dateDebut = $_GET['dateDebut'] ?? null;
-            $dateFin = $_GET['dateFin'] ?? null;
-            $boxType = $_GET['boxType'] ?? null;
-
-            $filtres = [];
-            if ($dateDebut) {
-                $filtres[] = "date_debut >= '$dateDebut'";
-            }
-            if ($dateFin) {
-                $filtres[] = "date_debut <= '$dateFin'";
-            }
-            if ($boxType) {
-                $filtres[] = "box_type_id = $boxType";
-            }
-
-            $filtresSQL = $filtres ? ' AND ' . implode(' AND ', $filtres) : '';
-
             require_once __DIR__ . '/../src/Vue/utilisateur/stats.php';
             break;
 
@@ -219,11 +202,6 @@ try {
 
         case 'mentions-legales':
             require_once __DIR__ . '/../Legal/mentions-legales.php';
-            break;
-
-        case 'dashboard':
-            verifierConnexion();
-            require_once __DIR__ . '/../src/Vue/utilisateur/dashboard.php';
             break;
 
         case 'importer-box':

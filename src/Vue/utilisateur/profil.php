@@ -1,52 +1,72 @@
 <?php
 use App\Configuration\ConnexionBD;
+use App\Controleur\Specifique\ControleurCsv;
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
-
 $utilisateurId = $_SESSION['user']['id'];
 
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM box_types WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasBoxes = $stmt->fetchColumn() > 0;
+
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM utilisateur_boxes WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasBoxesConfig = $stmt->fetchColumn() > 0;
+
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM locations WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasContrats = $stmt->fetchColumn() > 0;
+
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM factures WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasFactures = $stmt->fetchColumn() > 0;
+
+$succes = $erreur = "";
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (isset($_POST['changer_mdp'])) {
-        $ancienMdp = $_POST['ancien_mdp'];
-        $nouveauMdp = $_POST['nouveau_mdp'];
-        $confirmerMdp = $_POST['confirmer_mdp'];
+    $controleurCsv = new ControleurCsv();
 
-        if ($nouveauMdp !== $confirmerMdp) {
-            $erreur = "Les mots de passe ne correspondent pas.";
-        } else {
-            $stmt = $pdo->prepare('SELECT mot_de_passe FROM utilisateurs WHERE id = ?');
-            $stmt->execute([$utilisateurId]);
-            $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if (password_verify($ancienMdp, $utilisateur['mot_de_passe'])) {
-                $nouveauMdpHash = password_hash($nouveauMdp, PASSWORD_DEFAULT);
-                $stmt = $pdo->prepare('UPDATE utilisateurs SET mot_de_passe = ? WHERE id = ?');
-                $stmt->execute([$nouveauMdpHash, $utilisateurId]);
-                $succes = "Mot de passe changé avec succès.";
-            } else {
-                $erreur = "Ancien mot de passe incorrect.";
+    // Importer les box (Étape 1)
+    if (isset($_FILES['csv_box']) && $_FILES['csv_box']['size'] > 0) {
+        if (isset($_POST['confirm_reimport'])) {
+            try {
+                $controleurCsv->importerBoxTypes($_FILES['csv_box']);
+                $succes = "Fichier CSV des box importé avec succès.";
+            } catch (Exception $e) {
+                $erreur = "Erreur : " . $e->getMessage();
             }
+        } else {
+            header('Location: routeur.php?route=profil&confirm_box=1');
+            exit;
         }
-    } elseif (isset($_FILES['csv_box'])) {
-        $controleurCsv = new ControleurCsv();
-        try {
-            $controleurCsv->importerBoxTypes($_FILES['csv_box']);
-            $succes = "Fichier CSV des box importé avec succès.";
-        } catch (Exception $e) {
-            $erreur = "Erreur : " . $e->getMessage();
+    }
+
+    // Importer les contrats (Étape 3)
+    if (isset($_FILES['csv_contrats']) && $_FILES['csv_contrats']['size'] > 0) {
+        if (isset($_POST['confirm_reimport'])) {
+            try {
+                $controleurCsv->importerContrats($_FILES['csv_contrats'], $utilisateurId);
+                $succes = "Fichier CSV des contrats importé avec succès.";
+            } catch (Exception $e) {
+                $erreur = "Erreur : " . $e->getMessage();
+            }
+        } else {
+            header('Location: routeur.php?route=profil&confirm_contrats=1');
+            exit;
         }
-    } elseif (isset($_FILES['csv_contrats'])) {
-        $controleurCsv = new ControleurCsv();
+    }
+
+    // Importer les factures (Étape 4)
+    if (isset($_FILES['csv_factures']) && $_FILES['csv_factures']['size'] > 0) {
         try {
-            $controleurCsv->importerContrats($_FILES['csv_contrats'], $utilisateurId);
-            $succes = "Fichier CSV des contrats importé avec succès.";
+            $controleurCsv->importerFactures($_FILES['csv_factures'], $utilisateurId);
+            $succes = "Fichier CSV des factures importé avec succès.";
         } catch (Exception $e) {
             $erreur = "Erreur : " . $e->getMessage();
         }
     }
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -55,41 +75,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil</title>
+    <script>
+        function confirmerReimportation(message, formId) {
+            if (confirm(message)) {
+                document.getElementById(formId).submit();
+            }
+        }
+    </script>
 </head>
-<body class="profil-page">
+<body>
 <h1>Profil</h1>
 
-<?php if (isset($erreur)): ?>
-    <div class="error-message"><?= htmlspecialchars($erreur) ?></div>
+<?php if ($erreur): ?>
+    <div style="color: red;"><?= htmlspecialchars($erreur) ?></div>
 <?php endif; ?>
 
-<?php if (isset($succes)): ?>
-    <div class="success-message"><?= htmlspecialchars($succes) ?></div>
+<?php if ($succes): ?>
+    <div style="color: green;"><?= htmlspecialchars($succes) ?></div>
 <?php endif; ?>
 
-<h2>Changer le mot de passe</h2>
-<form action="routeur.php?route=profil" method="POST">
-    <label for="ancien_mdp">Ancien mot de passe :</label>
-    <input type="password" id="ancien_mdp" name="ancien_mdp" required><br>
-
-    <label for="nouveau_mdp">Nouveau mot de passe :</label>
-    <input type="password" id="nouveau_mdp" name="nouveau_mdp" required><br>
-
-    <label for="confirmer_mdp">Confirmer le nouveau mot de passe :</label>
-    <input type="password" id="confirmer_mdp" name="confirmer_mdp" required><br>
-
-    <button type="submit" name="changer_mdp">Changer le mot de passe</button>
+<!-- Étape 1 : Import des box -->
+<h2>Étape 1 : Import des box</h2>
+<p><?= $hasBoxes ? 'Données importées' : 'Données non importées' ?></p>
+<form id="importBoxForm" action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
+    <input type="file" name="csv_box" accept=".csv">
+    <input type="hidden" name="confirm_reimport" value="true">
+    <button type="button" onclick="confirmerReimportation('Importer de nouvelles box réinitialisera toutes les autres étapes.', 'importBoxForm')">
+        <?= $hasBoxes ? 'Réimporter' : 'Importer' ?>
+    </button>
 </form>
 
-<h2>Importer de nouveaux fichiers CSV</h2>
+<!-- Étape 2 : Configuration des box -->
+<h2>Étape 2 : Configuration des box</h2>
+<p><?= $hasBoxesConfig ? 'Configuration effectuée' : 'Configuration non effectuée' ?></p>
+
+<!-- Étape 3 : Import des contrats -->
+<h2>Étape 3 : Import des contrats</h2>
+<p><?= $hasContrats ? 'Données importées' : 'Données non importées' ?></p>
+<form id="importContratsForm" action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
+    <input type="file" name="csv_contrats" accept=".csv">
+    <input type="hidden" name="confirm_reimport" value="true">
+    <button type="button" onclick="confirmerReimportation('Importer de nouveaux contrats peut nécessiter de réimporter les factures.', 'importContratsForm')">
+        <?= $hasContrats ? 'Réimporter' : 'Importer' ?>
+    </button>
+</form>
+
+<!-- Étape 4 : Import des factures -->
+<h2>Étape 4 : Import des factures</h2>
+<p><?= $hasFactures ? 'Données importées' : 'Données non importées' ?></p>
 <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
-    <label for="csv_box">Importer un fichier CSV des box :</label>
-    <input type="file" id="csv_box" name="csv_box" accept=".csv"><br>
-
-    <label for="csv_contrats">Importer un fichier CSV des contrats :</label>
-    <input type="file" id="csv_contrats" name="csv_contrats" accept=".csv"><br>
-
-    <button type="submit">Importer</button>
+    <input type="file" name="csv_factures" accept=".csv">
+    <button type="submit"><?= $hasFactures ? 'Réimporter' : 'Importer' ?></button>
 </form>
+
 </body>
 </html>
