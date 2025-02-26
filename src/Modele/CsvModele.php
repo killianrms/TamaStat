@@ -202,6 +202,26 @@ class CsvModele {
         return $result ? $result['id'] : null;
     }
 
+    public function contratExiste($referenceContrat, $utilisateurId) {
+        if (!$referenceContrat) {
+            return false;
+        }
+
+        $stmt = $this->pdo->prepare('
+        SELECT COUNT(*) 
+        FROM locations 
+        WHERE reference_contrat = :reference_contrat 
+        AND utilisateur_id = :utilisateur_id
+    ');
+
+        $stmt->execute([
+            ':reference_contrat' => $referenceContrat,
+            ':utilisateur_id' => $utilisateurId
+        ]);
+
+        return $stmt->fetchColumn() > 0;
+    }
+
     private function normalizeString($string) {
         $string = trim($string);
         if (!mb_detect_encoding($string, 'UTF-8', true)) {
