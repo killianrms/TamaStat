@@ -901,9 +901,181 @@ input[type="file"] {
     max-width: 400px;
 }
 
+/* Profil - Conteneur principal */
+.profil-page {
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Section de chaque étape */
+.etape-card {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+    border-left: 5px solid #0072bc;
+}
+
+.etape-title {
+    font-size: 1.5rem;
+    color: #0072bc;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+/* Style pour les étapes complètes */
+.etape-complete {
+    border-left: 5px solid #4CAF50; /* Vert pour les étapes complétées */
+}
+
+/* Formulaires */
+.profil-page form {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.profil-page label {
+    display: block;
+    margin-bottom: 10px;
+    color: #0072bc;
+    font-weight: bold;
+}
+
+.profil-page input[type="password"],
+.profil-page input[type="file"],
+.profil-page input[type="text"],
+.profil-page input[type="number"] {
+    width: calc(100% - 20px);
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ddd;
+}
+
+/* Boutons */
+.profil-page button {
+    background-color: #ff6600;
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 1rem;
+    transition: background-color 0.3s ease;
+}
+
+.profil-page button:hover {
+    background-color: #e65c00;
+}
+
+/* Messages de confirmation */
+.confirmation-box {
+    background-color: #ffffdd;
+    border: 1px solid #ddddaa;
+    padding: 15px;
+    margin: 15px 0;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.confirmation-box h3 {
+    color: #ff6600;
+    font-size: 1.4rem;
+    margin-bottom: 10px;
+}
+
+.confirmation-box p {
+    color: #333;
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+.confirmation-box .btn {
+    background-color: #0072bc;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    display: inline-block;
+}
+
+.confirmation-box .btn:hover {
+    background-color: #005f9e;
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+/* Gestion des erreurs et messages de succès */
+.error-message {
+    color: red;
+    background-color: #ffeeee;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.success-message {
+    color: green;
+    background-color: #eeffee;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* Loader */
+.loader {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    animation: spin 2s linear infinite;
+    display: none;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+
 @media (max-width: 768px) {
     h1 {
         font-size: 1.5rem;
+    }
+
+    .profil-page {
+        padding: 10px;
+    }
+
+    .etape-title {
+        font-size: 1.3rem;
+    }
+
+    .profil-page button {
+        width: 100%;
+        padding: 10px;
+    }
+
+    .confirmation-box {
+        padding: 10px;
     }
 
     .charts-grid {
