@@ -1,4 +1,5 @@
 <?php
+
 use App\Configuration\ConnexionBD;
 use App\Controleur\Specifique\ControleurCsv;
 
@@ -27,37 +28,24 @@ $succes = $erreur = "";
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $controleurCsv = new ControleurCsv();
 
-    // Importer les box (Étape 1)
     if (isset($_FILES['csv_box']) && $_FILES['csv_box']['size'] > 0) {
-        if (isset($_POST['confirm_reimport'])) {
-            try {
-                $controleurCsv->importerBoxTypes($_FILES['csv_box']);
-                $succes = "Fichier CSV des box importé avec succès.";
-            } catch (Exception $e) {
-                $erreur = "Erreur : " . $e->getMessage();
-            }
-        } else {
-            header('Location: routeur.php?route=profil&confirm_box=1');
-            exit;
+        try {
+            $controleurCsv->importerBoxTypes($_FILES['csv_box']);
+            $succes = "Fichier CSV des box importé avec succès.";
+        } catch (Exception $e) {
+            $erreur = "Erreur : " . $e->getMessage();
         }
     }
 
-    // Importer les contrats (Étape 3)
     if (isset($_FILES['csv_contrats']) && $_FILES['csv_contrats']['size'] > 0) {
-        if (isset($_POST['confirm_reimport'])) {
-            try {
-                $controleurCsv->importerContrats($_FILES['csv_contrats'], $utilisateurId);
-                $succes = "Fichier CSV des contrats importé avec succès.";
-            } catch (Exception $e) {
-                $erreur = "Erreur : " . $e->getMessage();
-            }
-        } else {
-            header('Location: routeur.php?route=profil&confirm_contrats=1');
-            exit;
+        try {
+            $controleurCsv->importerContrats($_FILES['csv_contrats'], $utilisateurId);
+            $succes = "Fichier CSV des contrats importé avec succès.";
+        } catch (Exception $e) {
+            $erreur = "Erreur : " . $e->getMessage();
         }
     }
 
-    // Importer les factures (Étape 4)
     if (isset($_FILES['csv_factures']) && $_FILES['csv_factures']['size'] > 0) {
         try {
             $controleurCsv->importerFactures($_FILES['csv_factures'], $utilisateurId);
@@ -75,25 +63,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil</title>
-    <script>
-        function confirmerReimportation(message, formId) {
-            if (confirm(message)) {
-                document.getElementById(formId).submit();
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="../ressources/css/style.css">
 </head>
-<body>
+<body class="profil-page">
 <h1>Profil</h1>
 
 <?php if ($erreur): ?>
-    <div style="color: red;"><?= htmlspecialchars($erreur) ?></div>
+    <div class="error-message"><?= htmlspecialchars($erreur) ?></div>
 <?php endif; ?>
 
 <?php if ($succes): ?>
-    <div style="color: green;"><?= htmlspecialchars($succes) ?></div>
+    <div class="success-message"><?= htmlspecialchars($succes) ?></div>
 <?php endif; ?>
 
+<!-- Étape Changer le mot de passe -->
 <div class="etape-card">
     <h3 class="etape-title">Changer le mot de passe</h3>
     <form action="routeur.php?route=changer-mdp" method="POST">
@@ -118,17 +101,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <!-- Étape 1 : Import des box -->
-<h2>Étape 1 : Import des box</h2>
-<form id="importBoxForm" action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
-    <input type="file" name="csv_box" accept=".csv">
-    <input type="hidden" name="confirm_reimport" value="true">
-    <button type="button" onclick="confirmerReimportation('Importer de nouvelles box réinitialisera toutes les autres étapes.', 'importBoxForm')">
-        <?= $hasBoxes ? 'Réimporter' : 'Importer' ?>
-    </button>
-</form>
+<div class="etape-card">
+    <h3 class="etape-title">Étape 1 : Import des box</h3>
+    <p><?= $hasBoxes ? 'Données importées' : 'Données non importées' ?></p>
+    <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
+        <input type="file" name="csv_box" accept=".csv">
+        <button type="submit"><?= $hasBoxes ? 'Réimporter' : 'Importer' ?></button>
+    </form>
+</div>
 
 <!-- Étape 2 : Configuration des box -->
-<h2>Étape 2 : Configuration des box</h2>
 <div class="etape-card <?= $hasBoxesConfig ? 'etape-complete' : '' ?>">
     <h3 class="etape-title">Étape 2 : Configuration des box</h3>
     <p><?= $hasBoxesConfig ? 'Configuration effectuée' : 'Configuration non effectuée' ?></p>
@@ -137,23 +119,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 </div>
 
-
 <!-- Étape 3 : Import des contrats -->
-<h2>Étape 3 : Import des contrats</h2>
-<form id="importContratsForm" action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
-    <input type="file" name="csv_contrats" accept=".csv">
-    <input type="hidden" name="confirm_reimport" value="true">
-    <button type="button" onclick="confirmerReimportation('Importer de nouveaux contrats peut nécessiter de réimporter les factures.', 'importContratsForm')">
-        <?= $hasContrats ? 'Réimporter' : 'Importer' ?>
-    </button>
-</form>
+<div class="etape-card">
+    <h3 class="etape-title">Étape 3 : Import des contrats</h3>
+    <p><?= $hasContrats ? 'Données importées' : 'Données non importées' ?></p>
+    <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
+        <input type="file" name="csv_contrats" accept=".csv">
+        <button type="submit"><?= $hasContrats ? 'Réimporter' : 'Importer' ?></button>
+    </form>
+</div>
 
 <!-- Étape 4 : Import des factures -->
-<h2>Étape 4 : Import des factures</h2>
-<form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
-    <input type="file" name="csv_factures" accept=".csv">
-    <button type="submit"><?= $hasFactures ? 'Réimporter' : 'Importer' ?></button>
-</form>
+<div class="etape-card">
+    <h3 class="etape-title">Étape 4 : Import des factures</h3>
+    <p><?= $hasFactures ? 'Données importées' : 'Données non importées' ?></p>
+    <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
+        <input type="file" name="csv_factures" accept=".csv">
+        <button type="submit"><?= $hasFactures ? 'Réimporter' : 'Importer' ?></button>
+    </form>
+</div>
+
 <script>
     function verifierMdp() {
         const mdp = document.getElementById("nouveau_mdp").value;
@@ -167,13 +152,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const regChiffre = /[0-9]/;
         const regSpecial = /[!@#$%^&*]/;
 
-        min8.classList.toggle("valid", mdp.length >= 8);
-        majuscule.classList.toggle("valid", regMajuscule.test(mdp));
-        chiffre.classList.toggle("valid", regChiffre.test(mdp));
-        special.classList.toggle("valid", regSpecial.test(mdp));
+        min8.innerHTML = mdp.length >= 8 ? "✔ Au moins 8 caractères" : "❌ Au moins 8 caractères";
+        majuscule.innerHTML = regMajuscule.test(mdp) ? "✔ Une majuscule" : "❌ Une majuscule";
+        chiffre.innerHTML = regChiffre.test(mdp) ? "✔ Un chiffre" : "❌ Un chiffre";
+        special.innerHTML = regSpecial.test(mdp) ? "✔ Un caractère spécial" : "❌ Un caractère spécial";
 
         bouton.disabled = !(mdp.length >= 8 && regMajuscule.test(mdp) && regChiffre.test(mdp) && regSpecial.test(mdp));
     }
 </script>
+
 </body>
 </html>
