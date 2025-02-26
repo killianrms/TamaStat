@@ -1009,6 +1009,25 @@ input[type="file"] {
     margin-top: 10px;
 }
 
+.password-requirements {
+    list-style: none;
+    padding: 0;
+}
+
+.password-requirements li {
+    font-size: 0.9rem;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.invalid {
+    color: red;
+}
+
+.valid {
+    color: green;
+}
+
 /* Formulaire de changement de mot de passe */
 .password-requirements {
     list-style-type: none;

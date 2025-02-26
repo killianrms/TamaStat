@@ -87,10 +87,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <input type="password" id="nouveau_mdp" name="nouveau_mdp" required onkeyup="verifierMdp()">
 
         <ul class="password-requirements">
-            <li id="min8">❌ Au moins 8 caractères</li>
-            <li id="majuscule">❌ Une majuscule</li>
-            <li id="chiffre">❌ Un chiffre</li>
-            <li id="special">❌ Un caractère spécial (!@#$%^&*)</li>
+            <li id="min8" class="invalid">❌ Au moins 8 caractères</li>
+            <li id="majuscule" class="invalid">❌ Une majuscule</li>
+            <li id="chiffre" class="invalid">❌ Un chiffre</li>
+            <li id="special" class="invalid">❌ Un caractère spécial (!@#$%^&*)</li>
         </ul>
 
         <label for="confirmer_mdp">Confirmer le nouveau mot de passe :</label>
@@ -152,10 +152,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         const regChiffre = /[0-9]/;
         const regSpecial = /[!@#$%^&*]/;
 
-        min8.innerHTML = mdp.length >= 8 ? "✔ Au moins 8 caractères" : "❌ Au moins 8 caractères";
-        majuscule.innerHTML = regMajuscule.test(mdp) ? "✔ Une majuscule" : "❌ Une majuscule";
-        chiffre.innerHTML = regChiffre.test(mdp) ? "✔ Un chiffre" : "❌ Un chiffre";
-        special.innerHTML = regSpecial.test(mdp) ? "✔ Un caractère spécial" : "❌ Un caractère spécial";
+        function updateRequirement(element, condition) {
+            if (condition) {
+                element.classList.add("valid");
+                element.classList.remove("invalid");
+                element.innerHTML = "✔ " + element.innerHTML.slice(2);
+            } else {
+                element.classList.add("invalid");
+                element.classList.remove("valid");
+                element.innerHTML = "❌ " + element.innerHTML.slice(2);
+            }
+        }
+
+        updateRequirement(min8, mdp.length >= 8);
+        updateRequirement(majuscule, regMajuscule.test(mdp));
+        updateRequirement(chiffre, regChiffre.test(mdp));
+        updateRequirement(special, regSpecial.test(mdp));
 
         bouton.disabled = !(mdp.length >= 8 && regMajuscule.test(mdp) && regChiffre.test(mdp) && regSpecial.test(mdp));
     }
