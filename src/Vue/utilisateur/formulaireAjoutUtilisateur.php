@@ -17,8 +17,8 @@
     <div class="password-container">
         <input type="password" id="mot_de_passe" name="mot_de_passe" required onkeyup="verifierMdp()">
         <span class="toggle-password" onclick="togglePassword('mot_de_passe')">
-            <img src="../../../ressources/css/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-mdp">
-            <img src="../../../ressources/css/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-mdp" style="display: none;">
+            <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-mdp">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-mdp" style="display: none;">
         </span>
     </div>
 
@@ -33,8 +33,8 @@
     <div class="password-container">
         <input type="password" id="mot_de_passe_confirme" name="mot_de_passe_confirme" required onkeyup="verifierMdp()">
         <span class="toggle-password" onclick="togglePassword('mot_de_passe_confirme')">
-            <img src="../../../ressources/css/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-confirme">
-            <img src="../../../ressources/css/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-confirme" style="display: none;">
+            <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-confirme">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-confirme" style="display: none;">
         </span>
     </div>
 

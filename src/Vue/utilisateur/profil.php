@@ -85,8 +85,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="password-container">
             <input type="password" id="ancien_mdp" name="ancien_mdp" required>
             <span class="toggle-password" onclick="togglePassword('ancien_mdp')">
-            <img src="../../../ressources/css/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-ancien">
-            <img src="../../../ressources/css/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-ancien" style="display: none;">
+            <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-ancien">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-ancien" style="display: none;">
         </span>
         </div>
 
@@ -94,8 +94,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="password-container">
             <input type="password" id="nouveau_mdp" name="nouveau_mdp" required onkeyup="verifierMdp()">
             <span class="toggle-password" onclick="togglePassword('nouveau_mdp')">
-            <img src="../../../ressources/css/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-nouveau">
-            <img src="../../../ressources/css/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-nouveau" style="display: none;">
+            <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-nouveau">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-nouveau" style="display: none;">
         </span>
         </div>
 
@@ -110,8 +110,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="password-container">
             <input type="password" id="confirmer_mdp" name="confirmer_mdp" required onkeyup="verifierMdp()">
             <span class="toggle-password" onclick="togglePassword('confirmer_mdp')">
-            <img src="../../../ressources/css/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-confirmer">
-            <img src="../../../ressources/css/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-confirmer" style="display: none;">
+            <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-confirmer">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-confirmer" style="display: none;">
         </span>
         </div>
 
