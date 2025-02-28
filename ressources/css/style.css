@@ -1021,6 +1021,14 @@ input[type="file"] {
     padding-right: 35px; /* Laisser de la place pour l'icône */
 }
 
+.password-container .toggle-password {
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
 .toggle-password {
     position: absolute;
     right: 10px;
