@@ -14,7 +14,13 @@
     <input type="text" id="nom_utilisateur" name="nom_utilisateur" required><br>
 
     <label for="mot_de_passe">Mot de passe :</label>
-    <input type="password" id="mot_de_passe" name="mot_de_passe" required onkeyup="verifierMdp()">
+    <div class="password-container">
+        <input type="password" id="mot_de_passe" name="mot_de_passe" required onkeyup="verifierMdp()">
+        <span class="toggle-password" onclick="togglePassword('mot_de_passe')">
+            <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-mdp">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-mdp" style="display: none;">
+        </span>
+    </div>
 
     <ul class="password-requirements">
         <li id="min8" class="invalid">❌ Au moins 8 caractères</li>
@@ -24,7 +30,14 @@
     </ul>
 
     <label for="mot_de_passe_confirme">Confirmer le mot de passe :</label>
-    <input type="password" id="mot_de_passe_confirme" name="mot_de_passe_confirme" required onkeyup="verifierConfirmationMdp()">
+    <div class="password-container">
+        <input type="password" id="mot_de_passe_confirme" name="mot_de_passe_confirme" required onkeyup="verifierMdp()">
+        <span class="toggle-password" onclick="togglePassword('mot_de_passe_confirme')">
+            <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-confirme">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-confirme" style="display: none;">
+        </span>
+    </div>
+
     <p id="message-confirmation" class="invalid">❌ Les mots de passe ne correspondent pas</p>
 
     <label for="email">Email :</label>
@@ -32,7 +45,7 @@
     <p id="message-email" class="invalid">❌ Email invalide</p>
 
     <label for="is_admin">Administrateur :</label>
-    <select id="is_admin" name="is_admin">
+    <select id="is_admin" name="is_admin" onchange="verifierFormulaire()">
         <option value="0">Non</option>
         <option value="1">Oui</option>
     </select><br>
@@ -40,57 +53,49 @@
     <button type="submit" id="submitUtilisateur" disabled>Ajouter l'utilisateur</button>
 </form>
 
-<style>
-    .password-requirements {
-        list-style: none;
-        padding: 0;
-    }
 
-    .password-requirements li, #message-confirmation, #message-email {
-        font-size: 0.9rem;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-
-    .invalid {
-        color: red;
-    }
-
-    .valid {
-        color: green;
-    }
-</style>
 
 <script>
-    function updateRequirement(element, condition) {
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        const eyeIconOpen = input.nextElementSibling.querySelector('img[id^="oeil-ouvert"]');
+        const eyeIconClosed = input.nextElementSibling.querySelector('img[id^="oeil-ferme"]');
+
+        if (input.type === "password") {
+            input.type = "text";
+            eyeIconOpen.style.display = "inline";
+            eyeIconClosed.style.display = "none";
+        } else {
+            input.type = "password";
+            eyeIconOpen.style.display = "none";
+            eyeIconClosed.style.display = "inline";
+        }
+    }
+
+
+
+    function updateRequirement(element, condition, texteValide, texteInvalide) {
         if (condition) {
             element.classList.add("valid");
             element.classList.remove("invalid");
-            element.innerHTML = "✔ " + element.innerHTML.slice(2);
+            element.innerHTML = "✔ " + texteValide;
         } else {
             element.classList.add("invalid");
             element.classList.remove("valid");
-            element.innerHTML = "❌ " + element.innerHTML.slice(2);
+            element.innerHTML = "❌ " + texteInvalide;
         }
     }
 
     function verifierMdp() {
         const mdp = document.getElementById("mot_de_passe").value;
-        const min8 = document.getElementById("min8");
-        const majuscule = document.getElementById("majuscule");
-        const chiffre = document.getElementById("chiffre");
-        const special = document.getElementById("special");
+        const mdpConfirme = document.getElementById("mot_de_passe_confirme").value;
 
-        const regMajuscule = /[A-Z]/;
-        const regChiffre = /[0-9]/;
-        const regSpecial = /[!@#$%^&*]/;
+        updateRequirement(min8, mdp.length >= 8, "Au moins 8 caractères", "Au moins 8 caractères");
+        updateRequirement(majuscule, /[A-Z]/.test(mdp), "Une majuscule", "Une majuscule");
+        updateRequirement(chiffre, /[0-9]/.test(mdp), "Un chiffre", "Un chiffre");
+        updateRequirement(special, /[!@#$%^&*]/.test(mdp), "Un caractère spécial (!@#$%^&*)", "Un caractère spécial (!@#$%^&*)");
 
-        updateRequirement(min8, mdp.length >= 8);
-        updateRequirement(majuscule, regMajuscule.test(mdp));
-        updateRequirement(chiffre, regChiffre.test(mdp));
-        updateRequirement(special, regSpecial.test(mdp));
-
-        verifierFormulaire();
+        verifierConfirmationMdp();
     }
 
     function verifierConfirmationMdp() {
@@ -98,12 +103,7 @@
         const mdpConfirme = document.getElementById("mot_de_passe_confirme").value;
         const messageConfirmation = document.getElementById("message-confirmation");
 
-        if (mdpConfirme.length > 0) {
-            updateRequirement(messageConfirmation, mdp === mdpConfirme);
-        } else {
-            messageConfirmation.classList.remove("valid", "invalid");
-            messageConfirmation.innerHTML = "❌ Les mots de passe ne correspondent pas";
-        }
+        updateRequirement(messageConfirmation, mdp === mdpConfirme, "Les mots de passe correspondent", "Les mots de passe ne correspondent pas");
 
         verifierFormulaire();
     }
@@ -113,21 +113,30 @@
         const messageEmail = document.getElementById("message-email");
         const regexEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
-        updateRequirement(messageEmail, regexEmail.test(email));
+        updateRequirement(messageEmail, regexEmail.test(email), "Email valide", "Email invalide");
 
         verifierFormulaire();
     }
 
     function verifierFormulaire() {
-        const mdp = document.getElementById("mot_de_passe").value;
-        const mdpConfirme = document.getElementById("mot_de_passe_confirme").value;
-        const email = document.getElementById("email").value;
         const isMdpValide = document.querySelectorAll(".password-requirements .valid").length === 4;
-        const isMdpConfirme = mdp === mdpConfirme && mdpConfirme.length > 0;
+        const isMdpConfirme = document.getElementById("message-confirmation").classList.contains("valid");
         const isEmailValide = document.getElementById("message-email").classList.contains("valid");
+        const isAdmin = document.getElementById("is_admin").value === "1";
 
-        document.getElementById("submitUtilisateur").disabled = !(isMdpValide && isMdpConfirme && isEmailValide);
+        const bouton = document.getElementById("submitUtilisateur");
+
+        bouton.disabled = !(isMdpValide && isMdpConfirme && isEmailValide);
+
+        if (isAdmin && !bouton.disabled) {
+            setTimeout(() => {
+                if (!confirm("⚠️ Vous allez créer un administrateur ! Cette action est irréversible. Confirmer ?")) {
+                    bouton.disabled = true;
+                }
+            }, 100);
+        }
     }
 </script>
+
 </body>
 </html>

@@ -62,13 +62,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p id="message-email" class="invalid">❌ Email invalide</p>
 
     <label for="is_admin">Administrateur :</label>
-    <select id="is_admin" name="is_admin">
+    <select id="is_admin" name="is_admin" onchange="verifierFormulaire()">
         <option value="0" <?= $utilisateur['is_admin'] == 0 ? 'selected' : '' ?>>Non</option>
         <option value="1" <?= $utilisateur['is_admin'] == 1 ? 'selected' : '' ?>>Oui</option>
     </select><br>
 
     <button type="submit" id="submitModif" disabled>Enregistrer les modifications</button>
 </form>
+
+<style>
+    .invalid {
+        color: red;
+        font-weight: bold;
+    }
+
+    .valid {
+        color: green;
+        font-weight: bold;
+    }
+</style>
+
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         verifierEmail();
@@ -94,11 +107,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     function verifierFormulaire() {
         const isEmailValide = document.getElementById("message-email").classList.contains("valid");
-        document.getElementById("submitModif").disabled = !isEmailValide;
+        const isAdmin = document.getElementById("is_admin").value === "1";
+
+        const bouton = document.getElementById("submitModif");
+        bouton.disabled = !isEmailValide;
+
+        if (isAdmin && isEmailValide) {
+            setTimeout(() => {
+                if (!confirm("⚠️ Attention : Vous allez donner le rôle administrateur à cet utilisateur. Cette action est irréversible. Confirmez-vous ?")) {
+                    bouton.disabled = true;
+                    document.getElementById("is_admin").value = "0";
+                }
+            }, 50);
+        }
     }
 
     document.getElementById("email").addEventListener("input", verifierEmail);
-
 </script>
 
 </body>

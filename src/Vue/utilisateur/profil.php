@@ -67,13 +67,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body class="profil-page">
 <h1>Profil</h1>
-
-<?php if ($erreur): ?>
-    <div class="error-message"><?= htmlspecialchars($erreur) ?></div>
+<?php if (!empty($_SESSION['erreur_message'])): ?>
+    <div class="error-message"><?= htmlspecialchars($_SESSION['erreur_message']) ?></div>
+    <?php unset($_SESSION['erreur_message']); ?>
 <?php endif; ?>
 
-<?php if ($succes): ?>
-    <div class="success-message"><?= htmlspecialchars($succes) ?></div>
+<?php if (!empty($_SESSION['succes_message'])): ?>
+    <div class="success-message"><?= htmlspecialchars($_SESSION['succes_message']) ?></div>
+    <?php unset($_SESSION['succes_message']); ?>
 <?php endif; ?>
 
 <!-- Étape Changer le mot de passe -->
@@ -81,10 +82,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <h3 class="etape-title">Changer le mot de passe</h3>
     <form action="routeur.php?route=changer-mdp" method="POST">
         <label for="ancien_mdp">Ancien mot de passe :</label>
-        <input type="password" id="ancien_mdp" name="ancien_mdp" required>
+        <div class="password-container">
+            <input type="password" id="ancien_mdp" name="ancien_mdp" required>
+            <span class="toggle-password" onclick="togglePassword('ancien_mdp')">
+            <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-ancien">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-ancien" style="display: none;">
+        </span>
+        </div>
 
         <label for="nouveau_mdp">Nouveau mot de passe :</label>
-        <input type="password" id="nouveau_mdp" name="nouveau_mdp" required onkeyup="verifierMdp()">
+        <div class="password-container">
+            <input type="password" id="nouveau_mdp" name="nouveau_mdp" required onkeyup="verifierMdp()">
+            <span class="toggle-password" onclick="togglePassword('nouveau_mdp')">
+            <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-nouveau">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-nouveau" style="display: none;">
+        </span>
+        </div>
 
         <ul class="password-requirements">
             <li id="min8" class="invalid">❌ Au moins 8 caractères</li>
@@ -94,11 +107,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </ul>
 
         <label for="confirmer_mdp">Confirmer le nouveau mot de passe :</label>
-        <input type="password" id="confirmer_mdp" name="confirmer_mdp" required>
+        <div class="password-container">
+            <input type="password" id="confirmer_mdp" name="confirmer_mdp" required onkeyup="verifierMdp()">
+            <span class="toggle-password" onclick="togglePassword('confirmer_mdp')">
+            <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-confirmer">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-confirmer" style="display: none;">
+        </span>
+        </div>
+
+        <p id="message-confirmation" class="invalid">❌ Les mots de passe ne correspondent pas</p>
 
         <button type="submit" id="submitMdp" disabled>Changer le mot de passe</button>
     </form>
 </div>
+
 
 <!-- Étape 1 : Import des box -->
 <div class="etape-card">
@@ -140,37 +162,100 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </div>
 
 <script>
+    function updateRequirement(element, condition, texteValide, texteInvalide) {
+        if (condition) {
+            element.classList.add("valid");
+            element.classList.remove("invalid");
+            element.innerHTML = "✔ " + texteValide;
+        } else {
+            element.classList.add("invalid");
+            element.classList.remove("valid");
+            element.innerHTML = "❌ " + texteInvalide;
+        }
+    }
+
     function verifierMdp() {
         const mdp = document.getElementById("nouveau_mdp").value;
-        const min8 = document.getElementById("min8");
-        const majuscule = document.getElementById("majuscule");
-        const chiffre = document.getElementById("chiffre");
-        const special = document.getElementById("special");
-        const bouton = document.getElementById("submitMdp");
+        const mdpConfirme = document.getElementById("confirmer_mdp").value;
 
-        const regMajuscule = /[A-Z]/;
-        const regChiffre = /[0-9]/;
-        const regSpecial = /[!@#$%^&*]/;
+        updateRequirement(
+            document.getElementById("min8"),
+            mdp.length >= 8,
+            "Au moins 8 caractères",
+            "Au moins 8 caractères"
+        );
 
-        function updateRequirement(element, condition) {
-            if (condition) {
-                element.classList.add("valid");
-                element.classList.remove("invalid");
-                element.innerHTML = "✔ " + element.innerHTML.slice(2);
+        updateRequirement(
+            document.getElementById("majuscule"),
+            /[A-Z]/.test(mdp),
+            "Une majuscule",
+            "Une majuscule"
+        );
+
+        updateRequirement(
+            document.getElementById("chiffre"),
+            /[0-9]/.test(mdp),
+            "Un chiffre",
+            "Un chiffre"
+        );
+
+        updateRequirement(
+            document.getElementById("special"),
+            /[!@#$%^&*]/.test(mdp),
+            "Un caractère spécial (!@#$%^&*)",
+            "Un caractère spécial (!@#$%^&*)"
+        );
+
+        const messageConfirmation = document.getElementById("message-confirmation");
+
+        if (mdpConfirme.length > 0) {
+            if (mdp === mdpConfirme) {
+                messageConfirmation.innerHTML = "✔ Les mots de passe correspondent";
+                messageConfirmation.classList.add("valid");
+                messageConfirmation.classList.remove("invalid");
             } else {
-                element.classList.add("invalid");
-                element.classList.remove("valid");
-                element.innerHTML = "❌ " + element.innerHTML.slice(2);
+                messageConfirmation.innerHTML = "❌ Les mots de passe ne correspondent pas";
+                messageConfirmation.classList.add("invalid");
+                messageConfirmation.classList.remove("valid");
             }
+        } else {
+            messageConfirmation.innerHTML = "❌ Les mots de passe ne correspondent pas";
+            messageConfirmation.classList.remove("valid");
+            messageConfirmation.classList.add("invalid");
         }
 
-        updateRequirement(min8, mdp.length >= 8);
-        updateRequirement(majuscule, regMajuscule.test(mdp));
-        updateRequirement(chiffre, regChiffre.test(mdp));
-        updateRequirement(special, regSpecial.test(mdp));
-
-        bouton.disabled = !(mdp.length >= 8 && regMajuscule.test(mdp) && regChiffre.test(mdp) && regSpecial.test(mdp));
+        verifierFormulaire();
     }
+
+    function verifierFormulaire() {
+        const mdp = document.getElementById("nouveau_mdp").value;
+        const mdpConfirme = document.getElementById("confirmer_mdp").value;
+
+        const isMdpValide = document.querySelectorAll(".password-requirements .valid").length === 4;
+        const isMdpConfirme = mdp === mdpConfirme && mdpConfirme.length > 0;
+
+        document.getElementById("submitMdp").disabled = !(isMdpValide && isMdpConfirme);
+    }
+
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        const eyeIconOpen = input.nextElementSibling.querySelector('img[id^="oeil-ouvert"]');
+        const eyeIconClosed = input.nextElementSibling.querySelector('img[id^="oeil-ferme"]');
+
+        if (input.type === "password") {
+            input.type = "text";
+            eyeIconOpen.style.display = "inline";
+            eyeIconClosed.style.display = "none";
+        } else {
+            input.type = "password";
+            eyeIconOpen.style.display = "none";
+            eyeIconClosed.style.display = "inline";
+        }
+    }
+
+
+
+</script>
 </script>
 
 </body>
