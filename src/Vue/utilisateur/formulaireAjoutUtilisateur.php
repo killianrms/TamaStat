@@ -39,7 +39,7 @@
     <p id="message-email" class="invalid">❌ Email invalide</p>
 
     <label for="is_admin">Administrateur :</label>
-    <select id="is_admin" name="is_admin">
+    <select id="is_admin" name="is_admin" onchange="verifierFormulaire()">
         <option value="0">Non</option>
         <option value="1">Oui</option>
     </select><br>
@@ -47,7 +47,54 @@
     <button type="submit" id="submitUtilisateur" disabled>Ajouter l'utilisateur</button>
 </form>
 
+<style>
+    .password-container {
+        position: relative;
+        width: fit-content;
+    }
+
+    .password-container input {
+        padding-right: 30px;
+    }
+
+    .password-container .toggle-password {
+        position: absolute;
+        right: 5px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+    }
+
+    .password-requirements {
+        list-style: none;
+        padding: 0;
+    }
+
+    .password-requirements li, #message-confirmation, #message-email {
+        font-size: 0.9rem;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .invalid {
+        color: red;
+    }
+
+    .valid {
+        color: green;
+    }
+</style>
+
 <script>
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        if (input.type === "password") {
+            input.type = "text";
+        } else {
+            input.type = "password";
+        }
+    }
+
     function updateRequirement(element, condition, texteValide, texteInvalide) {
         if (condition) {
             element.classList.add("valid");
@@ -64,51 +111,20 @@
         const mdp = document.getElementById("mot_de_passe").value;
         const mdpConfirme = document.getElementById("mot_de_passe_confirme").value;
 
-        updateRequirement(
-            document.getElementById("min8"),
-            mdp.length >= 8,
-            "Au moins 8 caractères",
-            "Au moins 8 caractères"
-        );
+        updateRequirement(min8, mdp.length >= 8, "Au moins 8 caractères", "Au moins 8 caractères");
+        updateRequirement(majuscule, /[A-Z]/.test(mdp), "Une majuscule", "Une majuscule");
+        updateRequirement(chiffre, /[0-9]/.test(mdp), "Un chiffre", "Un chiffre");
+        updateRequirement(special, /[!@#$%^&*]/.test(mdp), "Un caractère spécial (!@#$%^&*)", "Un caractère spécial (!@#$%^&*)");
 
-        updateRequirement(
-            document.getElementById("majuscule"),
-            /[A-Z]/.test(mdp),
-            "Une majuscule",
-            "Une majuscule"
-        );
+        verifierConfirmationMdp();
+    }
 
-        updateRequirement(
-            document.getElementById("chiffre"),
-            /[0-9]/.test(mdp),
-            "Un chiffre",
-            "Un chiffre"
-        );
-
-        updateRequirement(
-            document.getElementById("special"),
-            /[!@#$%^&*]/.test(mdp),
-            "Un caractère spécial (!@#$%^&*)",
-            "Un caractère spécial (!@#$%^&*)"
-        );
-
+    function verifierConfirmationMdp() {
+        const mdp = document.getElementById("mot_de_passe").value;
+        const mdpConfirme = document.getElementById("mot_de_passe_confirme").value;
         const messageConfirmation = document.getElementById("message-confirmation");
 
-        if (mdpConfirme.length > 0) {
-            if (mdp === mdpConfirme) {
-                messageConfirmation.innerHTML = "✔ Les mots de passe correspondent";
-                messageConfirmation.classList.add("valid");
-                messageConfirmation.classList.remove("invalid");
-            } else {
-                messageConfirmation.innerHTML = "❌ Les mots de passe ne correspondent pas";
-                messageConfirmation.classList.add("invalid");
-                messageConfirmation.classList.remove("valid");
-            }
-        } else {
-            messageConfirmation.innerHTML = "❌ Les mots de passe ne correspondent pas";
-            messageConfirmation.classList.remove("valid");
-            messageConfirmation.classList.add("invalid");
-        }
+        updateRequirement(messageConfirmation, mdp === mdpConfirme, "Les mots de passe correspondent", "Les mots de passe ne correspondent pas");
 
         verifierFormulaire();
     }
@@ -118,30 +134,30 @@
         const messageEmail = document.getElementById("message-email");
         const regexEmail = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
-        if (regexEmail.test(email)) {
-            messageEmail.innerHTML = "✔ Email valide";
-            messageEmail.classList.add("valid");
-            messageEmail.classList.remove("invalid");
-        } else {
-            messageEmail.innerHTML = "❌ Email invalide";
-            messageEmail.classList.add("invalid");
-            messageEmail.classList.remove("valid");
-        }
+        updateRequirement(messageEmail, regexEmail.test(email), "Email valide", "Email invalide");
 
         verifierFormulaire();
     }
 
     function verifierFormulaire() {
-        const mdp = document.getElementById("mot_de_passe").value;
-        const mdpConfirme = document.getElementById("mot_de_passe_confirme").value;
-
         const isMdpValide = document.querySelectorAll(".password-requirements .valid").length === 4;
-        const isMdpConfirme = mdp === mdpConfirme && mdpConfirme.length > 0;
+        const isMdpConfirme = document.getElementById("message-confirmation").classList.contains("valid");
         const isEmailValide = document.getElementById("message-email").classList.contains("valid");
+        const isAdmin = document.getElementById("is_admin").value === "1";
 
-        document.getElementById("submitUtilisateur").disabled = !(isMdpValide && isMdpConfirme && isEmailValide);
+        const bouton = document.getElementById("submitUtilisateur");
+
+        bouton.disabled = !(isMdpValide && isMdpConfirme && isEmailValide);
+
+        if (isAdmin && !bouton.disabled) {
+            setTimeout(() => {
+                if (!confirm("⚠️ Vous allez créer un administrateur ! Cette action est irréversible. Confirmer ?")) {
+                    bouton.disabled = true;
+                }
+            }, 100);
+        }
     }
-
 </script>
+
 </body>
 </html>
