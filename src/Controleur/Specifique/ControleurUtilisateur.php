@@ -72,4 +72,41 @@ class ControleurUtilisateur
             }
         }
     }
+
+    public function changerMotDePasse($utilisateurId, $ancienMdp, $nouveauMdp, $confirmerMdp) {
+        try {
+            if ($nouveauMdp !== $confirmerMdp) {
+                throw new Exception("Les nouveaux mots de passe ne correspondent pas.");
+            }
+
+            if (!preg_match('/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/', $nouveauMdp)) {
+                throw new Exception("Le nouveau mot de passe ne respecte pas les critères de sécurité.");
+            }
+
+            $pdo = (new \App\Configuration\ConnexionBD())->getPdo();
+
+            $stmt = $pdo->prepare('SELECT mot_de_passe FROM utilisateurs WHERE id = ?');
+            $stmt->execute([$utilisateurId]);
+            $utilisateur = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if (!$utilisateur || !password_verify($ancienMdp, $utilisateur['mot_de_passe'])) {
+                throw new Exception("L'ancien mot de passe est incorrect.");
+            }
+
+            $nouveauMdpHash = password_hash($nouveauMdp, PASSWORD_BCRYPT);
+
+            $stmt = $pdo->prepare('UPDATE utilisateurs SET mot_de_passe = ? WHERE id = ?');
+            $stmt->execute([$nouveauMdpHash, $utilisateurId]);
+
+            $_SESSION['succes_message'] = "Mot de passe changé avec succès.";
+            header('Location: routeur.php?route=profil');
+            exit;
+
+        } catch (Exception $e) {
+            $_SESSION['erreur_message'] = $e->getMessage();
+            header('Location: routeur.php?route=profil');
+            exit;
+        }
+    }
+
 }

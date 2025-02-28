@@ -1009,14 +1009,37 @@ input[type="file"] {
     margin-top: 10px;
 }
 
+
+.password-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.password-container input {
+    flex: 1;
+    padding-right: 35px; /* Laisser de la place pour l'icône */
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    font-size: 1.2em;
+    color: #0072bc;
+}
+
+.toggle-password:hover {
+    color: #ff6600;
+}
+
 .password-requirements {
     list-style: none;
     padding: 0;
 }
 
-.password-requirements li {
+.password-requirements li, #message-confirmation, #message-email {
     font-size: 0.9rem;
-    margin-bottom: 5px;
     font-weight: bold;
 }
 
@@ -1027,6 +1050,7 @@ input[type="file"] {
 .valid {
     color: green;
 }
+
 
 /* Formulaire de changement de mot de passe */
 .password-requirements {

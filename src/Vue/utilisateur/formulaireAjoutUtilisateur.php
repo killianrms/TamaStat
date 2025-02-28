@@ -14,7 +14,10 @@
     <input type="text" id="nom_utilisateur" name="nom_utilisateur" required><br>
 
     <label for="mot_de_passe">Mot de passe :</label>
-    <input type="password" id="mot_de_passe" name="mot_de_passe" required onkeyup="verifierMdp()">
+    <div class="password-container">
+        <input type="password" id="mot_de_passe" name="mot_de_passe" required onkeyup="verifierMdp()">
+        <span class="toggle-password" onclick="togglePassword('mot_de_passe')">👁️</span>
+    </div>
 
     <ul class="password-requirements">
         <li id="min8" class="invalid">❌ Au moins 8 caractères</li>
@@ -24,7 +27,11 @@
     </ul>
 
     <label for="mot_de_passe_confirme">Confirmer le mot de passe :</label>
-    <input type="password" id="mot_de_passe_confirme" name="mot_de_passe_confirme" required onkeyup="verifierConfirmationMdp()">
+    <div class="password-container">
+        <input type="password" id="mot_de_passe_confirme" name="mot_de_passe_confirme" required onkeyup="verifierMdp()">
+        <span class="toggle-password" onclick="togglePassword('mot_de_passe_confirme')">👁️</span>
+    </div>
+
     <p id="message-confirmation" class="invalid">❌ Les mots de passe ne correspondent pas</p>
 
     <label for="email">Email :</label>
@@ -62,6 +69,22 @@
 </style>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        verifierMdp();
+    });
+
+    function togglePassword(id) {
+        const input = document.getElementById(id);
+        const icon = document.querySelector(`#${id} + .toggle-password`);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.innerHTML = "🙈"; // Icône fermée
+        } else {
+            input.type = "password";
+            icon.innerHTML = "👁️"; // Icône ouverte
+        }
+    }
+
     function updateRequirement(element, condition) {
         if (condition) {
             element.classList.add("valid");
@@ -76,10 +99,13 @@
 
     function verifierMdp() {
         const mdp = document.getElementById("mot_de_passe").value;
+        const mdpConfirme = document.getElementById("mot_de_passe_confirme").value;
         const min8 = document.getElementById("min8");
         const majuscule = document.getElementById("majuscule");
         const chiffre = document.getElementById("chiffre");
         const special = document.getElementById("special");
+        const messageConfirmation = document.getElementById("message-confirmation");
+        const bouton = document.getElementById("submitUtilisateur");
 
         const regMajuscule = /[A-Z]/;
         const regChiffre = /[0-9]/;
@@ -90,7 +116,17 @@
         updateRequirement(chiffre, regChiffre.test(mdp));
         updateRequirement(special, regSpecial.test(mdp));
 
-        verifierFormulaire();
+        if (mdpConfirme.length > 0) {
+            updateRequirement(messageConfirmation, mdp === mdpConfirme);
+        } else {
+            messageConfirmation.classList.remove("valid", "invalid");
+            messageConfirmation.innerHTML = "❌ Les mots de passe ne correspondent pas";
+        }
+
+        const mdpValide = mdp.length >= 8 && regMajuscule.test(mdp) && regChiffre.test(mdp) && regSpecial.test(mdp);
+        const mdpConfirmeValide = mdp === mdpConfirme && mdpConfirme.length > 0;
+
+        bouton.disabled = !(mdpValide && mdpConfirmeValide);
     }
 
     function verifierConfirmationMdp() {
