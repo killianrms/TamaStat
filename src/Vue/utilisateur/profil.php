@@ -84,13 +84,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label for="ancien_mdp">Ancien mot de passe :</label>
         <div class="password-container">
             <input type="password" id="ancien_mdp" name="ancien_mdp" required>
-            <span class="toggle-password" onclick="togglePassword('ancien_mdp')">👁️</span>
+            <span class="toggle-password" onclick="togglePassword('ancien_mdp')">
+            <img src="../../../ressources/css/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-ancien">
+            <img src="../../../ressources/css/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-ancien" style="display: none;">
+        </span>
         </div>
 
         <label for="nouveau_mdp">Nouveau mot de passe :</label>
         <div class="password-container">
             <input type="password" id="nouveau_mdp" name="nouveau_mdp" required onkeyup="verifierMdp()">
-            <span class="toggle-password" onclick="togglePassword('nouveau_mdp')">👁️</span>
+            <span class="toggle-password" onclick="togglePassword('nouveau_mdp')">
+            <img src="../../../ressources/css/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-nouveau">
+            <img src="../../../ressources/css/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-nouveau" style="display: none;">
+        </span>
         </div>
 
         <ul class="password-requirements">
@@ -103,7 +109,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label for="confirmer_mdp">Confirmer le nouveau mot de passe :</label>
         <div class="password-container">
             <input type="password" id="confirmer_mdp" name="confirmer_mdp" required onkeyup="verifierMdp()">
-            <span class="toggle-password" onclick="togglePassword('confirmer_mdp')">👁️</span>
+            <span class="toggle-password" onclick="togglePassword('confirmer_mdp')">
+            <img src="../../../ressources/css/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-confirmer">
+            <img src="../../../ressources/css/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-confirmer" style="display: none;">
+        </span>
         </div>
 
         <p id="message-confirmation" class="invalid">❌ Les mots de passe ne correspondent pas</p>
@@ -230,12 +239,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     function togglePassword(id) {
         const input = document.getElementById(id);
+        const eyeIconOpen = input.nextElementSibling.querySelector('img[id^="oeil-ouvert"]');
+        const eyeIconClosed = input.nextElementSibling.querySelector('img[id^="oeil-ferme"]');
+
         if (input.type === "password") {
             input.type = "text";
+            eyeIconOpen.style.display = "inline";
+            eyeIconClosed.style.display = "none";
         } else {
             input.type = "password";
+            eyeIconOpen.style.display = "none";
+            eyeIconClosed.style.display = "inline";
         }
     }
+
+
 
 </script>
 </script>

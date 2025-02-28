@@ -16,7 +16,10 @@
     <label for="mot_de_passe">Mot de passe :</label>
     <div class="password-container">
         <input type="password" id="mot_de_passe" name="mot_de_passe" required onkeyup="verifierMdp()">
-        <span class="toggle-password" onclick="togglePassword('mot_de_passe')">👁️</span>
+        <span class="toggle-password" onclick="togglePassword('mot_de_passe')">
+            <img src="../../../ressources/css/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-mdp">
+            <img src="../../../ressources/css/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-mdp" style="display: none;">
+        </span>
     </div>
 
     <ul class="password-requirements">
@@ -29,7 +32,10 @@
     <label for="mot_de_passe_confirme">Confirmer le mot de passe :</label>
     <div class="password-container">
         <input type="password" id="mot_de_passe_confirme" name="mot_de_passe_confirme" required onkeyup="verifierMdp()">
-        <span class="toggle-password" onclick="togglePassword('mot_de_passe_confirme')">👁️</span>
+        <span class="toggle-password" onclick="togglePassword('mot_de_passe_confirme')">
+            <img src="../../../ressources/css/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-confirme">
+            <img src="../../../ressources/css/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-confirme" style="display: none;">
+        </span>
     </div>
 
     <p id="message-confirmation" class="invalid">❌ Les mots de passe ne correspondent pas</p>
@@ -47,53 +53,26 @@
     <button type="submit" id="submitUtilisateur" disabled>Ajouter l'utilisateur</button>
 </form>
 
-<style>
-    .password-container {
-        position: relative;
-        width: fit-content;
-    }
 
-    .password-container input {
-        padding-right: 30px;
-    }
-
-    .password-container .toggle-password {
-        position: absolute;
-        right: 5px;
-        top: 50%;
-        transform: translateY(-50%);
-        cursor: pointer;
-    }
-
-    .password-requirements {
-        list-style: none;
-        padding: 0;
-    }
-
-    .password-requirements li, #message-confirmation, #message-email {
-        font-size: 0.9rem;
-        margin-bottom: 5px;
-        font-weight: bold;
-    }
-
-    .invalid {
-        color: red;
-    }
-
-    .valid {
-        color: green;
-    }
-</style>
 
 <script>
     function togglePassword(id) {
         const input = document.getElementById(id);
+        const eyeIconOpen = input.nextElementSibling.querySelector('img[id^="oeil-ouvert"]');
+        const eyeIconClosed = input.nextElementSibling.querySelector('img[id^="oeil-ferme"]');
+
         if (input.type === "password") {
             input.type = "text";
+            eyeIconOpen.style.display = "inline";
+            eyeIconClosed.style.display = "none";
         } else {
             input.type = "password";
+            eyeIconOpen.style.display = "none";
+            eyeIconClosed.style.display = "inline";
         }
     }
+
+
 
     function updateRequirement(element, condition, texteValide, texteInvalide) {
         if (condition) {

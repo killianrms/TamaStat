@@ -1011,15 +1011,29 @@ input[type="file"] {
 
 
 .password-container {
-    display: flex;
-    align-items: center;
     position: relative;
+    width: 100%;
 }
 
 .password-container input {
-    flex: 1;
-    padding-right: 35px; /* Laisser de la place pour l'icône */
+    width: 100%;
+    padding-right: 40px;
 }
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+}
+
+.toggle-password img {
+    width: 20px;
+    height: 20px;
+}
+
+
 
 .password-container .toggle-password {
     position: absolute;
@@ -1027,14 +1041,6 @@ input[type="file"] {
     top: 50%;
     transform: translateY(-50%);
     cursor: pointer;
-}
-
-.toggle-password {
-    position: absolute;
-    right: 10px;
-    cursor: pointer;
-    font-size: 1.2em;
-    color: #0072bc;
 }
 
 .toggle-password:hover {
