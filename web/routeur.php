@@ -192,10 +192,12 @@ try {
             if ($id) {
                 $pdo = (new ConnexionBD())->getPdo();
 
+                $stmt = $pdo->prepare('DELETE FROM locations WHERE utilisateur_id = :id');
+                $stmt->execute(['id' => $id]);
+
                 $stmt = $pdo->prepare('DELETE FROM box_types WHERE utilisateur_id = :id');
                 $stmt->execute(['id' => $id]);
 
-                // Ensuite, supprimer l'utilisateur
                 $stmt = $pdo->prepare('DELETE FROM utilisateurs WHERE id = :id');
                 $stmt->execute(['id' => $id]);
 
@@ -203,6 +205,7 @@ try {
                 exit;
             }
             break;
+
 
 
         case 'gestionUtilisateurs':
