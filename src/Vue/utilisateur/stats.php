@@ -194,13 +194,16 @@ foreach ($locations as $location) {
     </div>
 
     <h3>Filtrer les types de box</h3>
-    <div id="boxFilter">
-        <?php foreach ($boxLabels as $index => $boxLabel): ?>
-            <label>
-                <input type="checkbox" class="box-checkbox" value="<?= $index ?>" checked>
-                <?= htmlspecialchars($boxLabel) ?>
-            </label>
-        <?php endforeach; ?>
+    <div class="dropdown">
+        <button id="toggleFilter">Sélectionner les box ▼</button>
+        <div id="boxFilter" class="dropdown-content">
+            <?php foreach ($boxLabels as $index => $boxLabel): ?>
+                <label>
+                    <input type="checkbox" class="box-checkbox" value="<?= $index ?>" checked>
+                    <?= htmlspecialchars($boxLabel) ?>
+                </label>
+            <?php endforeach; ?>
+        </div>
     </div>
 
     <div class="chart-card">
@@ -253,6 +256,13 @@ foreach ($locations as $location) {
             data: chartData
         });
 
+        const toggleButton = document.getElementById("toggleFilter");
+        const dropdownContent = document.getElementById("boxFilter");
+
+        toggleButton.addEventListener("click", function () {
+            dropdownContent.classList.toggle("active");
+        });
+
         document.querySelectorAll(".box-checkbox").forEach((checkbox, index) => {
             checkbox.addEventListener("change", function () {
                 let selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox:checked")).map(cb => parseInt(cb.value));
@@ -265,7 +275,14 @@ foreach ($locations as $location) {
                 chart.update();
             });
         });
+
+        document.addEventListener("click", function (event) {
+            if (!toggleButton.contains(event.target) && !dropdownContent.contains(event.target)) {
+                dropdownContent.classList.remove("active");
+            }
+        });
     });
+
 
     new Chart(document.getElementById('revenuMensuelChart'), {
         type: 'line',

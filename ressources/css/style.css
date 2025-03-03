@@ -871,6 +871,55 @@ canvas {
     background-color: #dc3545;
 }
 
+/* Conteneur du menu déroulant */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+/* Bouton pour ouvrir/fermer le menu */
+#toggleFilter {
+    background-color: #007bff;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+/* Contenu du menu (masqué par défaut) */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: white;
+    min-width: 200px;
+    max-height: 250px;
+    overflow-y: auto;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+/* Style des labels des checkboxes */
+.dropdown-content label {
+    display: block;
+    padding: 5px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* Affichage de la liste quand elle est active */
+.dropdown-content.active {
+    display: block;
+}
+
+/* Hover sur le bouton */
+#toggleFilter:hover {
+    background-color: #0056b3;
+}
+
+
 .loader {
     border: 5px solid #f3f3f3;
     border-top: 5px solid #3498db;
