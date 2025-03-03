@@ -7,21 +7,25 @@ $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
 $utilisateurId = $_SESSION['user']['id'];
 
-$stmt = $pdo->prepare('SELECT COUNT(*) FROM box_types WHERE utilisateur_id = ?');
+$stmt = $pdo->prepare('SELECT date_dernier_changement_mdp FROM utilisateurs WHERE id = ?');
 $stmt->execute([$utilisateurId]);
-$hasBoxes = $stmt->fetchColumn() > 0;
+$dateDernierMdp = $stmt->fetchColumn();
 
-$stmt = $pdo->prepare('SELECT COUNT(*) FROM utilisateur_boxes WHERE utilisateur_id = ?');
+$stmt = $pdo->prepare('SELECT MAX(date_dernier_import) FROM box_types WHERE utilisateur_id = ?');
 $stmt->execute([$utilisateurId]);
-$hasBoxesConfig = $stmt->fetchColumn() > 0;
+$dateDernierImportBox = $stmt->fetchColumn();
 
-$stmt = $pdo->prepare('SELECT COUNT(*) FROM locations WHERE utilisateur_id = ?');
+$stmt = $pdo->prepare('SELECT MAX(date_dernier_import) FROM utilisateur_boxes WHERE utilisateur_id = ?');
 $stmt->execute([$utilisateurId]);
-$hasContrats = $stmt->fetchColumn() > 0;
+$dateDernierImportNbBox = $stmt->fetchColumn();
 
-$stmt = $pdo->prepare('SELECT COUNT(*) FROM factures WHERE utilisateur_id = ?');
+$stmt = $pdo->prepare('SELECT MAX(date_dernier_import) FROM locations WHERE utilisateur_id = ?');
 $stmt->execute([$utilisateurId]);
-$hasFactures = $stmt->fetchColumn() > 0;
+$dateDernierImportContrats = $stmt->fetchColumn();
+
+$stmt = $pdo->prepare('SELECT MAX(date_dernier_import) FROM factures WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$dateDernierImportFactures = $stmt->fetchColumn();
 
 $succes = $erreur = "";
 
@@ -31,6 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['csv_box']) && $_FILES['csv_box']['size'] > 0) {
         try {
             $controleurCsv->importerBoxTypes($_FILES['csv_box']);
+            $pdo->prepare('UPDATE box_types SET date_dernier_import = NOW() WHERE utilisateur_id = ?')->execute([$utilisateurId]);
             $succes = "Fichier CSV des box importé avec succès.";
         } catch (Exception $e) {
             $erreur = "Erreur : " . $e->getMessage();
@@ -40,6 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['csv_contrats']) && $_FILES['csv_contrats']['size'] > 0) {
         try {
             $controleurCsv->importerContrats($_FILES['csv_contrats'], $utilisateurId);
+            $pdo->prepare('UPDATE locations SET date_dernier_import = NOW() WHERE utilisateur_id = ?')->execute([$utilisateurId]);
             $succes = "Fichier CSV des contrats importé avec succès.";
         } catch (Exception $e) {
             $erreur = "Erreur : " . $e->getMessage();
@@ -49,6 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['csv_factures']) && $_FILES['csv_factures']['size'] > 0) {
         try {
             $controleurCsv->importerFactures($_FILES['csv_factures'], $utilisateurId);
+            $pdo->prepare('UPDATE factures SET date_dernier_import = NOW() WHERE utilisateur_id = ?')->execute([$utilisateurId]);
             $succes = "Fichier CSV des factures importé avec succès.";
         } catch (Exception $e) {
             $erreur = "Erreur : " . $e->getMessage();
@@ -56,28 +63,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Profil</title>
-    <link rel="stylesheet" href="../ressources/css/style.css">
+    <link rel="stylesheet" href="../../../ressources/js/script.js">
 </head>
-<body class="profil-page">
+<body>
 <h1>Profil</h1>
-<?php if (!empty($_SESSION['erreur_message'])): ?>
-    <div class="error-message"><?= htmlspecialchars($_SESSION['erreur_message']) ?></div>
-    <?php unset($_SESSION['erreur_message']); ?>
-<?php endif; ?>
-
-<?php if (!empty($_SESSION['succes_message'])): ?>
-    <div class="success-message"><?= htmlspecialchars($_SESSION['succes_message']) ?></div>
-    <?php unset($_SESSION['succes_message']); ?>
-<?php endif; ?>
-
-<!-- Étape Changer le mot de passe -->
 <div class="etape-card">
     <h3 class="etape-title">Changer le mot de passe</h3>
     <form action="routeur.php?route=changer-mdp" method="POST">
@@ -86,7 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="password" id="ancien_mdp" name="ancien_mdp" required>
             <span class="toggle-password" onclick="togglePassword('ancien_mdp')">
             <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-ancien">
-            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-ancien" style="display: none;">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-ancien"
+                 style="display: none;">
         </span>
         </div>
 
@@ -95,7 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="password" id="nouveau_mdp" name="nouveau_mdp" required onkeyup="verifierMdp()">
             <span class="toggle-password" onclick="togglePassword('nouveau_mdp')">
             <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-nouveau">
-            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-nouveau" style="display: none;">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-nouveau"
+                 style="display: none;">
         </span>
         </div>
 
@@ -111,7 +107,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <input type="password" id="confirmer_mdp" name="confirmer_mdp" required onkeyup="verifierMdp()">
             <span class="toggle-password" onclick="togglePassword('confirmer_mdp')">
             <img src="../../../ressources/images/oeil-ferme.png" alt="Oeil fermé" id="oeil-ferme-confirmer">
-            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-confirmer" style="display: none;">
+            <img src="../../../ressources/images/oeil-ouvert.png" alt="Oeil ouvert" id="oeil-ouvert-confirmer"
+                 style="display: none;">
         </span>
         </div>
 
@@ -121,47 +118,59 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </form>
 </div>
 
-
-<!-- Étape 1 : Import des box -->
 <div class="etape-card">
-    <h3 class="etape-title">Étape 1 : Import des box</h3>
-    <p><?= $hasBoxes ? 'Données importées' : 'Données non importées' ?></p>
-    <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
+    <h3>Import des box</h3>
+    <p>Dernier import
+        : <?= $dateDernierImportBox ? date('d/m/Y H:i', strtotime($dateDernierImportBox)) : 'Jamais' ?></p>
+    <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data" onsubmit="showLoader(this)">
         <input type="file" name="csv_box" accept=".csv">
-        <button type="submit"><?= $hasBoxes ? 'Réimporter' : 'Importer' ?></button>
+        <button type="submit">Importer</button>
+        <div class="loader"></div>
     </form>
 </div>
 
-<!-- Étape 2 : Configuration des box -->
-<div class="etape-card <?= $hasBoxesConfig ? 'etape-complete' : '' ?>">
-    <h3 class="etape-title">Étape 2 : Configuration des box</h3>
-    <p><?= $hasBoxesConfig ? 'Configuration effectuée' : 'Configuration non effectuée' ?></p>
-    <?php if ($hasBoxesConfig): ?>
-        <a href="routeur.php?route=modifier-boxes" class="btn">Modifier la configuration</a>
-    <?php endif; ?>
+<div class="etape-card">
+    <h3>Modifier la quantité de boxes</h3>
+    <p>Dernier import
+        : <?= $dateDernierImportNbBox ? date('d/m/Y H:i', strtotime($dateDernierImportNbBox)) : 'Jamais' ?></p>
+    <a href="routeur.php?route=modifier-boxes" class="btn">Modifier la configuration</a>
 </div>
 
-<!-- Étape 3 : Import des contrats -->
 <div class="etape-card">
-    <h3 class="etape-title">Étape 3 : Import des contrats</h3>
-    <p><?= $hasContrats ? 'Données importées' : 'Données non importées' ?></p>
-    <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
+    <h3>Import des contrats</h3>
+    <p>Dernier import
+        : <?= $dateDernierImportContrats ? date('d/m/Y H:i', strtotime($dateDernierImportContrats)) : 'Jamais' ?></p>
+    <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data" onsubmit="showLoader(this)">
         <input type="file" name="csv_contrats" accept=".csv">
-        <button type="submit"><?= $hasContrats ? 'Réimporter' : 'Importer' ?></button>
+        <button type="submit">Importer</button>
+        <div class="loader"></div>
     </form>
 </div>
 
-<!-- Étape 4 : Import des factures -->
 <div class="etape-card">
-    <h3 class="etape-title">Étape 4 : Import des factures</h3>
-    <p><?= $hasFactures ? 'Données importées' : 'Données non importées' ?></p>
-    <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data">
+    <h3>Import des factures</h3>
+    <p>Dernier import
+        : <?= $dateDernierImportFactures ? date('d/m/Y H:i', strtotime($dateDernierImportFactures)) : 'Jamais' ?></p>
+    <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data" onsubmit="showLoader(this)">
         <input type="file" name="csv_factures" accept=".csv">
-        <button type="submit"><?= $hasFactures ? 'Réimporter' : 'Importer' ?></button>
+        <button type="submit">Importer</button>
+        <div class="loader"></div>
     </form>
 </div>
 
 <script>
+    function showLoader(form) {
+        const button = form.querySelector('button[type="submit"]');
+        const loader = form.querySelector('.loader');
+        button.disabled = true;
+        loader.style.display = 'block';
+
+        setTimeout(() => {
+            button.disabled = false;
+            loader.style.display = 'none';
+        }, 30000);
+    }
+
     function updateRequirement(element, condition, texteValide, texteInvalide) {
         if (condition) {
             element.classList.add("valid");
@@ -252,11 +261,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             eyeIconClosed.style.display = "inline";
         }
     }
-
-
-
 </script>
-</script>
-
 </body>
 </html>

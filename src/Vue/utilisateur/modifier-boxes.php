@@ -18,6 +18,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt = $pdo->prepare('UPDATE utilisateur_boxes SET quantite = ? WHERE box_type_id = ? AND utilisateur_id = ?');
         $stmt->execute([$quantite, $boxId, $utilisateurId]);
     }
+
+    $pdo->prepare('UPDATE utilisateur_boxes SET date_dernier_import = NOW() WHERE utilisateur_id = ?')->execute([$utilisateurId]);
+
     header('Location: routeur.php?route=profil');
     exit;
 }
