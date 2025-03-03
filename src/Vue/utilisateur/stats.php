@@ -41,11 +41,16 @@ $capaciteUtilisee = 0;
 $boxLibres = [];
 $boxMax = [];
 $boxOccupees = [];
+$boxLabels = [];
 foreach ($boxTypes as $boxType) {
     $boxTypeId = $boxType['id'];
 
     // Nombre de box disponibles par type
     $totalBoxDispo = $boxDisponibles[$boxTypeId] ?? 0;
+
+    if ($totalBoxDispo == 0) {
+        continue;
+    }
 
     // Nombre de box occupées
     $nbBoxLoues = count(array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId));
@@ -58,6 +63,8 @@ foreach ($boxTypes as $boxType) {
 
     // Nombre de box occupées
     $boxOccupees[$boxTypeId] = $nbBoxLoues;
+
+    $boxLabels[] = $boxType['denomination'];
 }
 
 
