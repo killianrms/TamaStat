@@ -150,12 +150,12 @@ foreach ($locations as $location) {
 <!-- Graphiques -->
 <div class="charts-grid">
     <div class="chart-card">
-        <h3>Revenu mensuel</h3>
+        <h3>Chiffre d'affaires</h3>
         <canvas id="revenuMensuelChart"></canvas>
     </div>
 
     <div class="chart-card">
-        <h3>Nouveaux contrats par mois</h3>
+        <h3>Nombre d'entrées</h3>
         <canvas id="nouveauxContratsChart"></canvas>
     </div>
 
@@ -177,19 +177,11 @@ foreach ($locations as $location) {
         data: {
             labels: moisLabels,
             datasets: [{
-                label: 'Chiffre d\'affaire',
+                label: 'Évolution du Chiffre d\'affaire Mensuel (€ HT)',
                 data: revenuMensuelData,
                 borderColor: '#0072bc',
                 tension: 0.1
             }]
-        },
-        options: {
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Évolution du Chiffre d\'affaire Mensuel (€ HT)'
-                }
-            }
         }
     });
 
@@ -198,18 +190,10 @@ foreach ($locations as $location) {
         data: {
             labels: moisLabels,
             datasets: [{
-                label: 'Contrats',
+                label: 'Nombre d\'entrées mensuel',
                 data: nouveauxContratsData,
                 backgroundColor: '#ff6600'
             }]
-        },
-        options: {
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Nombre d\'entrées mensuel'
-                }
-            }
         }
     });
 
@@ -218,18 +202,10 @@ foreach ($locations as $location) {
         data: {
             labels: boxLabels,
             datasets: [{
-                label: 'Occupation',
+                label: 'Occupation à ce jour (%)',
                 data: occupationData,
                 backgroundColor: '#36A2EB'
             }]
-        },
-        options: {
-            plugins: {
-                title: {
-                    display: true,
-                    text: 'Occupation à ce jour (%)'
-                }
-            }
         }
     });
 </script>
