@@ -192,22 +192,6 @@ try {
             if ($id) {
                 $pdo = (new ConnexionBD())->getPdo();
 
-                $stmt = $pdo->prepare('DELETE FROM factures WHERE utilisateur_id = :id');
-                $stmt->execute(['id' => $id]);
-
-                $stmt = $pdo->prepare('DELETE locations FROM locations 
-                               JOIN box_types ON locations.box_type_id = box_types.id 
-                               WHERE box_types.utilisateur_id = :id');
-                $stmt->execute(['id' => $id]);
-
-                $stmt = $pdo->prepare('DELETE utilisateur_boxes FROM utilisateur_boxes 
-                               JOIN box_types ON utilisateur_boxes.box_type_id = box_types.id 
-                               WHERE box_types.utilisateur_id = :id');
-                $stmt->execute(['id' => $id]);
-
-                $stmt = $pdo->prepare('DELETE FROM box_types WHERE utilisateur_id = :id');
-                $stmt->execute(['id' => $id]);
-
                 $stmt = $pdo->prepare('DELETE FROM utilisateurs WHERE id = :id');
                 $stmt->execute(['id' => $id]);
 
@@ -215,6 +199,7 @@ try {
                 exit;
             }
             break;
+
 
 
 
