@@ -37,8 +37,10 @@ $capaciteTotale = 0;
 $capaciteUtilisee = 0;
 
 // Calculer le nombre de box libres et maximales
+// Calculer le nombre de box libres, occupées et maximales
 $boxLibres = [];
 $boxMax = [];
+$boxOccupees = [];
 foreach ($boxTypes as $boxType) {
     $boxTypeId = $boxType['id'];
 
@@ -48,12 +50,16 @@ foreach ($boxTypes as $boxType) {
     // Nombre de box occupées
     $nbBoxLoues = count(array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId));
 
-    // Calcul du nombre de box libres
+    // Nombre de box libres
     $boxLibres[$boxTypeId] = $totalBoxDispo - $nbBoxLoues;
 
     // Stocker la quantité maximale
     $boxMax[$boxTypeId] = $totalBoxDispo;
+
+    // Nombre de box occupées
+    $boxOccupees[$boxTypeId] = $nbBoxLoues;
 }
+
 
 
 // Lier les box à leurs prix
@@ -72,8 +78,9 @@ foreach ($boxTypes as $boxType) {
     // Nombre de box actuellement loués (un box ne compte qu'une fois par mois)
     $nbBoxLoues = count(array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId));
 
-    // Occupation par type de box (inclure même les box à 0%)
-    $occupationParBox[$boxTypeId] = ($totalBoxDispo > 0) ? min(100, round(($nbBoxLoues / $totalBoxDispo) * 100, 2)) : 0;
+    // Nombre de box occupées
+    $occupationParBox[$boxTypeId] = $nbBoxLoues;
+
 
     // Mise à jour des valeurs globales
     $capaciteTotale += $totalBoxDispo;
@@ -199,7 +206,7 @@ foreach ($locations as $location) {
     const occupationData = <?= json_encode(array_values($occupationParBox))?>;
     const boxLibresData = <?= json_encode(array_values($boxLibres)) ?>;
     const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
-    const boxOccupeData = <?= json_encode(array_values($occupationParBox)) ?>;
+    const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
 
     new Chart(document.getElementById('boxLibreOccupeMaxChart'), {
         type: 'bar',
@@ -213,7 +220,7 @@ foreach ($locations as $location) {
                 },
                 {
                     label: 'Box Occupées',
-                    data: boxOccupeData,
+                    data: boxOccupeesData,
                     backgroundColor: '#dc3545'
                 },
                 {
@@ -224,6 +231,7 @@ foreach ($locations as $location) {
             ]
         }
     });
+
 
 
     new Chart(document.getElementById('revenuMensuelChart'), {
