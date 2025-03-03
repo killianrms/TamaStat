@@ -871,56 +871,56 @@ canvas {
     background-color: #dc3545;
 }
 
-/* Conteneur du graphique et du menu déroulant */
-.chart-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
+/* Conteneur du graphique */
+.chart-card {
+    position: relative;
+    padding: 20px;
+    text-align: center;
 }
 
 /* Style du bouton déroulant */
 .dropdown {
     position: relative;
     display: inline-block;
+    margin-bottom: 10px;
 }
 
 #toggleFilter {
     background-color: #007bff;
     color: white;
-    padding: 10px 15px;
+    padding: 5px 10px;
     border: none;
     cursor: pointer;
     border-radius: 5px;
-    font-size: 14px;
+    font-size: 13px;
+    margin-top: 5px; /* Espacement sous le titre */
 }
 
-/* Contenu du menu (masqué par défaut) */
+/* Contenu du menu déroulant */
 .dropdown-content {
     display: none;
     position: absolute;
     background-color: white;
-    min-width: 200px;
-    max-height: 250px;
+    min-width: 180px;
+    max-height: 200px;
     overflow-y: auto;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     padding: 10px;
     border-radius: 5px;
-    z-index: 1000;
-    top: 100%;
-    left: 0;
+    z-index: 10;
+    left: 50%;
+    transform: translateX(-50%); /* Centre le menu sous le bouton */
 }
 
 /* Labels des checkboxes */
 .dropdown-content label {
     display: block;
     padding: 5px;
-    font-size: 14px;
+    font-size: 13px;
     cursor: pointer;
 }
 
-/* Affichage de la liste quand elle est active */
+/* Affichage du menu déroulant */
 .dropdown-content.active {
     display: block;
 }

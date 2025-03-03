@@ -193,9 +193,10 @@ foreach ($locations as $location) {
         <canvas id="nouveauxContratsChart"></canvas>
     </div>
 
-    <div class="chart-container">
+    <div class="chart-card">
+        <h3>Quantité de Box - Libre / Occupé / Max</h3>
         <div class="dropdown">
-            <button id="toggleFilter">Sélectionner les box ▼</button>
+            <button id="toggleFilter">🔽 Sélectionner les box</button>
             <div id="boxFilter" class="dropdown-content">
                 <?php foreach ($boxLabels as $index => $boxLabel): ?>
                     <label>
@@ -205,12 +206,9 @@ foreach ($locations as $location) {
                 <?php endforeach; ?>
             </div>
         </div>
-
-        <div class="chart-card">
-            <h3>Quantité de Box - Libre / Occupé / Max</h3>
-            <canvas id="boxLibreOccupeMaxChart"></canvas>
-        </div>
+        <canvas id="boxLibreOccupeMaxChart"></canvas>
     </div>
+
 
 
 </div>
@@ -236,17 +234,17 @@ foreach ($locations as $location) {
             labels: boxLabels,
             datasets: [
                 {
-                    label: "Box Libres",
+                    label: "Libres",
                     data: boxLibresData,
                     backgroundColor: "#28a745"
                 },
                 {
-                    label: "Box Occupées",
+                    label: "Occupées",
                     data: boxOccupeesData,
                     backgroundColor: "#dc3545"
                 },
                 {
-                    label: "Box Maximales",
+                    label: "Maximales",
                     data: boxMaxData,
                     backgroundColor: "#007bff"
                 }
@@ -285,8 +283,6 @@ foreach ($locations as $location) {
             }
         });
     });
-
-
 
     new Chart(document.getElementById('revenuMensuelChart'), {
         type: 'line',
