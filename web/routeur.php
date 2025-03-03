@@ -201,8 +201,6 @@ try {
             break;
 
 
-
-
         case 'gestionUtilisateurs':
             verifierConnexion();
             if ($_SESSION['user']['is_admin'] !== 1) {

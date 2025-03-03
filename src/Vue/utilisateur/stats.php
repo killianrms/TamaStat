@@ -166,7 +166,7 @@ foreach ($locations as $location) {
 <!-- Statistiques globales -->
 <div class="stats-globales">
     <div class="stat-card">
-        <h3>Revenu total</h3>
+        <h3>Revenu total (€ HT)</h3>
         <div class="value"><?= number_format($revenuTotal, 2) ?> €</div>
     </div>
 
@@ -194,7 +194,7 @@ foreach ($locations as $location) {
     </div>
 
     <div class="chart-card">
-        <h3>Nombre de Box - Libre / Occupé / Max</h3>
+        <h3>Quantité de Box - Libre / Occupé / Max</h3>
         <canvas id="boxLibreOccupeMaxChart"></canvas>
     </div>
 
@@ -215,26 +215,23 @@ foreach ($locations as $location) {
             labels: boxLabels,
             datasets: [
                 {
-                    label: 'Box Libres',
+                    label: 'Quantités Libres',
                     data: boxLibresData,
                     backgroundColor: '#28a745'
                 },
                 {
-                    label: 'Box Occupées',
+                    label: 'Quantités Occupées',
                     data: boxOccupeesData,
                     backgroundColor: '#dc3545'
                 },
                 {
-                    label: 'Box Maximales',
+                    label: 'Quantités Maximales',
                     data: boxMaxData,
                     backgroundColor: '#007bff'
                 }
             ]
         }
     });
-
-
-
 
     new Chart(document.getElementById('revenuMensuelChart'), {
         type: 'line',
