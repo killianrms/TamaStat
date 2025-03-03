@@ -192,7 +192,13 @@ try {
             if ($id) {
                 $pdo = (new ConnexionBD())->getPdo();
 
-                $stmt = $pdo->prepare('DELETE FROM locations WHERE utilisateur_id = :id');
+                $stmt = $pdo->prepare('DELETE FROM factures WHERE box_type_id IN (SELECT id FROM box_types WHERE utilisateur_id = :id)');
+                $stmt->execute(['id' => $id]);
+
+                $stmt = $pdo->prepare('DELETE FROM locations WHERE box_type_id IN (SELECT id FROM box_types WHERE utilisateur_id = :id)');
+                $stmt->execute(['id' => $id]);
+
+                $stmt = $pdo->prepare('DELETE FROM utilisateur_boxes WHERE box_type_id IN (SELECT id FROM box_types WHERE utilisateur_id = :id)');
                 $stmt->execute(['id' => $id]);
 
                 $stmt = $pdo->prepare('DELETE FROM box_types WHERE utilisateur_id = :id');
@@ -205,6 +211,7 @@ try {
                 exit;
             }
             break;
+
 
 
 
