@@ -187,11 +187,6 @@ foreach ($locations as $location) {
     </div>
 
     <div class="chart-card">
-        <h3>Occupation par type de box</h3>
-        <canvas id="occupationChart"></canvas>
-    </div>
-
-    <div class="chart-card">
         <h3>Nombre de Box - Libre / Occupé / Max</h3>
         <canvas id="boxLibreOccupeMaxChart"></canvas>
     </div>
@@ -203,7 +198,6 @@ foreach ($locations as $location) {
     const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
     const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
     const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination'))?>;
-    const occupationData = <?= json_encode(array_values($occupationParBox))?>;
     const boxLibresData = <?= json_encode(array_values($boxLibres)) ?>;
     const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
     const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
@@ -255,18 +249,6 @@ foreach ($locations as $location) {
                 label: 'Nombre d\'entrées mensuel',
                 data: nouveauxContratsData,
                 backgroundColor: '#ff6600'
-            }]
-        }
-    });
-
-    new Chart(document.getElementById('occupationChart'), {
-        type: 'bar',
-        data: {
-            labels: boxLabels,
-            datasets: [{
-                label: 'Occupation à ce jour (%)',
-                data: occupationData,
-                backgroundColor: '#36A2EB'
             }]
         }
     });
