@@ -289,7 +289,7 @@ foreach ($locations as $location) {
         data: {
             labels: moisLabels,
             datasets: [{
-                label: 'Évolution du Chiffre d\'affaire Mensuel (€ HT)',
+                label: 'Évolution Mensuel (€ HT)',
                 data: revenuMensuelData,
                 borderColor: '#0072bc',
                 tension: 0.1
