@@ -194,7 +194,7 @@ foreach ($locations as $location) {
     </div>
 
     <div class="chart-card">
-        <h3>Quantité de Box - Libre / Occupé / Max</h3>
+        <h3>Quantité de Box</h3>
         <div class="dropdown">
             <button id="toggleFilter">🔽 Sélectionner les box</button>
             <div id="boxFilter" class="dropdown-content">
