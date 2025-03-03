@@ -73,7 +73,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <body>
 <h1>Profil</h1>
 <div class="etape-card">
-    <h3 class="etape-title">Changer le mot de passe</h3>
+    <h3 class="etape-title">Changer de mot de passe</h3>
+    <p>Dernier changement
+        : <?= $dateDernierMdp ? date('d/m/Y H:i', strtotime($dateDernierMdp)) : 'Jamais' ?></p>
     <form action="routeur.php?route=changer-mdp" method="POST">
         <label for="ancien_mdp">Ancien mot de passe :</label>
         <div class="password-container">
@@ -168,7 +170,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setTimeout(() => {
             button.disabled = false;
             loader.style.display = 'none';
-        }, 30000);
+        }, 300000);
     }
 
     function updateRequirement(element, condition, texteValide, texteInvalide) {
