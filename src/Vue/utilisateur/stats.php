@@ -193,23 +193,25 @@ foreach ($locations as $location) {
         <canvas id="nouveauxContratsChart"></canvas>
     </div>
 
-    <h3>Filtrer les types de box</h3>
-    <div class="dropdown">
-        <button id="toggleFilter">Sélectionner les box ▼</button>
-        <div id="boxFilter" class="dropdown-content">
-            <?php foreach ($boxLabels as $index => $boxLabel): ?>
-                <label>
-                    <input type="checkbox" class="box-checkbox" value="<?= $index ?>" checked>
-                    <?= htmlspecialchars($boxLabel) ?>
-                </label>
-            <?php endforeach; ?>
+    <div class="chart-container">
+        <div class="dropdown">
+            <button id="toggleFilter">Sélectionner les box ▼</button>
+            <div id="boxFilter" class="dropdown-content">
+                <?php foreach ($boxLabels as $index => $boxLabel): ?>
+                    <label>
+                        <input type="checkbox" class="box-checkbox" value="<?= $index ?>" checked>
+                        <?= htmlspecialchars($boxLabel) ?>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <h3>Quantité de Box - Libre / Occupé / Max</h3>
+            <canvas id="boxLibreOccupeMaxChart"></canvas>
         </div>
     </div>
 
-    <div class="chart-card">
-        <h3>Quantité de Box - Libre / Occupé / Max</h3>
-        <canvas id="boxLibreOccupeMaxChart"></canvas>
-    </div>
 
 </div>
 
@@ -259,7 +261,8 @@ foreach ($locations as $location) {
         const toggleButton = document.getElementById("toggleFilter");
         const dropdownContent = document.getElementById("boxFilter");
 
-        toggleButton.addEventListener("click", function () {
+        toggleButton.addEventListener("click", function (event) {
+            event.stopPropagation();
             dropdownContent.classList.toggle("active");
         });
 
@@ -282,6 +285,7 @@ foreach ($locations as $location) {
             }
         });
     });
+
 
 
     new Chart(document.getElementById('revenuMensuelChart'), {

@@ -871,13 +871,21 @@ canvas {
     background-color: #dc3545;
 }
 
-/* Conteneur du menu déroulant */
+/* Conteneur du graphique et du menu déroulant */
+.chart-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Style du bouton déroulant */
 .dropdown {
     position: relative;
     display: inline-block;
 }
 
-/* Bouton pour ouvrir/fermer le menu */
 #toggleFilter {
     background-color: #007bff;
     color: white;
@@ -885,6 +893,7 @@ canvas {
     border: none;
     cursor: pointer;
     border-radius: 5px;
+    font-size: 14px;
 }
 
 /* Contenu du menu (masqué par défaut) */
@@ -899,9 +908,11 @@ canvas {
     padding: 10px;
     border-radius: 5px;
     z-index: 1000;
+    top: 100%;
+    left: 0;
 }
 
-/* Style des labels des checkboxes */
+/* Labels des checkboxes */
 .dropdown-content label {
     display: block;
     padding: 5px;
@@ -914,7 +925,7 @@ canvas {
     display: block;
 }
 
-/* Hover sur le bouton */
+/* Effet hover sur le bouton */
 #toggleFilter:hover {
     background-color: #0056b3;
 }
