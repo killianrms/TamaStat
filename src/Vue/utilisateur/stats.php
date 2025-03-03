@@ -1,4 +1,5 @@
 <?php
+
 use App\Configuration\ConnexionBD;
 use App\Modele\CsvModele;
 
@@ -23,7 +24,7 @@ $locations = $pdo->prepare('SELECT * FROM locations WHERE utilisateur_id = ?');
 $locations->execute([$utilisateurId]);
 $locations = $locations->fetchAll(PDO::FETCH_ASSOC);
 
-// Récupérer les factures de l'utilisateur (utiliser prix HT au lieu de TTC)
+// Récupérer les factures de l'utilisateur
 $factures = $pdo->prepare('SELECT * FROM factures WHERE utilisateur_id = ?');
 $factures->execute([$utilisateurId]);
 $factures = $factures->fetchAll(PDO::FETCH_ASSOC);
@@ -48,7 +49,7 @@ foreach ($boxTypes as $boxType) {
     // Nombre de box disponibles
     $totalBoxDispo = $boxDisponibles[$boxTypeId] ?? 0;
 
-    // Nombre de box actuellement loués
+    // Nombre de box actuellement loués (un box ne compte qu'une fois par mois)
     $nbBoxLoues = count(array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId));
 
     // Occupation par type de box (inclure même les box à 0%)
@@ -59,7 +60,7 @@ foreach ($boxTypes as $boxType) {
     $capaciteUtilisee += $nbBoxLoues;
 }
 
-// Calculer le revenu total et mensuel (Prix HT au lieu de TTC)
+// Calculer le revenu total et mensuel
 foreach ($factures as $facture) {
     $revenuTotal += $facture['total_ht'];
     $mois = date('Y-m', strtotime($facture['date_facture']));
@@ -81,20 +82,72 @@ foreach ($locations as $location) {
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        .charts-grid {
-            display: flex;
-            flex-wrap: wrap;
+        .stats-globales {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
-            flex-direction: row;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .stat-card .value {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .chart-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
     </style>
 </head>
-<body>
+<body class="stats-page">
 <h1>Statistiques de vos locations</h1>
 
+<!-- Statistiques globales -->
+<div class="stats-globales">
+    <div class="stat-card">
+        <h3>Revenu total</h3>
+        <div class="value"><?= number_format($revenuTotal, 2) ?> €</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Taux d'occupation</h3>
+        <div class="value"><?= $tauxOccupationGlobal ?> %</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Capacité utilisée</h3>
+        <div class="value"><?= $capaciteUtilisee ?> box loués</div>
+    </div>
+</div>
+
+<!-- Graphiques -->
 <div class="charts-grid">
     <div class="chart-card">
         <h3>Revenu mensuel</h3>
@@ -113,48 +166,70 @@ foreach ($locations as $location) {
 </div>
 
 <script>
-    const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
-    const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
-    const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
-    const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination')) ?>.reverse();
-    const occupationData = <?= json_encode(array_values($occupationParBox)) ?>.reverse();
+    const moisLabels = <?= json_encode(array_keys($revenuMensuel)) . reverse() ?>;
+    const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) . reverse() ?>;
+    const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) . reverse() ?>;
+    const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination'))?>;
+    const occupationData = <?= json_encode(array_values($occupationParBox))?>;
 
     new Chart(document.getElementById('revenuMensuelChart'), {
         type: 'line',
         data: {
             labels: moisLabels,
             datasets: [{
-                label: 'Revenu mensuel (€ HT)',
+                label: 'Chiffre d\'affaire',
                 data: revenuMensuelData,
                 borderColor: '#0072bc',
                 tension: 0.1
             }]
-        }
-    });
+        },
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Évolution du Chiffre d\'affaire Mensuel (€ HT)'
+                }
+            }
+        });
+
 
     new Chart(document.getElementById('nouveauxContratsChart'), {
         type: 'bar',
         data: {
             labels: moisLabels,
             datasets: [{
-                label: 'Nouveaux contrats',
+                label: 'Contrats',
                 data: nouveauxContratsData,
                 backgroundColor: '#ff6600'
             }]
-        }
-    });
+        },
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Nombre d\'entrées mensuel'
+                }
+            }
+        });
 
     new Chart(document.getElementById('occupationChart'), {
         type: 'bar',
         data: {
             labels: boxLabels,
             datasets: [{
-                label: 'Occupation (%)',
+                label: 'Occupation',
                 data: occupationData,
                 backgroundColor: '#36A2EB'
             }]
-        }
-    });
+        },
+        options: {
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Occupation à ce jour (%)'
+                }
+            }
+        });
 </script>
 </body>
 </html>
