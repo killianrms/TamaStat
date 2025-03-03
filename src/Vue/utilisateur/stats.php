@@ -193,6 +193,16 @@ foreach ($locations as $location) {
         <canvas id="nouveauxContratsChart"></canvas>
     </div>
 
+    <h3>Filtrer les types de box</h3>
+    <div id="boxFilter">
+        <?php foreach ($boxLabels as $index => $boxLabel): ?>
+            <label>
+                <input type="checkbox" class="box-checkbox" value="<?= $index ?>" checked>
+                <?= htmlspecialchars($boxLabel) ?>
+            </label>
+        <?php endforeach; ?>
+    </div>
+
     <div class="chart-card">
         <h3>Quantité de Box - Libre / Occupé / Max</h3>
         <canvas id="boxLibreOccupeMaxChart"></canvas>
@@ -209,28 +219,52 @@ foreach ($locations as $location) {
     const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
     const boxLabels = <?= json_encode($boxLabels) ?>;
 
-    new Chart(document.getElementById('boxLibreOccupeMaxChart'), {
-        type: 'bar',
-        data: {
+    document.addEventListener("DOMContentLoaded", function () {
+        const ctx = document.getElementById("boxLibreOccupeMaxChart").getContext("2d");
+
+        const boxLabels = <?= json_encode($boxLabels) ?>;
+        const boxLibresData = <?= json_encode(array_values($boxLibres)) ?>;
+        const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
+        const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
+
+        let chartData = {
             labels: boxLabels,
             datasets: [
                 {
-                    label: 'Quantités Libres',
+                    label: "Box Libres",
                     data: boxLibresData,
-                    backgroundColor: '#28a745'
+                    backgroundColor: "#28a745"
                 },
                 {
-                    label: 'Quantités Occupées',
+                    label: "Box Occupées",
                     data: boxOccupeesData,
-                    backgroundColor: '#dc3545'
+                    backgroundColor: "#dc3545"
                 },
                 {
-                    label: 'Quantités Maximales',
+                    label: "Box Maximales",
                     data: boxMaxData,
-                    backgroundColor: '#007bff'
+                    backgroundColor: "#007bff"
                 }
             ]
-        }
+        };
+
+        let chart = new Chart(ctx, {
+            type: "bar",
+            data: chartData
+        });
+
+        document.querySelectorAll(".box-checkbox").forEach((checkbox, index) => {
+            checkbox.addEventListener("change", function () {
+                let selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox:checked")).map(cb => parseInt(cb.value));
+
+                chartData.labels = selectedIndexes.map(i => boxLabels[i]);
+                chartData.datasets[0].data = selectedIndexes.map(i => boxLibresData[i]);
+                chartData.datasets[1].data = selectedIndexes.map(i => boxOccupeesData[i]);
+                chartData.datasets[2].data = selectedIndexes.map(i => boxMaxData[i]);
+
+                chart.update();
+            });
+        });
     });
 
     new Chart(document.getElementById('revenuMensuelChart'), {
