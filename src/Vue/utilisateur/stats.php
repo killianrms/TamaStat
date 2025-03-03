@@ -166,9 +166,9 @@ foreach ($locations as $location) {
 </div>
 
 <script>
-    const moisLabels = <?= json_encode(array_keys($revenuMensuel)) . reverse() ?>;
-    const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) . reverse() ?>;
-    const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) . reverse() ?>;
+    const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
+    const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
+    const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
     const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination'))?>;
     const occupationData = <?= json_encode(array_values($occupationParBox))?>;
 
@@ -190,8 +190,8 @@ foreach ($locations as $location) {
                     text: 'Évolution du Chiffre d\'affaire Mensuel (€ HT)'
                 }
             }
-        });
-
+        }
+    });
 
     new Chart(document.getElementById('nouveauxContratsChart'), {
         type: 'bar',
@@ -210,7 +210,8 @@ foreach ($locations as $location) {
                     text: 'Nombre d\'entrées mensuel'
                 }
             }
-        });
+        }
+    });
 
     new Chart(document.getElementById('occupationChart'), {
         type: 'bar',
@@ -229,7 +230,8 @@ foreach ($locations as $location) {
                     text: 'Occupation à ce jour (%)'
                 }
             }
-        });
+        }
+    });
 </script>
 </body>
 </html>
