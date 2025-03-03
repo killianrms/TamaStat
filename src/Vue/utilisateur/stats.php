@@ -204,10 +204,10 @@ foreach ($locations as $location) {
     const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
     const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
     const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
-    const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination'))?>;
     const boxLibresData = <?= json_encode(array_values($boxLibres)) ?>;
     const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
     const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
+    const boxLabels = <?= json_encode($boxLabels) ?>;
 
     new Chart(document.getElementById('boxLibreOccupeMaxChart'), {
         type: 'bar',
@@ -232,6 +232,7 @@ foreach ($locations as $location) {
             ]
         }
     });
+
 
 
 
