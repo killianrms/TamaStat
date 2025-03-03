@@ -15,8 +15,24 @@ $boxConfig = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     foreach ($_POST['box_counts'] as $boxId => $quantite) {
-        $stmt = $pdo->prepare('UPDATE utilisateur_boxes SET quantite = ? WHERE box_type_id = ? AND utilisateur_id = ?');
-        $stmt->execute([$quantite, $boxId, $utilisateurId]);
+        // Vérifier si la box existe déjà dans la table utilisateur_boxes
+        $stmt = $pdo->prepare('SELECT id FROM utilisateur_boxes WHERE box_type_id = ? AND utilisateur_id = ?');
+        $stmt->execute([$boxId, $utilisateurId]);
+        $existingBox = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($existingBox) {
+            // Si la box existe, mettre à jour la quantité
+            $stmt = $pdo->prepare('UPDATE utilisateur_boxes SET quantite = ? WHERE box_type_id = ? AND utilisateur_id = ?');
+            $stmt->execute([$quantite, $boxId, $utilisateurId]);
+        } else {
+            // Si la box n'existe pas, l'insérer
+            $stmt = $pdo->prepare('INSERT INTO utilisateur_boxes (utilisateur_id, box_type_id, quantite) VALUES (:utilisateur_id, :box_type_id, :quantite)');
+            $stmt->execute([
+                ':utilisateur_id' => $utilisateurId,
+                ':box_type_id' => $boxId,
+                ':quantite' => $quantite
+            ]);
+        }
     }
 
     $pdo->prepare('UPDATE utilisateur_boxes SET date_dernier_import = NOW() WHERE utilisateur_id = ?')->execute([$utilisateurId]);
@@ -25,6 +41,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="fr">
