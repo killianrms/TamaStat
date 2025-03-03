@@ -36,6 +36,26 @@ $occupationParBox = [];
 $capaciteTotale = 0;
 $capaciteUtilisee = 0;
 
+// Calculer le nombre de box libres et maximales
+$boxLibres = [];
+$boxMax = [];
+foreach ($boxTypes as $boxType) {
+    $boxTypeId = $boxType['id'];
+
+    // Nombre de box disponibles par type
+    $totalBoxDispo = $boxDisponibles[$boxTypeId] ?? 0;
+
+    // Nombre de box occupées
+    $nbBoxLoues = count(array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId));
+
+    // Calcul du nombre de box libres
+    $boxLibres[$boxTypeId] = $totalBoxDispo - $nbBoxLoues;
+
+    // Stocker la quantité maximale
+    $boxMax[$boxTypeId] = $totalBoxDispo;
+}
+
+
 // Lier les box à leurs prix
 $boxTypesById = [];
 foreach ($boxTypes as $boxType) {
@@ -163,6 +183,12 @@ foreach ($locations as $location) {
         <h3>Occupation par type de box</h3>
         <canvas id="occupationChart"></canvas>
     </div>
+
+    <div class="chart-card">
+        <h3>Nombre de Box - Libre / Occupé / Max</h3>
+        <canvas id="boxLibreOccupeMaxChart"></canvas>
+    </div>
+
 </div>
 
 <script>
@@ -171,6 +197,34 @@ foreach ($locations as $location) {
     const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
     const boxLabels = <?= json_encode(array_column($boxTypes, 'denomination'))?>;
     const occupationData = <?= json_encode(array_values($occupationParBox))?>;
+    const boxLibresData = <?= json_encode(array_values($boxLibres)) ?>;
+    const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
+    const boxOccupeData = <?= json_encode(array_values($occupationParBox)) ?>;
+
+    new Chart(document.getElementById('boxLibreOccupeMaxChart'), {
+        type: 'bar',
+        data: {
+            labels: boxLabels,
+            datasets: [
+                {
+                    label: 'Box Libres',
+                    data: boxLibresData,
+                    backgroundColor: '#28a745'
+                },
+                {
+                    label: 'Box Occupées',
+                    data: boxOccupeData,
+                    backgroundColor: '#dc3545'
+                },
+                {
+                    label: 'Box Maximales',
+                    data: boxMaxData,
+                    backgroundColor: '#007bff'
+                }
+            ]
+        }
+    });
+
 
     new Chart(document.getElementById('revenuMensuelChart'), {
         type: 'line',
