@@ -170,10 +170,20 @@ class CsvModele {
 
     public function importerRecapVentes($utilisateurId, $ligne) {
         try {
-            $dateVente = \DateTime::createFromFormat('d/m/Y', $ligne[1]);
-            if (!$dateVente) {
-                throw new Exception("Date de vente invalide : " . $ligne[1]);
+            $dateVenteStr = trim($ligne[1]);
+
+            $formats = ['d/m/Y', 'Y-m-d', 'm/d/Y'];
+            $dateVente = false;
+
+            foreach ($formats as $format) {
+                $dateVente = \DateTime::createFromFormat($format, $dateVenteStr);
+                if ($dateVente) break;
             }
+
+            if (!$dateVente) {
+                throw new Exception("Date de vente invalide : '" . $dateVenteStr . "' dans le fichier CSV.");
+            }
+
 
             $totalHt = str_replace(',', '.', $ligne[5]);
             $tva = str_replace(',', '.', $ligne[6]);

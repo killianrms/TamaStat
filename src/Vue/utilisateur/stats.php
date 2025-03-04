@@ -38,18 +38,13 @@ $parcs = $parcs->fetchAll(PDO::FETCH_ASSOC);
 $parcFiltreId = $_GET['parc_id'] ?? null;
 $filtreActif = $parcFiltreId ? "AND factures.parc_id = :parc_id" : "";
 
-$query = 'SELECT recap_ventes.* FROM recap_ventes 
-          JOIN factures ON factures.id = recap_ventes.facture_id
-          WHERE recap_ventes.utilisateur_id = ? ' . $filtreActif;
-
+$query = 'SELECT * FROM recap_ventes WHERE utilisateur_id = ?';
 $stmt = $pdo->prepare($query);
-
 $params = [$utilisateurId];
 if ($parcFiltreId) {
     $stmt->bindParam(':parc_id', $parcFiltreId, PDO::PARAM_INT);
 }
-
-$stmt->execute($params);
+$stmt->execute([$utilisateurId]);
 $recapVentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 
