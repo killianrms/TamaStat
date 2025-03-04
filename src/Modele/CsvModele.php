@@ -161,9 +161,17 @@ class CsvModele {
                 throw new Exception("Date de vente invalide : " . $ligne[1]);
             }
 
-            $totalHt = str_replace(',', '.', $ligne[4]);
-            $tva = str_replace(',', '.', $ligne[5]);
-            $totalTtc = str_replace(',', '.', $ligne[6]);
+            $totalHt = str_replace(',', '.', $ligne[5]);
+            $tva = str_replace(',', '.', $ligne[6]);
+            $totalTtc = str_replace(',', '.', $ligne[7]);
+
+            $totalHt = number_format((float) $totalHt, 2, '.', '');
+            $tva = number_format((float) $tva, 2, '.', '');
+            $totalTtc = number_format((float) $totalTtc, 2, '.', '');
+
+            if (!is_numeric($totalHt) || !is_numeric($tva) || !is_numeric($totalTtc)) {
+                throw new Exception("Valeur invalide détectée : Total HT = $totalHt, TVA = $tva, Total TTC = $totalTtc");
+            }
 
             $stmt = $this->pdo->prepare('
             INSERT INTO recap_ventes (utilisateur_id, date_vente, total_ht, tva, total_ttc, date_dernier_import)
@@ -190,6 +198,7 @@ class CsvModele {
             throw new Exception("Erreur PDO : " . $e->getMessage());
         }
     }
+
 
 
 
