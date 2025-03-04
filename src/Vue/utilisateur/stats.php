@@ -182,16 +182,34 @@ foreach ($locations as $location) {
 </div>
 
 <!-- Graphiques -->
-<div class="charts-grid">
-    <div class="chart-card">
-        <h3>Chiffre d'affaires</h3>
-        <canvas id="revenuMensuelChart"></canvas>
+<div class="chart-card">
+    <h3>Chiffre d'affaires</h3>
+    <div class="date-filters">
+        <label for="startDateRevenue">Date début :</label>
+        <input type="date" id="startDateRevenue">
+
+        <label for="endDateRevenue">Date fin :</label>
+        <input type="date" id="endDateRevenue">
     </div>
 
-    <div class="chart-card">
-        <h3>Nombre d'entrées</h3>
-        <canvas id="nouveauxContratsChart"></canvas>
+    <canvas id="revenuMensuelChart"></canvas>
+</div>
+
+
+<div class="chart-card">
+    <h3>Nombre d'entrées</h3>
+
+    <div class="date-filters">
+        <label for="startDateEntrées">Date début :</label>
+        <input type="date" id="startDateEntrées">
+
+        <label for="endDateEntrées">Date fin :</label>
+        <input type="date" id="endDateEntrées">
     </div>
+
+    <canvas id="nouveauxContratsChart"></canvas>
+</div>
+
 
     <div class="chart-card">
         <h3>Quantité de Box</h3>
@@ -284,23 +302,63 @@ foreach ($locations as $location) {
         });
     });
 
-    new Chart(document.getElementById('revenuMensuelChart'), {
-        type: 'line',
-        data: {
-            labels: moisLabels,
-            datasets: [{
-                label: 'Évolution Mensuel (€ HT)',
-                data: revenuMensuelData,
-                borderColor: '#0072bc',
-                tension: 0.1
-            }]
+    document.addEventListener("DOMContentLoaded", function () {
+        const revenueCtx = document.getElementById('revenuMensuelChart').getContext('2d');
+
+        const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
+        const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
+
+        let revenueChart = new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: moisLabels,
+                datasets: [{
+                    label: 'Évolution Mensuel (€ HT)',
+                    data: revenuMensuelData,
+                    borderColor: '#0072bc',
+                    tension: 0.1
+                }]
+            }
+        });
+
+        const startDateInput = document.getElementById('startDateRevenue');
+        const endDateInput = document.getElementById('endDateRevenue');
+
+        function updateRevenueChart() {
+            const startDate = startDateInput.value ? new Date(startDateInput.value + '-01') : null;
+            const endDate = endDateInput.value ? new Date(endDateInput.value + '-01') : null;
+
+            let filteredLabels = [];
+            let filteredData = [];
+
+            moisLabels.forEach((mois, index) => {
+                const date = new Date(mois + '-01');
+                if ((startDate === null || date >= startDate) &&
+                    (endDate === null || date <= endDate)) {
+                    filteredLabels.push(mois);
+                    filteredData.push(revenuMensuelData[index]);
+                }
+            });
+
+            revenueChart.data.labels = filteredLabels;
+            revenueChart.data.datasets[0].data = filteredData;
+            revenueChart.update();
         }
+
+        startDateInput.addEventListener('change', updateRevenueChart);
+        endDateInput.addEventListener('change', updateRevenueChart);
     });
 
-    new Chart(document.getElementById('nouveauxContratsChart'), {
+
+    const contratsCtx = document.getElementById('nouveauxContratsChart').getContext('2d');
+
+    const moisContratsLabels = <?= json_encode(array_keys($nouveauxContratsParMois)) ?>.reverse();
+    const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
+
+    let contratsChart = new Chart(contratsCtx, {
         type: 'bar',
         data: {
-            labels: moisLabels,
+            labels: moisContratsLabels,
             datasets: [{
                 label: 'Nombre d\'entrées mensuel',
                 data: nouveauxContratsData,
@@ -308,6 +366,34 @@ foreach ($locations as $location) {
             }]
         }
     });
+
+    const startDateContratsInput = document.getElementById('startDateEntrées');
+    const endDateContratsInput = document.getElementById('endDateEntrées');
+
+    function updateContratsChart() {
+        const startDate = startDateContratsInput.value ? new Date(startDateContratsInput.value + '-01') : null;
+        const endDate = endDateContratsInput.value ? new Date(endDateContratsInput.value + '-01') : null;
+
+        let filteredLabels = [];
+        let filteredData = [];
+
+        moisContratsLabels.forEach((mois, index) => {
+            const date = new Date(mois + '-01');
+            if ((startDate === null || date >= startDate) &&
+                (endDate === null || date <= endDate)) {
+                filteredLabels.push(mois);
+                filteredData.push(nouveauxContratsData[index]);
+            }
+        });
+
+        contratsChart.data.labels = filteredLabels;
+        contratsChart.data.datasets[0].data = filteredData;
+        contratsChart.update();
+    }
+
+    startDateContratsInput.addEventListener('change', updateContratsChart);
+    endDateContratsInput.addEventListener('change', updateContratsChart);
+
 </script>
 </body>
 </html>

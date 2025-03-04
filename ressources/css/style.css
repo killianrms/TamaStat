@@ -885,6 +885,19 @@ canvas {
     margin-bottom: 10px;
 }
 
+.date-filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.date-filters label {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+
 #toggleFilter {
     background-color: #007bff;
     color: white;
