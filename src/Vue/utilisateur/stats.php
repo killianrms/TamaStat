@@ -185,11 +185,11 @@ foreach ($locations as $location) {
 <div class="chart-card">
     <h3>Chiffre d'affaires</h3>
     <div class="date-filters">
-        <label for="startDateRevenue">Date début :</label>
-        <input type="date" id="startDateRevenue">
+        <label for="startDateRevenue">Mois début :</label>
+        <input type="month" id="startDateRevenue">
 
-        <label for="endDateRevenue">Date fin :</label>
-        <input type="date" id="endDateRevenue">
+        <label for="endDateRevenue">Mois fin :</label>
+        <input type="month" id="endDateRevenue">
     </div>
 
     <canvas id="revenuMensuelChart"></canvas>
@@ -200,10 +200,10 @@ foreach ($locations as $location) {
     <h3>Nombre d'entrées</h3>
 
     <div class="date-filters">
-        <label for="startDateEntrées">Date début :</label>
+        <label for="startDateEntrées">Mois début :</label>
         <input type="date" id="startDateEntrées">
 
-        <label for="endDateEntrées">Date fin :</label>
+        <label for="endDateEntrées">Mois fin :</label>
         <input type="date" id="endDateEntrées">
     </div>
 
@@ -299,8 +299,8 @@ foreach ($locations as $location) {
         // --- Gestion des filtres DATE pour les graphiques temporels ---
 
         function updateChartWithDates(chart, labels, data, startInput, endInput) {
-            const startDate = startInput.value ? startInput.value.substring(0, 7) : null;  // YYYY-MM
-            const endDate = endInput.value ? endInput.value.substring(0, 7) : null;        // YYYY-MM
+            const startDate = startInput.value || null;
+            const endDate = endInput.value || null;
 
             let filteredLabels = [];
             let filteredData = [];
@@ -323,6 +323,7 @@ foreach ($locations as $location) {
             chart.data.datasets[0].data = filteredData;
             chart.update();
         }
+
 
 
 
