@@ -184,7 +184,6 @@ class CsvModele {
                 throw new Exception("Date de vente invalide : '" . $dateVenteStr . "' dans le fichier CSV.");
             }
 
-
             $totalHt = str_replace(',', '.', $ligne[5]);
             $tva = str_replace(',', '.', $ligne[6]);
             $totalTtc = str_replace(',', '.', $ligne[7]);
