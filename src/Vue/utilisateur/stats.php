@@ -201,10 +201,10 @@ foreach ($locations as $location) {
 
     <div class="date-filters">
         <label for="startDateEntrées">Mois début :</label>
-        <input type="date" id="startDateEntrées">
+        <input type="month" id="startDateEntrées">
 
         <label for="endDateEntrées">Mois fin :</label>
-        <input type="date" id="endDateEntrées">
+        <input type="month" id="endDateEntrées">
     </div>
 
     <canvas id="nouveauxContratsChart"></canvas>
