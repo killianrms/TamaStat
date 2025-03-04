@@ -314,10 +314,18 @@ foreach ($locations as $location) {
                 }
             });
 
+            if (filteredLabels.length === 0) {
+                // Si aucune donnée à afficher, on remet toutes les données (pour éviter le "disparu")
+                alert("Aucune donnée à afficher pour cette période !");
+                filteredLabels = labels;
+                filteredData = data;
+            }
+
             chart.data.labels = filteredLabels;
             chart.data.datasets[0].data = filteredData;
             chart.update();
         }
+
 
         // Filtres pour Chiffre d'affaires
         document.getElementById('startDateRevenue').addEventListener('change', () => {
