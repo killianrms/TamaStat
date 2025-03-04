@@ -43,8 +43,13 @@ class ControleurCsv {
                 }
                 fclose($handle);
 
-                $stmt = $this->pdo->prepare('UPDATE factures SET date_dernier_import = NOW() WHERE utilisateur_id = ?');
-                $stmt->execute([$utilisateurId]);
+                $stmt = $this->pdo->prepare('
+    INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import)
+    VALUES (:utilisateur_id, "factures", NOW())
+    ON DUPLICATE KEY UPDATE date_dernier_import = NOW()
+');
+                $stmt->execute([':utilisateur_id' => $utilisateurId]);
+
             }
     }
 
@@ -77,8 +82,13 @@ class ControleurCsv {
             }
             fclose($handle);
 
-            $stmt = $this->pdo->prepare('UPDATE box_types SET date_dernier_import = NOW() WHERE utilisateur_id = ?');
-            $stmt->execute([$utilisateurId]);
+        $stmt = $this->pdo->prepare('
+    INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import)
+    VALUES (:utilisateur_id, "box_types", NOW())
+    ON DUPLICATE KEY UPDATE date_dernier_import = NOW()
+');
+        $stmt->execute([':utilisateur_id' => $utilisateurId]);
+
     }
 
     /**
@@ -141,8 +151,13 @@ class ControleurCsv {
             }
             fclose($handle);
 
-            $stmt = $this->pdo->prepare('UPDATE locations SET date_dernier_import = NOW() WHERE utilisateur_id = ?');
-            $stmt->execute([$utilisateurId]);
+        $stmt = $this->pdo->prepare('
+    INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import)
+    VALUES (:utilisateur_id, "locations", NOW())
+    ON DUPLICATE KEY UPDATE date_dernier_import = NOW()
+');
+        $stmt->execute([':utilisateur_id' => $utilisateurId]);
+
     }
 
 }

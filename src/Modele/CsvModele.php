@@ -187,12 +187,12 @@ class CsvModele {
             ]);
 
             $stmt = $this->pdo->prepare('
-            UPDATE recap_ventes 
-            SET date_dernier_import = NOW()
-            WHERE utilisateur_id = :utilisateur_id
-        ');
-
+    INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import)
+    VALUES (:utilisateur_id, "recap_ventes", NOW())
+    ON DUPLICATE KEY UPDATE date_dernier_import = NOW()
+');
             $stmt->execute([':utilisateur_id' => $utilisateurId]);
+
 
         } catch (\PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());

@@ -11,25 +11,19 @@ $stmt = $pdo->prepare('SELECT date_dernier_changement_mdp FROM utilisateurs WHER
 $stmt->execute([$utilisateurId]);
 $dateDernierMdp = $stmt->fetchColumn();
 
-$stmt = $pdo->prepare('SELECT MAX(date_dernier_import) FROM box_types WHERE utilisateur_id = ?');
-$stmt->execute([$utilisateurId]);
-$dateDernierImportBox = $stmt->fetchColumn();
+$tables = ["recap_ventes", "factures", "locations", "box_types", "utilisateur_boxes"];
+$datesDernierImport = [];
 
-$stmt = $pdo->prepare('SELECT MAX(date_dernier_import) FROM utilisateur_boxes WHERE utilisateur_id = ?');
-$stmt->execute([$utilisateurId]);
-$dateDernierImportNbBox = $stmt->fetchColumn();
+foreach ($tables as $table) {
+    $stmt = $pdo->prepare('
+        SELECT date_dernier_import 
+        FROM import_tracking 
+        WHERE utilisateur_id = ? AND table_name = ?
+    ');
+    $stmt->execute([$utilisateurId, $table]);
+    $datesDernierImport[$table] = $stmt->fetchColumn();
+}
 
-$stmt = $pdo->prepare('SELECT MAX(date_dernier_import) FROM locations WHERE utilisateur_id = ?');
-$stmt->execute([$utilisateurId]);
-$dateDernierImportContrats = $stmt->fetchColumn();
-
-$stmt = $pdo->prepare('SELECT MAX(date_dernier_import) FROM factures WHERE utilisateur_id = ?');
-$stmt->execute([$utilisateurId]);
-$dateDernierImportFactures = $stmt->fetchColumn();
-
-$stmt = $pdo->prepare('SELECT MAX(date_dernier_import) FROM recap_ventes WHERE utilisateur_id = ?');
-$stmt->execute([$utilisateurId]);
-$dateDernierImportRecapVentes = $stmt->fetchColumn();
 
 $succes = $erreur = "";
 
@@ -137,8 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="etape-card">
     <h3>Import des box</h3>
-    <p>Dernier import
-        : <?= $dateDernierImportBox ? date('d/m/Y H:i', strtotime($dateDernierImportBox)) : 'Jamais' ?></p>
+    <p>Dernier import : <?= $datesDernierImport["box_types"] ? date('d/m/Y H:i', strtotime($datesDernierImport["box_types"])) : 'Jamais' ?></p>
     <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data" onsubmit="showLoader(this)">
         <input type="file" name="csv_box" accept=".csv">
         <button type="submit">Importer</button>
@@ -148,15 +141,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="etape-card">
     <h3>Modifier la quantité de boxes</h3>
-    <p>Dernier import
-        : <?= $dateDernierImportNbBox ? date('d/m/Y H:i', strtotime($dateDernierImportNbBox)) : 'Jamais' ?></p>
+    <p>Dernier import : <?= $datesDernierImport["utilisateur_boxes"] ? date('d/m/Y H:i', strtotime($datesDernierImport["utilisateur_boxes"])) : 'Jamais' ?></p>
     <a href="routeur.php?route=modifier-boxes" class="btn">Modifier la configuration</a>
 </div>
 
 <div class="etape-card">
     <h3>Import des contrats</h3>
-    <p>Dernier import
-        : <?= $dateDernierImportContrats ? date('d/m/Y H:i', strtotime($dateDernierImportContrats)) : 'Jamais' ?></p>
+    <p>Dernier import : <?= $datesDernierImport["locations"] ? date('d/m/Y H:i', strtotime($datesDernierImport["locations"])) : 'Jamais' ?></p>
+
     <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data" onsubmit="showLoader(this)">
         <input type="file" name="csv_contrats" accept=".csv">
         <button type="submit">Importer</button>
@@ -166,8 +158,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="etape-card">
     <h3>Import des factures</h3>
-    <p>Dernier import
-        : <?= $dateDernierImportFactures ? date('d/m/Y H:i', strtotime($dateDernierImportFactures)) : 'Jamais' ?></p>
+    <p>Dernier import : <?= $datesDernierImport["factures"] ? date('d/m/Y H:i', strtotime($datesDernierImport["factures"])) : 'Jamais' ?></p>
+
     <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data" onsubmit="showLoader(this)">
         <input type="file" name="csv_factures" accept=".csv">
         <button type="submit">Importer</button>
@@ -177,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 <div class="etape-card">
     <h3>Import du récapitulatif des ventes</h3>
-    <p>Dernier import : <?= $dateDernierImportRecapVentes ? date('d/m/Y H:i', strtotime($dateDernierImportRecapVentes)) : 'Jamais' ?></p>
+    <p>Dernier import : <?= $datesDernierImport["recap_ventes"] ? date('d/m/Y H:i', strtotime($datesDernierImport["recap_ventes"])) : 'Jamais' ?></p>
     <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data" onsubmit="showLoader(this)">
         <input type="file" name="csv_recap_ventes" accept=".csv" required>
         <button type="submit">Importer</button>
