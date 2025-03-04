@@ -29,6 +29,11 @@ $factures = $pdo->prepare('SELECT * FROM factures WHERE utilisateur_id = ?');
 $factures->execute([$utilisateurId]);
 $factures = $factures->fetchAll(PDO::FETCH_ASSOC);
 
+// Récupérer les ventes et remboursements de l'utilisateur pour calculer le CA
+$recapVentes = $pdo->prepare('SELECT * FROM recap_ventes WHERE utilisateur_id = ?');
+$recapVentes->execute([$utilisateurId]);
+$recapVentes = $recapVentes->fetchAll(PDO::FETCH_ASSOC);
+
 // Calcul des revenus cumulés
 $revenuTotal = 0;
 $revenuMensuel = [];
@@ -95,11 +100,13 @@ foreach ($boxTypes as $boxType) {
 }
 
 // Calculer le revenu total et mensuel
-foreach ($factures as $facture) {
-    $revenuTotal += $facture['total_ht'];
-    $mois = date('Y-m', strtotime($facture['date_facture']));
-    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $facture['total_ht'];
+
+foreach ($recapVentes as $vente) {
+    $revenuTotal += $vente['total_ht'];
+    $mois = date('Y-m', strtotime($vente['date_vente']));
+    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $vente['total_ht'];
 }
+
 
 // Calculer le taux d'occupation global
 $tauxOccupationGlobal = ($capaciteTotale > 0) ? min(100, round(($capaciteUtilisee / $capaciteTotale) * 100, 2)) : 0;
