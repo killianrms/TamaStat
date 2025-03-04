@@ -201,6 +201,21 @@ try {
             break;
 
 
+        case 'importer-recap-ventes':
+            verifierConnexion();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_recap_ventes'])) {
+                $controleurCsv = new ControleurCsv();
+                try {
+                    $controleurCsv->importerRecapVentes($_FILES['csv_recap_ventes'], $_SESSION['user']['id']);
+                    header('Location: routeur.php?route=accueil');
+                    exit;
+                } catch (Exception $e) {
+                    echo "<div class='error-message'>Erreur : " . $e->getMessage() . "</div>";
+                }
+            }
+            break;
+
+
         case 'gestionUtilisateurs':
             verifierConnexion();
             if ($_SESSION['user']['is_admin'] !== 1) {

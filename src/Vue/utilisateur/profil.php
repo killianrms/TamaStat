@@ -27,6 +27,10 @@ $stmt = $pdo->prepare('SELECT MAX(date_dernier_import) FROM factures WHERE utili
 $stmt->execute([$utilisateurId]);
 $dateDernierImportFactures = $stmt->fetchColumn();
 
+$stmt = $pdo->prepare('SELECT MAX(date_dernier_import) FROM recap_ventes WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$dateDernierImportRecapVentes = $stmt->fetchColumn();
+
 $succes = $erreur = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -61,6 +65,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $erreur = "Erreur : " . $e->getMessage();
         }
     }
+
+    if (isset($_FILES['csv_recap_ventes']) && $_FILES['csv_recap_ventes']['size'] > 0) {
+        try {
+            $controleurCsv->importerRecapVentes($_FILES['csv_recap_ventes'], $utilisateurId);
+            $pdo->prepare('UPDATE recap_ventes SET date_dernier_import = NOW() WHERE utilisateur_id = ?')->execute([$utilisateurId]);
+            $succes = "Fichier CSV du récapitulatif des ventes importé avec succès.";
+        } catch (Exception $e) {
+            $erreur = "Erreur : " . $e->getMessage();
+        }
+    }
+
 }
 ?>
 <!DOCTYPE html>
@@ -159,6 +174,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="loader"></div>
     </form>
 </div>
+
+<div class="etape-card">
+    <h3>Import du récapitulatif des ventes</h3>
+    <p>Dernier import : <?= $dateDernierImportRecapVentes ? date('d/m/Y H:i', strtotime($dateDernierImportRecapVentes)) : 'Jamais' ?></p>
+    <form action="routeur.php?route=profil" method="POST" enctype="multipart/form-data" onsubmit="showLoader(this)">
+        <input type="file" name="csv_recap_ventes" accept=".csv" required>
+        <button type="submit">Importer</button>
+        <div class="loader"></div>
+    </form>
+</div>
+
 
 <script>
     function showLoader(form) {

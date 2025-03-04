@@ -81,6 +81,37 @@ class ControleurCsv {
             $stmt->execute([$utilisateurId]);
     }
 
+    /**
+     * Importe les récapitulatifs de ventes à partir d'un fichier CSV.
+     *
+     * @param array $csvFile Fichier CSV uploadé.
+     * @param int $utilisateurId ID de l'utilisateur.
+     * @return void
+     */
+
+    public function importerRecapVentes($csvFile, $utilisateurId) {
+        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
+        if ($fileExt !== 'csv') {
+            throw new Exception("Le fichier doit être au format CSV.");
+        }
+
+        $fileTmpName = $csvFile['tmp_name'];
+
+        if (($handle = fopen($fileTmpName, 'r')) === false) {
+            throw new Exception("Erreur lors de l'ouverture du fichier.");
+        }
+
+        fgetcsv($handle);
+
+        while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+            if (count($data) >= 7) {
+                $this->csvModele->importerRecapVentes($utilisateurId, $data);
+            }
+        }
+        fclose($handle);
+    }
+
+
 
     /**
      * Importe les contrats à partir d'un fichier CSV.

@@ -151,6 +151,49 @@ class CsvModele {
     }
 
     /**
+     * Importe un récapitulatif de ventes.
+     */
+
+    public function importerRecapVentes($utilisateurId, $ligne) {
+        try {
+            $dateVente = \DateTime::createFromFormat('d/m/Y', $ligne[1]);
+            if (!$dateVente) {
+                throw new Exception("Date de vente invalide : " . $ligne[1]);
+            }
+
+            $totalHt = str_replace(',', '.', $ligne[4]);
+            $tva = str_replace(',', '.', $ligne[5]);
+            $totalTtc = str_replace(',', '.', $ligne[6]);
+
+            $stmt = $this->pdo->prepare('
+            INSERT INTO recap_ventes (utilisateur_id, date_vente, total_ht, tva, total_ttc, date_dernier_import)
+            VALUES (:utilisateur_id, :date_vente, :total_ht, :tva, :total_ttc, NOW())
+        ');
+
+            $stmt->execute([
+                ':utilisateur_id' => $utilisateurId,
+                ':date_vente' => $dateVente->format('Y-m-d'),
+                ':total_ht' => $totalHt,
+                ':tva' => $tva,
+                ':total_ttc' => $totalTtc
+            ]);
+
+            $stmt = $this->pdo->prepare('
+            UPDATE recap_ventes 
+            SET date_dernier_import = NOW()
+            WHERE utilisateur_id = :utilisateur_id
+        ');
+
+            $stmt->execute([':utilisateur_id' => $utilisateurId]);
+
+        } catch (\PDOException $e) {
+            throw new Exception("Erreur PDO : " . $e->getMessage());
+        }
+    }
+
+
+
+    /**
      * Importe une location si elle n'existe pas déjà.
      */
     public function importerLocation($utilisateurId, $ligne) {
