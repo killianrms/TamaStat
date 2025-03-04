@@ -3,14 +3,14 @@ USE App\Configuration\ConnexionBD;
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
-
 $utilisateurId = $_SESSION['user']['id'];
 
 // Récupérer la configuration actuelle des box
-$stmt = $pdo->prepare('SELECT b.id, b.denomination, ub.quantite FROM box_types b 
-                        LEFT JOIN utilisateur_boxes ub ON b.id = ub.box_type_id 
-                        WHERE b.utilisateur_id = ?');
-$stmt->execute([$utilisateurId]);
+$stmt = $pdo->prepare('SELECT b.id, b.denomination, COALESCE(ub.quantite, 0) AS quantite 
+                       FROM box_types b 
+                       LEFT JOIN utilisateur_boxes ub ON b.id = ub.box_type_id AND ub.utilisateur_id = ? 
+                       WHERE b.utilisateur_id = ?');
+$stmt->execute([$utilisateurId, $utilisateurId]);
 $boxConfig = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -35,14 +35,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    $pdo->prepare('UPDATE utilisateur_boxes SET date_dernier_import = NOW() WHERE utilisateur_id = ?')->execute([$utilisateurId]);
+    // Mettre à jour la date d'import dans `import_tracking`
+    $stmt = $pdo->prepare('
+        INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) 
+        VALUES (:utilisateur_id, :table_name, NOW()) 
+        ON DUPLICATE KEY UPDATE date_dernier_import = NOW()
+    ');
+    $stmt->execute([
+        ':utilisateur_id' => $utilisateurId,
+        ':table_name' => "utilisateur_boxes"
+    ]);
 
     header('Location: routeur.php?route=profil');
     exit;
 }
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="fr">
