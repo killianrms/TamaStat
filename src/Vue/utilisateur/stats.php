@@ -42,6 +42,29 @@ $occupationParBox = [];
 $capaciteTotale = 0;
 $capaciteUtilisee = 0;
 
+// Calcul du chiffre d'affaires max mensuel
+$caMaxMensuel = 0;
+foreach ($boxTypes as $boxType) {
+    $boxTypeId = $boxType['id'];
+    $prixMensuel = $boxType['prix_mensuel'];
+    $quantiteBox = $boxDisponibles[$boxTypeId] ?? 0;
+    $caMaxMensuel += $quantiteBox * $prixMensuel;
+}
+
+// Calcul du chiffre d'affaires mensuel actuel
+$revenuMensuel = [];
+foreach ($recapVentes as $vente) {
+    $mois = date('Y-m', strtotime($vente['date_vente']));
+    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $vente['total_ht'];
+}
+
+// Définir le mois actuel par défaut
+$moisActuel = date('Y-m');
+$caActuel = $revenuMensuel[$moisActuel] ?? 0;
+
+// Calcul du chiffre d'affaires restant
+$caRestant = max(0, $caMaxMensuel - $caActuel);
+
 // Calculer le nombre de box libres, occupées et maximales
 $boxLibres = [];
 $boxMax = [];
@@ -129,8 +152,10 @@ foreach ($locations as $location) {
 <!-- Statistiques globales -->
 <div class="stats-globales">
     <div class="stat-card">
-        <h3>Revenu total (€ HT)</h3>
-        <div class="value"><?= number_format($revenuTotal, 2) ?> €</div>
+        <h3>Chiffres d'affaires (€ HT)</h3>
+        <div class="value">CA Max Mensuel: <span id="caMaxMensuel"><?= number_format($caMaxMensuel, 2) ?> €</span></div>
+        <div class="value">CA Actuel: <span id="caActuel"><?= number_format($caActuel, 2) ?> €</span></div>
+        <div class="value">CA Restant: <span id="caRestant"><?= number_format($caRestant, 2) ?> €</span></div>
     </div>
 
     <div class="stat-card">
@@ -195,6 +220,37 @@ foreach ($locations as $location) {
 </div>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const revenuMensuelData = <?= json_encode($revenuMensuel) ?>;
+        const caMaxMensuel = <?= $caMaxMensuel ?>;
+
+        function updateStats(moisSelectionne) {
+            let caActuel = revenuMensuelData[moisSelectionne] || 0;
+            let caRestant = Math.max(0, caMaxMensuel - caActuel);
+
+            document.getElementById("caActuel").innerText = caActuel.toFixed(2) + " €";
+            document.getElementById("caRestant").innerText = caRestant.toFixed(2) + " €";
+        }
+
+        const ctx = document.getElementById('revenuMensuelChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: Object.keys(revenuMensuelData),
+                datasets: [{
+                    label: 'CA Mensuel (€ HT)',
+                    data: Object.values(revenuMensuelData),
+                    borderColor: '#0072bc',
+                    tension: 0.1
+                }]
+            }
+        });
+
+        document.getElementById("dateSelector").addEventListener("change", function () {
+            updateStats(this.value);
+        });
+    });
+
     document.addEventListener("DOMContentLoaded", function () {
         const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
         const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
