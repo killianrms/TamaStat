@@ -11,6 +11,7 @@ $stmt = $pdo->prepare('SELECT date_dernier_changement_mdp FROM utilisateurs WHER
 $stmt->execute([$utilisateurId]);
 $dateDernierMdp = $stmt->fetchColumn();
 
+// Liste des tables suivies pour les imports
 $tables = ["recap_ventes", "factures", "locations", "box_types", "utilisateur_boxes"];
 $datesDernierImport = [];
 
@@ -24,16 +25,27 @@ foreach ($tables as $table) {
     $datesDernierImport[$table] = $stmt->fetchColumn();
 }
 
-
 $succes = $erreur = "";
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $controleurCsv = new ControleurCsv();
 
+    function mettreAJourTracking($pdo, $utilisateurId, $table) {
+        $stmt = $pdo->prepare('
+            INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) 
+            VALUES (:utilisateur_id, :table_name, NOW())
+            ON DUPLICATE KEY UPDATE date_dernier_import = NOW()
+        ');
+        $stmt->execute([
+            ':utilisateur_id' => $utilisateurId,
+            ':table_name' => $table
+        ]);
+    }
+
     if (isset($_FILES['csv_box']) && $_FILES['csv_box']['size'] > 0) {
         try {
             $controleurCsv->importerBoxTypes($_FILES['csv_box']);
-            $pdo->prepare('UPDATE box_types SET date_dernier_import = NOW() WHERE utilisateur_id = ?')->execute([$utilisateurId]);
+            mettreAJourTracking($pdo, $utilisateurId, "box_types");
             $succes = "Fichier CSV des box importé avec succès.";
         } catch (Exception $e) {
             $erreur = "Erreur : " . $e->getMessage();
@@ -43,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['csv_contrats']) && $_FILES['csv_contrats']['size'] > 0) {
         try {
             $controleurCsv->importerContrats($_FILES['csv_contrats'], $utilisateurId);
-            $pdo->prepare('UPDATE locations SET date_dernier_import = NOW() WHERE utilisateur_id = ?')->execute([$utilisateurId]);
+            mettreAJourTracking($pdo, $utilisateurId, "locations");
             $succes = "Fichier CSV des contrats importé avec succès.";
         } catch (Exception $e) {
             $erreur = "Erreur : " . $e->getMessage();
@@ -53,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['csv_factures']) && $_FILES['csv_factures']['size'] > 0) {
         try {
             $controleurCsv->importerFactures($_FILES['csv_factures'], $utilisateurId);
-            $pdo->prepare('UPDATE factures SET date_dernier_import = NOW() WHERE utilisateur_id = ?')->execute([$utilisateurId]);
+            mettreAJourTracking($pdo, $utilisateurId, "factures");
             $succes = "Fichier CSV des factures importé avec succès.";
         } catch (Exception $e) {
             $erreur = "Erreur : " . $e->getMessage();
@@ -63,15 +75,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (isset($_FILES['csv_recap_ventes']) && $_FILES['csv_recap_ventes']['size'] > 0) {
         try {
             $controleurCsv->importerRecapVentes($_FILES['csv_recap_ventes'], $utilisateurId);
-            $pdo->prepare('UPDATE recap_ventes SET date_dernier_import = NOW() WHERE utilisateur_id = ?')->execute([$utilisateurId]);
+            mettreAJourTracking($pdo, $utilisateurId, "recap_ventes");
             $succes = "Fichier CSV du récapitulatif des ventes importé avec succès.";
         } catch (Exception $e) {
             $erreur = "Erreur : " . $e->getMessage();
         }
     }
-
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
