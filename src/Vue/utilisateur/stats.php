@@ -125,16 +125,6 @@ foreach ($locations as $location) {
 </head>
 <body class="stats-page">
 <h1>Statistiques de vos locations</h1>
-<div class="chart-card">
-    <h3>Filtrer par Parc</h3>
-    <label for="parcSelect">Choisissez un parc :</label>
-    <select id="parcSelect">
-        <option value="all">Tous les parcs</option>
-        <?php foreach ($parcs as $parc): ?>
-            <option value="<?= $parc['id'] ?>"><?= htmlspecialchars($parc['nom']) ?></option>
-        <?php endforeach; ?>
-    </select>
-</div>
 
 <!-- Statistiques globales -->
 <div class="stats-globales">
