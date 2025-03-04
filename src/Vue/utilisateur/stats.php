@@ -232,23 +232,46 @@ foreach ($locations as $location) {
 </div>
 
 <script>
-    const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
-    const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
-    const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
-    const boxLibresData = <?= json_encode(array_values($boxLibres)) ?>;
-    const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
-    const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
-    const boxLabels = <?= json_encode($boxLabels) ?>;
-
     document.addEventListener("DOMContentLoaded", function () {
-        const ctx = document.getElementById("boxLibreOccupeMaxChart").getContext("2d");
-
-        const boxLabels = <?= json_encode($boxLabels) ?>;
+        const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
+        const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
+        const moisContratsLabels = <?= json_encode(array_keys($nouveauxContratsParMois)) ?>.reverse();
+        const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
         const boxLibresData = <?= json_encode(array_values($boxLibres)) ?>;
-        const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
         const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
+        const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
+        const boxLabels = <?= json_encode($boxLabels) ?>;
 
-        let chartData = {
+
+        const revenueCtx = document.getElementById('revenuMensuelChart').getContext('2d');
+        const revenueChart = new Chart(revenueCtx, {
+            type: 'line',
+            data: {
+                labels: moisLabels,
+                datasets: [{
+                    label: 'Évolution Mensuel (€ HT)',
+                    data: revenuMensuelData,
+                    borderColor: '#0072bc',
+                    tension: 0.1
+                }]
+            }
+        });
+
+        const contratsCtx = document.getElementById('nouveauxContratsChart').getContext('2d');
+        const contratsChart = new Chart(contratsCtx, {
+            type: 'bar',
+            data: {
+                labels: moisContratsLabels,
+                datasets: [{
+                    label: 'Nombre d\'entrées mensuel',
+                    data: nouveauxContratsData,
+                    backgroundColor: '#ff6600'
+                }]
+            }
+        });
+
+        const boxCtx = document.getElementById("boxLibreOccupeMaxChart").getContext("2d");
+        const boxChartData = {
             labels: boxLabels,
             datasets: [
                 {
@@ -268,11 +291,61 @@ foreach ($locations as $location) {
                 }
             ]
         };
-
-        let chart = new Chart(ctx, {
+        const boxChart = new Chart(boxCtx, {
             type: "bar",
-            data: chartData
+            data: boxChartData
         });
+
+        // --- Gestion des filtres DATE pour les graphiques temporels ---
+
+        function updateChartWithDates(chart, labels, data, startInput, endInput) {
+            const startDate = startInput.value ? new Date(startInput.value + '-01') : null;
+            const endDate = endInput.value ? new Date(endInput.value + '-01') : null;
+
+            let filteredLabels = [];
+            let filteredData = [];
+
+            labels.forEach((mois, index) => {
+                const date = new Date(mois + '-01');
+                if ((startDate === null || date >= startDate) &&
+                    (endDate === null || date <= endDate)) {
+                    filteredLabels.push(mois);
+                    filteredData.push(data[index]);
+                }
+            });
+
+            chart.data.labels = filteredLabels;
+            chart.data.datasets[0].data = filteredData;
+            chart.update();
+        }
+
+        // Filtres pour Chiffre d'affaires
+        document.getElementById('startDateRevenue').addEventListener('change', () => {
+            updateChartWithDates(revenueChart, moisLabels, revenuMensuelData,
+                document.getElementById('startDateRevenue'),
+                document.getElementById('endDateRevenue'));
+        });
+
+        document.getElementById('endDateRevenue').addEventListener('change', () => {
+            updateChartWithDates(revenueChart, moisLabels, revenuMensuelData,
+                document.getElementById('startDateRevenue'),
+                document.getElementById('endDateRevenue'));
+        });
+
+        // Filtres pour Nombre d'entrées
+        document.getElementById('startDateEntrées').addEventListener('change', () => {
+            updateChartWithDates(contratsChart, moisContratsLabels, nouveauxContratsData,
+                document.getElementById('startDateEntrées'),
+                document.getElementById('endDateEntrées'));
+        });
+
+        document.getElementById('endDateEntrées').addEventListener('change', () => {
+            updateChartWithDates(contratsChart, moisContratsLabels, nouveauxContratsData,
+                document.getElementById('startDateEntrées'),
+                document.getElementById('endDateEntrées'));
+        });
+
+        // --- Gestion du sélecteur de box pour le graphique des box ---
 
         const toggleButton = document.getElementById("toggleFilter");
         const dropdownContent = document.getElementById("boxFilter");
@@ -284,116 +357,24 @@ foreach ($locations as $location) {
 
         document.querySelectorAll(".box-checkbox").forEach((checkbox, index) => {
             checkbox.addEventListener("change", function () {
-                let selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox:checked")).map(cb => parseInt(cb.value));
+                const selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox:checked")).map(cb => parseInt(cb.value));
 
-                chartData.labels = selectedIndexes.map(i => boxLabels[i]);
-                chartData.datasets[0].data = selectedIndexes.map(i => boxLibresData[i]);
-                chartData.datasets[1].data = selectedIndexes.map(i => boxOccupeesData[i]);
-                chartData.datasets[2].data = selectedIndexes.map(i => boxMaxData[i]);
+                boxChartData.labels = selectedIndexes.map(i => boxLabels[i]);
+                boxChartData.datasets[0].data = selectedIndexes.map(i => boxLibresData[i]);
+                boxChartData.datasets[1].data = selectedIndexes.map(i => boxOccupeesData[i]);
+                boxChartData.datasets[2].data = selectedIndexes.map(i => boxMaxData[i]);
 
-                chart.update();
+                boxChart.update();
             });
         });
 
+        // Fermer le menu si clic en dehors
         document.addEventListener("click", function (event) {
             if (!toggleButton.contains(event.target) && !dropdownContent.contains(event.target)) {
                 dropdownContent.classList.remove("active");
             }
         });
     });
-
-    document.addEventListener("DOMContentLoaded", function () {
-        const revenueCtx = document.getElementById('revenuMensuelChart').getContext('2d');
-
-        const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
-        const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
-
-        let revenueChart = new Chart(revenueCtx, {
-            type: 'line',
-            data: {
-                labels: moisLabels,
-                datasets: [{
-                    label: 'Évolution Mensuel (€ HT)',
-                    data: revenuMensuelData,
-                    borderColor: '#0072bc',
-                    tension: 0.1
-                }]
-            }
-        });
-
-        const startDateInput = document.getElementById('startDateRevenue');
-        const endDateInput = document.getElementById('endDateRevenue');
-
-        function updateRevenueChart() {
-            const startDate = startDateInput.value ? new Date(startDateInput.value + '-01') : null;
-            const endDate = endDateInput.value ? new Date(endDateInput.value + '-01') : null;
-
-            let filteredLabels = [];
-            let filteredData = [];
-
-            moisLabels.forEach((mois, index) => {
-                const date = new Date(mois + '-01');
-                if ((startDate === null || date >= startDate) &&
-                    (endDate === null || date <= endDate)) {
-                    filteredLabels.push(mois);
-                    filteredData.push(revenuMensuelData[index]);
-                }
-            });
-
-            revenueChart.data.labels = filteredLabels;
-            revenueChart.data.datasets[0].data = filteredData;
-            revenueChart.update();
-        }
-
-        startDateInput.addEventListener('change', updateRevenueChart);
-        endDateInput.addEventListener('change', updateRevenueChart);
-    });
-
-
-    const contratsCtx = document.getElementById('nouveauxContratsChart').getContext('2d');
-
-    const moisContratsLabels = <?= json_encode(array_keys($nouveauxContratsParMois)) ?>.reverse();
-    const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
-
-    let contratsChart = new Chart(contratsCtx, {
-        type: 'bar',
-        data: {
-            labels: moisContratsLabels,
-            datasets: [{
-                label: 'Nombre d\'entrées mensuel',
-                data: nouveauxContratsData,
-                backgroundColor: '#ff6600'
-            }]
-        }
-    });
-
-    const startDateContratsInput = document.getElementById('startDateEntrées');
-    const endDateContratsInput = document.getElementById('endDateEntrées');
-
-    function updateContratsChart() {
-        const startDate = startDateContratsInput.value ? new Date(startDateContratsInput.value + '-01') : null;
-        const endDate = endDateContratsInput.value ? new Date(endDateContratsInput.value + '-01') : null;
-
-        let filteredLabels = [];
-        let filteredData = [];
-
-        moisContratsLabels.forEach((mois, index) => {
-            const date = new Date(mois + '-01');
-            if ((startDate === null || date >= startDate) &&
-                (endDate === null || date <= endDate)) {
-                filteredLabels.push(mois);
-                filteredData.push(nouveauxContratsData[index]);
-            }
-        });
-
-        contratsChart.data.labels = filteredLabels;
-        contratsChart.data.datasets[0].data = filteredData;
-        contratsChart.update();
-    }
-
-    startDateContratsInput.addEventListener('change', updateContratsChart);
-    endDateContratsInput.addEventListener('change', updateContratsChart);
-
 </script>
 </body>
 </html>
