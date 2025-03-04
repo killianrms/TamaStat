@@ -16,20 +16,18 @@ class CsvModele {
     /**
      * Vérifie si une facture existe déjà avant l'insertion.
      */
-    private function factureExiste($utilisateurId, $referenceContrat, $titre, $totalTtc, $dateFacture) {
+    private function factureExiste($utilisateurId, $referenceContrat, $titre, $dateFacture) {
         $stmt = $this->pdo->prepare('
             SELECT COUNT(*) FROM factures 
             WHERE utilisateur_id = :utilisateur_id 
             AND reference_contrat = :reference_contrat
             AND titre = :titre
-            AND total_ttc = :total_ttc
             AND date_facture = :date_facture
         ');
         $stmt->execute([
             ':utilisateur_id' => $utilisateurId,
             ':reference_contrat' => $referenceContrat,
             ':titre' => $titre,
-            ':total_ttc' => $totalTtc,
             ':date_facture' => $dateFacture
         ]);
         return $stmt->fetchColumn() > 0;
@@ -51,36 +49,52 @@ class CsvModele {
                 throw new Exception("Date de facture invalide : " . $ligne[9]);
             }
 
-            $totalHt = str_replace(',', '.', $ligne[6]);
-            $tva = str_replace(',', '.', $ligne[7]);
-            $totalTtc = str_replace(',', '.', $ligne[8]);
+            // Récupérer ou créer le `parc_id`
+            $parc = trim($ligne[2]);
+            $parcId = $this->getOrCreateParcId($parc, $utilisateurId);
 
-            if ($this->factureExiste($utilisateurId, $referenceContrat, $titre, $totalTtc, $dateFacture->format('Y-m-d'))) {
+            // Vérifier si la facture existe déjà
+            if ($this->factureExiste($utilisateurId, $referenceContrat, $titre, $dateFacture->format('Y-m-d'))) {
                 return;
             }
 
             $stmt = $this->pdo->prepare('
-                INSERT INTO factures 
-                (reference_contrat, utilisateur_id, titre, parc, total_ht, tva, total_ttc, date_facture, est_lie_contrat)
-                VALUES 
-                (:reference_contrat, :utilisateur_id, :titre, :parc, :total_ht, :tva, :total_ttc, :date_facture, :est_lie_contrat)
-            ');
+            INSERT INTO factures 
+            (reference_contrat, utilisateur_id, titre, parc_id, date_facture, est_lie_contrat)
+            VALUES 
+            (:reference_contrat, :utilisateur_id, :titre, :parc_id, :date_facture, :est_lie_contrat)
+        ');
 
             $stmt->execute([
                 ':reference_contrat' => $referenceContrat,
                 ':utilisateur_id' => $utilisateurId,
                 ':titre' => $titre,
-                ':parc' => $ligne[2],
-                ':total_ht' => $totalHt,
-                ':tva' => $tva,
-                ':total_ttc' => $totalTtc,
+                ':parc_id' => $parcId,
                 ':date_facture' => $dateFacture->format('Y-m-d'),
                 ':est_lie_contrat' => $estLieContrat ? 1 : 0
             ]);
+
         } catch (\PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
         }
     }
+
+// Fonction pour récupérer ou créer un parc
+    private function getOrCreateParcId($parcNom, $utilisateurId) {
+        $stmt = $this->pdo->prepare('SELECT id FROM parcs WHERE utilisateur_id = :utilisateur_id AND nom = :nom');
+        $stmt->execute([':utilisateur_id' => $utilisateurId, ':nom' => $parcNom]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($result) {
+            return $result['id'];
+        }
+
+        // Insérer un nouveau parc
+        $stmt = $this->pdo->prepare('INSERT INTO parcs (utilisateur_id, nom) VALUES (:utilisateur_id, :nom)');
+        $stmt->execute([':utilisateur_id' => $utilisateurId, ':nom' => $parcNom]);
+        return $this->pdo->lastInsertId();
+    }
+
 
     /**
      * Vérifie si un type de box existe déjà avant l'insertion.
@@ -174,9 +188,10 @@ class CsvModele {
             }
 
             $stmt = $this->pdo->prepare('
-            INSERT INTO recap_ventes (utilisateur_id, date_vente, total_ht, tva, total_ttc, date_dernier_import)
-            VALUES (:utilisateur_id, :date_vente, :total_ht, :tva, :total_ttc, NOW())
-        ');
+    INSERT INTO recap_ventes (utilisateur_id, date_vente, total_ht, tva, total_ttc)
+    VALUES (:utilisateur_id, :date_vente, :total_ht, :tva, :total_ttc)
+');
+
 
             $stmt->execute([
                 ':utilisateur_id' => $utilisateurId,
@@ -192,6 +207,7 @@ class CsvModele {
     ON DUPLICATE KEY UPDATE date_dernier_import = NOW()
 ');
             $stmt->execute([':utilisateur_id' => $utilisateurId]);
+
 
 
         } catch (\PDOException $e) {
