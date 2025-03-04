@@ -29,24 +29,11 @@ $factures = $pdo->prepare('SELECT * FROM factures WHERE utilisateur_id = ?');
 $factures->execute([$utilisateurId]);
 $factures = $factures->fetchAll(PDO::FETCH_ASSOC);
 
-// Récupérer les parcs de l'utilisateur
-$parcs = $pdo->prepare('SELECT id, nom FROM parcs WHERE utilisateur_id = ?');
-$parcs->execute([$utilisateurId]);
-$parcs = $parcs->fetchAll(PDO::FETCH_ASSOC);
-
-// Vérifier si un parc spécifique est sélectionné
-$parcFiltreId = $_GET['parc_id'] ?? null;
-$filtreActif = $parcFiltreId ? "AND factures.parc_id = :parc_id" : "";
-
+// Récupérer les ventes et remboursements de l'utilisateur pour calculer le CA
 $query = 'SELECT * FROM recap_ventes WHERE utilisateur_id = ?';
 $stmt = $pdo->prepare($query);
-$params = [$utilisateurId];
-if ($parcFiltreId) {
-    $stmt->bindParam(':parc_id', $parcFiltreId, PDO::PARAM_INT);
-}
 $stmt->execute([$utilisateurId]);
 $recapVentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
 
 // Calcul des revenus cumulés
 $revenuTotal = 0;
@@ -55,7 +42,6 @@ $occupationParBox = [];
 $capaciteTotale = 0;
 $capaciteUtilisee = 0;
 
-// Calculer le nombre de box libres et maximales
 // Calculer le nombre de box libres, occupées et maximales
 $boxLibres = [];
 $boxMax = [];
@@ -86,8 +72,6 @@ foreach ($boxTypes as $boxType) {
     $boxLabels[] = $boxType['denomination'];
 }
 
-
-
 // Lier les box à leurs prix
 $boxTypesById = [];
 foreach ($boxTypes as $boxType) {
@@ -107,20 +91,17 @@ foreach ($boxTypes as $boxType) {
     // Nombre de box occupées
     $occupationParBox[$boxTypeId] = $nbBoxLoues;
 
-
     // Mise à jour des valeurs globales
     $capaciteTotale += $totalBoxDispo;
     $capaciteUtilisee += $nbBoxLoues;
 }
 
 // Calculer le revenu total et mensuel
-
 foreach ($recapVentes as $vente) {
     $revenuTotal += $vente['total_ht'];
     $mois = date('Y-m', strtotime($vente['date_vente']));
     $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $vente['total_ht'];
 }
-
 
 // Calculer le taux d'occupation global
 $tauxOccupationGlobal = ($capaciteTotale > 0) ? min(100, round(($capaciteUtilisee / $capaciteTotale) * 100, 2)) : 0;
@@ -133,6 +114,7 @@ foreach ($locations as $location) {
 }
 ?>
 
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -140,46 +122,6 @@ foreach ($locations as $location) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .stats-globales {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .stat-card h3 {
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .stat-card .value {
-            font-size: 24px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .chart-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-    </style>
 </head>
 <body class="stats-page">
 <h1>Statistiques de vos locations</h1>
@@ -272,9 +214,8 @@ foreach ($locations as $location) {
         const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
         const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
         const boxLabels = <?= json_encode($boxLabels) ?>;
-        const recapVentes = <?= json_encode($recapVentes) ?>;
-        const locations = <?= json_encode($locations) ?>;
 
+        // 📊 Création du graphique CA
         const revenueCtx = document.getElementById('revenuMensuelChart').getContext('2d');
         const revenueChart = new Chart(revenueCtx, {
             type: 'line',
@@ -289,6 +230,7 @@ foreach ($locations as $location) {
             }
         });
 
+        // 📊 Création du graphique des contrats
         const contratsCtx = document.getElementById('nouveauxContratsChart').getContext('2d');
         const contratsChart = new Chart(contratsCtx, {
             type: 'bar',
@@ -302,6 +244,7 @@ foreach ($locations as $location) {
             }
         });
 
+        // 📊 Création du graphique de la quantité de box
         const boxCtx = document.getElementById("boxLibreOccupeMaxChart").getContext("2d");
         const boxChartData = {
             labels: boxLabels,
@@ -313,7 +256,7 @@ foreach ($locations as $location) {
         };
         const boxChart = new Chart(boxCtx, { type: "bar", data: boxChartData });
 
-        // --- Gestion des filtres DATE pour les graphiques temporels ---
+        // 🎯 Gestion des filtres DATE pour les graphiques temporels
         function updateChartWithDates(chart, labels, data, startInput, endInput) {
             const startDate = startInput.value || null;
             const endDate = endInput.value || null;
@@ -340,7 +283,7 @@ foreach ($locations as $location) {
             chart.update();
         }
 
-        // Filtres pour Chiffre d'affaires
+        // 🎯 Filtres pour Chiffre d'affaires
         document.getElementById('startDateRevenue').addEventListener('change', () => {
             updateChartWithDates(revenueChart, moisLabels, revenuMensuelData,
                 document.getElementById('startDateRevenue'),
@@ -353,7 +296,7 @@ foreach ($locations as $location) {
                 document.getElementById('endDateRevenue'));
         });
 
-        // Filtres pour Nombre d'entrées
+        // 🎯 Filtres pour Nombre d'entrées
         document.getElementById('startDateEntrées').addEventListener('change', () => {
             updateChartWithDates(contratsChart, moisContratsLabels, nouveauxContratsData,
                 document.getElementById('startDateEntrées'),
@@ -366,71 +309,7 @@ foreach ($locations as $location) {
                 document.getElementById('endDateEntrées'));
         });
 
-        // --- Gestion du sélecteur de parc ---
-        const parcSelect = document.getElementById("parcSelect");
-        parcSelect.addEventListener("change", function () {
-            const selectedParc = parcSelect.value;
-            filterDataByParc(selectedParc);
-        });
-
-        function filterDataByParc(parcId) {
-            let filteredRevenus = {};
-            let filteredContrats = {};
-            let totalCA = 0;
-            let totalContrats = 0;
-
-            Object.keys(revenuMensuelData).forEach((mois, index) => {
-                let moisTotal = 0;
-                recapVentes.forEach(vente => {
-                    if (parcId === "all" || vente.parc_id == parcId) {
-                        moisTotal += parseFloat(vente.total_ht);
-                    }
-                });
-                if (moisTotal > 0) {
-                    filteredRevenus[mois] = moisTotal;
-                    totalCA += moisTotal;
-                }
-            });
-
-            Object.keys(nouveauxContratsData).forEach((mois, index) => {
-                let moisContrats = 0;
-                locations.forEach(location => {
-                    if (parcId === "all" || location.parc_id == parcId) {
-                        moisContrats += 1;
-                    }
-                });
-                if (moisContrats > 0) {
-                    filteredContrats[mois] = moisContrats;
-                    totalContrats += moisContrats;
-                }
-            });
-
-            updateCAChart(filteredRevenus);
-            updateContratsChart(filteredContrats);
-
-            document.querySelector(".stat-card .value").innerHTML = totalCA.toFixed(2) + " €";
-            document.querySelector(".stat-card:nth-child(3) .value").innerHTML = totalContrats + " contrats";
-        }
-
-        function updateCAChart(filteredRevenus) {
-            const labels = Object.keys(filteredRevenus).reverse();
-            const data = Object.values(filteredRevenus).reverse();
-
-            revenueChart.data.labels = labels;
-            revenueChart.data.datasets[0].data = data;
-            revenueChart.update();
-        }
-
-        function updateContratsChart(filteredContrats) {
-            const labels = Object.keys(filteredContrats).reverse();
-            const data = Object.values(filteredContrats).reverse();
-
-            contratsChart.data.labels = labels;
-            contratsChart.data.datasets[0].data = data;
-            contratsChart.update();
-        }
-
-        // --- Gestion du sélecteur de box pour le graphique des box ---
+        // 🎯 Gestion du sélecteur de box pour le graphique des box
         const toggleButton = document.getElementById("toggleFilter");
         const dropdownContent = document.getElementById("boxFilter");
 
@@ -459,6 +338,7 @@ foreach ($locations as $location) {
             }
         });
     });
+
 </script>
 </body>
 </html>
