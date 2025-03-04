@@ -299,23 +299,21 @@ foreach ($locations as $location) {
         // --- Gestion des filtres DATE pour les graphiques temporels ---
 
         function updateChartWithDates(chart, labels, data, startInput, endInput) {
-            const startDate = startInput.value ? new Date(startInput.value + '-01') : null;
-            const endDate = endInput.value ? new Date(endInput.value + '-01') : null;
+            const startDate = startInput.value ? startInput.value.substring(0, 7) : null;  // YYYY-MM
+            const endDate = endInput.value ? endInput.value.substring(0, 7) : null;        // YYYY-MM
 
             let filteredLabels = [];
             let filteredData = [];
 
             labels.forEach((mois, index) => {
-                const date = new Date(mois + '-01');
-                if ((startDate === null || date >= startDate) &&
-                    (endDate === null || date <= endDate)) {
+                if ((startDate === null || mois >= startDate) &&
+                    (endDate === null || mois <= endDate)) {
                     filteredLabels.push(mois);
                     filteredData.push(data[index]);
                 }
             });
 
             if (filteredLabels.length === 0) {
-                // Si aucune donnée à afficher, on remet toutes les données (pour éviter le "disparu")
                 alert("Aucune donnée à afficher pour cette période !");
                 filteredLabels = labels;
                 filteredData = data;
@@ -325,6 +323,7 @@ foreach ($locations as $location) {
             chart.data.datasets[0].data = filteredData;
             chart.update();
         }
+
 
 
         // Filtres pour Chiffre d'affaires
