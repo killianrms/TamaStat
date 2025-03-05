@@ -36,7 +36,7 @@ $revenuTotal = $revenuTotal->fetchColumn();
 
 // Récupérer les box de l'utilisateur avec leur quantité et leur prix
 $utilisateurBoxes = $pdo->prepare('
-    SELECT ub.box_type_id, ub.quantite, tb.prix 
+    SELECT ub.box_type_id, ub.quantite, tb.prix_ttc 
     FROM utilisateur_boxes ub
     JOIN box_types tb ON ub.box_type_id = tb.id
     WHERE ub.utilisateur_id = ?
@@ -47,7 +47,7 @@ $utilisateurBoxes = $utilisateurBoxes->fetchAll(PDO::FETCH_ASSOC);
 // Calculer le revenu max mensuel
 $revenuMaxMensuel = 0;
 foreach ($utilisateurBoxes as $box) {
-    $revenuMaxMensuel += $box['quantite'] * $box['prix'];
+    $revenuMaxMensuel += $box['quantite'] * $box['prix_ttc'];
 }
 
 // Récupérer les revenus mensuels à partir de la table recap_vente
