@@ -186,8 +186,10 @@ foreach ($locations as $location) {
     <div class="chart-card">
         <h3>Chiffre d'affaires</h3>
         <div class="date-selector">
-            <label for="monthSelectorRevenu">Sélectionnez un mois :</label>
-            <input type="month" id="monthSelectorRevenu" name="monthSelectorRevenu">
+            <label for="startDateRevenu">Date de début :</label>
+            <input type="month" id="startDateRevenu" name="startDateRevenu">
+            <label for="endDateRevenu">Date de fin :</label>
+            <input type="month" id="endDateRevenu" name="endDateRevenu">
         </div>
         <canvas id="revenuMensuelChart"></canvas>
     </div>
@@ -195,8 +197,10 @@ foreach ($locations as $location) {
     <div class="chart-card">
         <h3>Nombre d'entrées</h3>
         <div class="date-selector">
-            <label for="monthSelectorContrats">Sélectionnez un mois :</label>
-            <input type="month" id="monthSelectorContrats" name="monthSelectorContrats">
+            <label for="startDateContrats">Date de début :</label>
+            <input type="month" id="startDateContrats" name="startDateContrats">
+            <label for="endDateContrats">Date de fin :</label>
+            <input type="month" id="endDateContrats" name="endDateContrats">
         </div>
         <canvas id="nouveauxContratsChart"></canvas>
     </div>
@@ -323,7 +327,6 @@ foreach ($locations as $location) {
         const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
         const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
 
-        // Graphique Chiffre d'affaires
         const revenuMensuelChart = new Chart(document.getElementById('revenuMensuelChart'), {
             type: 'line',
             data: {
@@ -350,38 +353,53 @@ foreach ($locations as $location) {
             }
         });
 
-        const monthSelectorRevenu = document.getElementById('monthSelectorRevenu');
-        monthSelectorRevenu.addEventListener('change', function () {
-            const selectedMonth = this.value; // Format YYYY-MM
+        function filterDataByDateRange(startDate, endDate, labels, data) {
+            const filteredLabels = [];
+            const filteredData = [];
 
-            const monthIndex = moisLabels.indexOf(selectedMonth);
+            labels.forEach((label, index) => {
+                const currentDate = new Date(label + '-01');
+                if (currentDate >= new Date(startDate + '-01') && currentDate <= new Date(endDate + '-01')) {
+                    filteredLabels.push(label);
+                    filteredData.push(data[index]);
+                }
+            });
 
-            if (monthIndex !== -1) {
-                revenuMensuelChart.data.labels = [selectedMonth];
-                revenuMensuelChart.data.datasets[0].data = [revenuMensuelData[monthIndex]];
-                revenuMensuelChart.update();
-            } else {
-                revenuMensuelChart.data.labels = [];
-                revenuMensuelChart.data.datasets[0].data = [];
-                revenuMensuelChart.update();
-            }
+            return { labels: filteredLabels, data: filteredData };
+        }
+
+        const startDateRevenu = document.getElementById('startDateRevenu');
+        const endDateRevenu = document.getElementById('endDateRevenu');
+
+        [startDateRevenu, endDateRevenu].forEach(input => {
+            input.addEventListener('change', function () {
+                const startDate = startDateRevenu.value;
+                const endDate = endDateRevenu.value;
+
+                if (startDate && endDate) {
+                    const filteredData = filterDataByDateRange(startDate, endDate, moisLabels, revenuMensuelData);
+                    revenuMensuelChart.data.labels = filteredData.labels;
+                    revenuMensuelChart.data.datasets[0].data = filteredData.data;
+                    revenuMensuelChart.update();
+                }
+            });
         });
 
-        const monthSelectorContrats = document.getElementById('monthSelectorContrats');
-        monthSelectorContrats.addEventListener('change', function () {
-            const selectedMonth = this.value; // Format YYYY-MM
+        const startDateContrats = document.getElementById('startDateContrats');
+        const endDateContrats = document.getElementById('endDateContrats');
 
-            const monthIndex = moisLabels.indexOf(selectedMonth);
+        [startDateContrats, endDateContrats].forEach(input => {
+            input.addEventListener('change', function () {
+                const startDate = startDateContrats.value;
+                const endDate = endDateContrats.value;
 
-            if (monthIndex !== -1) {
-                nouveauxContratsChart.data.labels = [selectedMonth];
-                nouveauxContratsChart.data.datasets[0].data = [nouveauxContratsData[monthIndex]];
-                nouveauxContratsChart.update();
-            } else {
-                nouveauxContratsChart.data.labels = [];
-                nouveauxContratsChart.data.datasets[0].data = [];
-                nouveauxContratsChart.update();
-            }
+                if (startDate && endDate) {
+                    const filteredData = filterDataByDateRange(startDate, endDate, moisLabels, nouveauxContratsData);
+                    nouveauxContratsChart.data.labels = filteredData.labels;
+                    nouveauxContratsChart.data.datasets[0].data = filteredData.data;
+                    nouveauxContratsChart.update();
+                }
+            });
         });
     });
 </script>

@@ -646,6 +646,7 @@ table.boxes-table tr:nth-child(even) {
     font-size: 14px;
     border-radius: 4px;
     border: 1px solid #ccc;
+    margin-right: 10px;
 }
 
 .button {
