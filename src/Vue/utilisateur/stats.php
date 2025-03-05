@@ -29,61 +29,82 @@ $factures = $pdo->prepare('SELECT * FROM factures WHERE utilisateur_id = ?');
 $factures->execute([$utilisateurId]);
 $factures = $factures->fetchAll(PDO::FETCH_ASSOC);
 
-// Récupérer le revenu total à partir de la table recap_vente
-$revenuTotal = $pdo->prepare('SELECT SUM(total_ht) AS total FROM recap_ventes WHERE utilisateur_id = ?');
-$revenuTotal->execute([$utilisateurId]);
-$revenuTotal = $revenuTotal->fetchColumn();
+// Récupérer les ventes et remboursements de l'utilisateur pour calculer le CA
+$query = 'SELECT * FROM recap_ventes WHERE utilisateur_id = ?';
+$stmt = $pdo->prepare($query);
+$stmt->execute([$utilisateurId]);
+$recapVentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Récupérer les box de l'utilisateur avec leur quantité et leur prix
-$utilisateurBoxes = $pdo->prepare('
-    SELECT ub.box_type_id, ub.quantite, tb.prix_ttc 
-    FROM utilisateur_boxes ub
-    JOIN box_types tb ON ub.box_type_id = tb.id
-    WHERE ub.utilisateur_id = ?
-');
-$utilisateurBoxes->execute([$utilisateurId]);
-$utilisateurBoxes = $utilisateurBoxes->fetchAll(PDO::FETCH_ASSOC);
+// Calcul des revenus cumulés
+$revenuTotal = 0;
+$revenuMensuel = [];
+$occupationParBox = [];
+$capaciteTotale = 0;
+$capaciteUtilisee = 0;
 
-// Calculer le revenu max mensuel
-$revenuMaxMensuel = 0;
-foreach ($utilisateurBoxes as $box) {
-    $revenuMaxMensuel += $box['quantite'] * $box['prix_ttc'];
+// Calculer le nombre de box libres, occupées et maximales
+$boxLibres = [];
+$boxMax = [];
+$boxOccupees = [];
+$boxLabels = [];
+foreach ($boxTypes as $boxType) {
+    $boxTypeId = $boxType['id'];
+
+    // Nombre de box disponibles par type
+    $totalBoxDispo = $boxDisponibles[$boxTypeId] ?? 0;
+
+    if ($totalBoxDispo == 0) {
+        continue;
+    }
+
+    // Nombre de box occupées
+    $nbBoxLoues = count(array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId));
+
+    // Nombre de box libres
+    $boxLibres[$boxTypeId] = $totalBoxDispo - $nbBoxLoues;
+
+    // Stocker la quantité maximale
+    $boxMax[$boxTypeId] = $totalBoxDispo;
+
+    // Nombre de box occupées
+    $boxOccupees[$boxTypeId] = $nbBoxLoues;
+
+    $boxLabels[] = $boxType['denomination'];
 }
 
-// Récupérer les revenus mensuels à partir de la table recap_vente
-$revenuMensuel = $pdo->prepare('
-    SELECT DATE_FORMAT(date_vente, "%Y-%m") AS mois, SUM(total_ht) AS total 
-    FROM recap_ventes 
-    WHERE utilisateur_id = ?
-    GROUP BY mois
-    ORDER BY mois
-');
-$revenuMensuel->execute([$utilisateurId]);
-$revenuMensuel = $revenuMensuel->fetchAll(PDO::FETCH_KEY_PAIR);
+// Lier les box à leurs prix
+$boxTypesById = [];
+foreach ($boxTypes as $boxType) {
+    $boxTypesById[$boxType['id']] = $boxType;
+}
 
-// Récupérer le nombre total de box de l'utilisateur
-$totalBox = $pdo->prepare('
-    SELECT SUM(quantite) AS total 
-    FROM utilisateur_boxes 
-    WHERE utilisateur_id = ?
-');
-$totalBox->execute([$utilisateurId]);
-$totalBox = $totalBox->fetchColumn();
+// Calculer les taux d'occupation et revenus
+foreach ($boxTypes as $boxType) {
+    $boxTypeId = $boxType['id'];
 
-// Récupérer le nombre de box louées
-$boxLouees = $pdo->prepare('
-    SELECT COUNT(*) AS total 
-    FROM locations 
-    WHERE utilisateur_id = ? AND date_fin > NOW()
-');
-$boxLouees->execute([$utilisateurId]);
-$boxLouees = $boxLouees->fetchColumn();
+    // Nombre de box disponibles
+    $totalBoxDispo = $boxDisponibles[$boxTypeId] ?? 0;
 
-// Calculer le nombre de box restantes
-$boxRestantes = $totalBox - $boxLouees;
+    // Nombre de box actuellement loués (un box ne compte qu'une fois par mois)
+    $nbBoxLoues = count(array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId));
 
-// Calculer le taux d'occupation
-$tauxOccupation = ($totalBox > 0) ? round(($boxLouees / $totalBox) * 100, 2) : 0;
+    // Nombre de box occupées
+    $occupationParBox[$boxTypeId] = $nbBoxLoues;
+
+    // Mise à jour des valeurs globales
+    $capaciteTotale += $totalBoxDispo;
+    $capaciteUtilisee += $nbBoxLoues;
+}
+
+// Calculer le revenu total et mensuel
+foreach ($recapVentes as $vente) {
+    $revenuTotal += $vente['total_ht'];
+    $mois = date('Y-m', strtotime($vente['date_vente']));
+    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $vente['total_ht'];
+}
+
+// Calculer le taux d'occupation global
+$tauxOccupationGlobal = ($capaciteTotale > 0) ? min(100, round(($capaciteUtilisee / $capaciteTotale) * 100, 2)) : 0;
 
 // Nouveaux contrats par mois
 $nouveauxContratsParMois = [];
@@ -93,6 +114,7 @@ foreach ($locations as $location) {
 }
 ?>
 
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -100,155 +122,97 @@ foreach ($locations as $location) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        .stats-globales {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 20px;
-        }
-
-        .stat-card {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-
-        .stat-card h3 {
-            margin: 0;
-            font-size: 16px;
-        }
-
-        .stat-card .value {
-            font-size: 24px;
-            font-weight: bold;
-            margin-top: 10px;
-        }
-
-        .charts-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-
-        .chart-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .date-selector {
-            margin-bottom: 10px;
-            text-align: center;
-        }
-
-        .date-selector label {
-            font-size: 14px;
-            margin-right: 10px;
-        }
-
-        .date-selector input[type="month"] {
-            padding: 5px;
-            font-size: 14px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            margin-right: 10px;
-        }
-    </style>
 </head>
 <body class="stats-page">
 <h1>Statistiques de vos locations</h1>
 
 <!-- Statistiques globales -->
 <div class="stats-globales">
-    <!-- Sélecteur de date -->
     <div class="stat-card">
-        <h3>Période</h3>
-        <div class="date-selector">
-            <label for="startDate">Date de début :</label>
-            <input type="month" id="startDate" name="startDate">
-            <label for="endDate">Date de fin :</label>
-            <input type="month" id="endDate" name="endDate">
-        </div>
+        <h3>Revenu total (€ HT)</h3>
+        <div class="value"><?= number_format($revenuTotal, 2) ?> €</div>
     </div>
 
-    <!-- Revenu max mensuel -->
-    <div class="stat-card">
-        <h3>Revenu max mensuel</h3>
-        <div class="value" id="revenuMaxMensuel"><?= number_format($revenuMaxMensuel, 2) ?> €</div>
-    </div>
-
-    <!-- Revenu actuel -->
-    <div class="stat-card">
-        <h3>Revenu actuel</h3>
-        <div class="value" id="revenuActuel">0 €</div>
-    </div>
-
-    <!-- Revenu restant -->
-    <div class="stat-card">
-        <h3>Revenu restant</h3>
-        <div class="value" id="revenuRestant">0 €</div>
-    </div>
-
-    <!-- Nombre total de box -->
-    <div class="stat-card">
-        <h3>Nombre total de box</h3>
-        <div class="value"><?= $totalBox ?></div>
-    </div>
-
-    <!-- Nombre de box louées -->
-    <div class="stat-card">
-        <h3>Box louées</h3>
-        <div class="value" id="boxLouees"><?= $boxLouees ?></div>
-    </div>
-
-    <!-- Nombre de box restantes -->
-    <div class="stat-card">
-        <h3>Box restantes</h3>
-        <div class="value" id="boxRestantes"><?= $boxRestantes ?></div>
-    </div>
-
-    <!-- Taux d'occupation -->
     <div class="stat-card">
         <h3>Taux d'occupation</h3>
-        <div class="value" id="tauxOccupation"><?= $tauxOccupation ?> %</div>
+        <div class="value"><?= $tauxOccupationGlobal ?> %</div>
+    </div>
+
+    <div class="stat-card">
+        <h3>Capacité utilisée</h3>
+        <div class="value"><?= $capaciteUtilisee ?> box loués</div>
     </div>
 </div>
 
 <!-- Graphiques -->
-<div class="charts-grid">
-    <div class="chart-card">
-        <h3>Chiffre d'affaires</h3>
-        <canvas id="revenuMensuelChart"></canvas>
+<div class="chart-card">
+    <h3>Chiffre d'affaires</h3>
+    <div class="date-filters">
+        <label for="startDateRevenue">Mois début :</label>
+        <input type="month" id="startDateRevenue">
+
+        <label for="endDateRevenue">Mois fin :</label>
+        <input type="month" id="endDateRevenue">
     </div>
 
-    <div class="chart-card">
-        <h3>Nombre d'entrées</h3>
-        <canvas id="nouveauxContratsChart"></canvas>
+    <canvas id="revenuMensuelChart"></canvas>
+</div>
+
+
+<div class="chart-card">
+    <h3>Nombre d'entrées</h3>
+
+    <div class="date-filters">
+        <label for="startDateEntrées">Mois début :</label>
+        <input type="month" id="startDateEntrées">
+
+        <label for="endDateEntrées">Mois fin :</label>
+        <input type="month" id="endDateEntrées">
     </div>
+
+    <canvas id="nouveauxContratsChart"></canvas>
+</div>
+
+
+<div class="chart-card">
+    <h3>Quantité de Box</h3>
+    <div class="dropdown">
+        <button id="toggleFilter">🔽 Sélectionner les box</button>
+        <div id="boxFilter" class="dropdown-content">
+            <?php foreach ($boxLabels as $index => $boxLabel): ?>
+                <label>
+                    <input type="checkbox" class="box-checkbox" value="<?= $index ?>" checked>
+                    <?= htmlspecialchars($boxLabel) ?>
+                </label>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <canvas id="boxLibreOccupeMaxChart"></canvas>
+</div>
+
+
+
 </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
         const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
         const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
+        const moisContratsLabels = <?= json_encode(array_keys($nouveauxContratsParMois)) ?>.reverse();
         const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
-        const revenuMaxMensuel = <?= json_encode($revenuMaxMensuel) ?>;
-        const totalBox = <?= json_encode($totalBox) ?>;
-        const boxLouees = <?= json_encode($boxLouees) ?>;
-        const boxRestantes = <?= json_encode($boxRestantes) ?>;
-        const tauxOccupation = <?= json_encode($tauxOccupation) ?>;
+        const boxLibresData = <?= json_encode(array_values($boxLibres)) ?>;
+        const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
+        const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
+        const boxLabels = <?= json_encode($boxLabels) ?>;
 
-        // Graphique Chiffre d'affaires
-        const revenuMensuelChart = new Chart(document.getElementById('revenuMensuelChart'), {
+        // 📊 Création du graphique CA
+        const revenueCtx = document.getElementById('revenuMensuelChart').getContext('2d');
+        const revenueChart = new Chart(revenueCtx, {
             type: 'line',
             data: {
                 labels: moisLabels,
                 datasets: [{
-                    label: 'Évolution Mensuel (€ HT)',
+                    label: 'Évolution Mensuelle (€ HT)',
                     data: revenuMensuelData,
                     borderColor: '#0072bc',
                     tension: 0.1
@@ -256,11 +220,12 @@ foreach ($locations as $location) {
             }
         });
 
-        // Graphique Nouveaux contrats
-        const nouveauxContratsChart = new Chart(document.getElementById('nouveauxContratsChart'), {
+        // 📊 Création du graphique des contrats
+        const contratsCtx = document.getElementById('nouveauxContratsChart').getContext('2d');
+        const contratsChart = new Chart(contratsCtx, {
             type: 'bar',
             data: {
-                labels: moisLabels,
+                labels: moisContratsLabels,
                 datasets: [{
                     label: 'Nombre d\'entrées mensuel',
                     data: nouveauxContratsData,
@@ -269,56 +234,101 @@ foreach ($locations as $location) {
             }
         });
 
-        // Sélecteurs de date
-        const startDateInput = document.getElementById('startDate');
-        const endDateInput = document.getElementById('endDate');
-        const revenuActuelElement = document.getElementById('revenuActuel');
-        const revenuRestantElement = document.getElementById('revenuRestant');
-        const boxLoueesElement = document.getElementById('boxLouees');
-        const boxRestantesElement = document.getElementById('boxRestantes');
-        const tauxOccupationElement = document.getElementById('tauxOccupation');
+        // 📊 Création du graphique de la quantité de box
+        const boxCtx = document.getElementById("boxLibreOccupeMaxChart").getContext("2d");
+        const boxChartData = {
+            labels: boxLabels,
+            datasets: [
+                { label: "Libres", data: boxLibresData, backgroundColor: "#28a745" },
+                { label: "Occupées", data: boxOccupeesData, backgroundColor: "#dc3545" },
+                { label: "Maximales", data: boxMaxData, backgroundColor: "#007bff" }
+            ]
+        };
+        const boxChart = new Chart(boxCtx, { type: "bar", data: boxChartData });
 
-        [startDateInput, endDateInput].forEach(input => {
-            input.addEventListener('change', function () {
-                const startDate = startDateInput.value;
-                const endDate = endDateInput.value;
+        // 🎯 Gestion des filtres DATE pour les graphiques temporels
+        function updateChartWithDates(chart, labels, data, startInput, endInput) {
+            const startDate = startInput.value || null;
+            const endDate = endInput.value || null;
 
-                if (startDate && endDate) {
-                    // Calculer le nombre de mois entre les deux dates
-                    const start = new Date(startDate + '-01');
-                    const end = new Date(endDate + '-01');
-                    const nbMois = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth()) + 1;
+            let filteredLabels = [];
+            let filteredData = [];
 
-                    // Calculer le revenu max pour la période
-                    const revenuMaxPeriode = revenuMaxMensuel * nbMois;
-
-                    // Calculer le revenu actuel pour la période
-                    let revenuActuelPeriode = 0;
-                    Object.keys(revenuMensuel).forEach(mois => {
-                        const currentDate = new Date(mois + '-01');
-                        if (currentDate >= start && currentDate <= end) {
-                            revenuActuelPeriode += revenuMensuel[mois];
-                        }
-                    });
-
-                    // Calculer le revenu restant
-                    let revenuRestantPeriode = revenuMaxPeriode - revenuActuelPeriode;
-                    if (revenuRestantPeriode < 0) {
-                        revenuRestantPeriode = 0;
-                    }
-
-                    // Mettre à jour les éléments HTML pour les revenus
-                    revenuActuelElement.textContent = revenuActuelPeriode.toFixed(2) + ' €';
-                    revenuRestantElement.textContent = revenuRestantPeriode.toFixed(2) + ' €';
-
-                    // Mettre à jour les éléments HTML pour les box
-                    boxLoueesElement.textContent = boxLouees;
-                    boxRestantesElement.textContent = boxRestantes;
-                    tauxOccupationElement.textContent = tauxOccupation + ' %';
+            labels.forEach((mois, index) => {
+                if ((startDate === null || mois >= startDate) &&
+                    (endDate === null || mois <= endDate)) {
+                    filteredLabels.push(mois);
+                    filteredData.push(data[index]);
                 }
             });
+
+            if (filteredLabels.length === 0) {
+                alert("Aucune donnée à afficher pour cette période !");
+                filteredLabels = labels;
+                filteredData = data;
+            }
+
+            chart.data.labels = filteredLabels;
+            chart.data.datasets[0].data = filteredData;
+            chart.update();
+        }
+
+        // 🎯 Filtres pour Chiffre d'affaires
+        document.getElementById('startDateRevenue').addEventListener('change', () => {
+            updateChartWithDates(revenueChart, moisLabels, revenuMensuelData,
+                document.getElementById('startDateRevenue'),
+                document.getElementById('endDateRevenue'));
+        });
+
+        document.getElementById('endDateRevenue').addEventListener('change', () => {
+            updateChartWithDates(revenueChart, moisLabels, revenuMensuelData,
+                document.getElementById('startDateRevenue'),
+                document.getElementById('endDateRevenue'));
+        });
+
+        // 🎯 Filtres pour Nombre d'entrées
+        document.getElementById('startDateEntrées').addEventListener('change', () => {
+            updateChartWithDates(contratsChart, moisContratsLabels, nouveauxContratsData,
+                document.getElementById('startDateEntrées'),
+                document.getElementById('endDateEntrées'));
+        });
+
+        document.getElementById('endDateEntrées').addEventListener('change', () => {
+            updateChartWithDates(contratsChart, moisContratsLabels, nouveauxContratsData,
+                document.getElementById('startDateEntrées'),
+                document.getElementById('endDateEntrées'));
+        });
+
+        // 🎯 Gestion du sélecteur de box pour le graphique des box
+        const toggleButton = document.getElementById("toggleFilter");
+        const dropdownContent = document.getElementById("boxFilter");
+
+        toggleButton.addEventListener("click", function (event) {
+            event.stopPropagation();
+            dropdownContent.classList.toggle("active");
+        });
+
+        document.querySelectorAll(".box-checkbox").forEach((checkbox, index) => {
+            checkbox.addEventListener("change", function () {
+                const selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox:checked")).map(cb => parseInt(cb.value));
+
+                boxChartData.labels = selectedIndexes.map(i => boxLabels[i]);
+                boxChartData.datasets[0].data = selectedIndexes.map(i => boxLibresData[i]);
+                boxChartData.datasets[1].data = selectedIndexes.map(i => boxOccupeesData[i]);
+                boxChartData.datasets[2].data = selectedIndexes.map(i => boxMaxData[i]);
+
+                boxChart.update();
+            });
+        });
+
+        // Fermer le menu si clic en dehors
+        document.addEventListener("click", function (event) {
+            if (!toggleButton.contains(event.target) && !dropdownContent.contains(event.target)) {
+                dropdownContent.classList.remove("active");
+            }
         });
     });
+
 </script>
 </body>
 </html>
