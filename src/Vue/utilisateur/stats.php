@@ -38,7 +38,7 @@ $revenuTotal = $revenuTotal->fetchColumn();
 $utilisateurBoxes = $pdo->prepare('
     SELECT ub.box_type_id, ub.quantite, tb.prix 
     FROM utilisateur_boxes ub
-    JOIN type_boxes tb ON ub.box_type_id = tb.id
+    JOIN box_types tb ON ub.box_type_id = tb.id
     WHERE ub.utilisateur_id = ?
 ');
 $utilisateurBoxes->execute([$utilisateurId]);
