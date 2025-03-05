@@ -185,13 +185,22 @@ foreach ($locations as $location) {
 <div class="charts-grid">
     <div class="chart-card">
         <h3>Chiffre d'affaires</h3>
+        <div class="date-selector">
+            <label for="monthSelectorRevenu">Sélectionnez un mois :</label>
+            <input type="month" id="monthSelectorRevenu" name="monthSelectorRevenu">
+        </div>
         <canvas id="revenuMensuelChart"></canvas>
     </div>
 
     <div class="chart-card">
         <h3>Nombre d'entrées</h3>
+        <div class="date-selector">
+            <label for="monthSelectorContrats">Sélectionnez un mois :</label>
+            <input type="month" id="monthSelectorContrats" name="monthSelectorContrats">
+        </div>
         <canvas id="nouveauxContratsChart"></canvas>
     </div>
+</div>
 
     <div class="chart-card">
         <h3>Quantité de Box</h3>
@@ -307,6 +316,73 @@ foreach ($locations as $location) {
                 backgroundColor: '#ff6600'
             }]
         }
+    });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
+        const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
+        const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
+
+        // Graphique Chiffre d'affaires
+        const revenuMensuelChart = new Chart(document.getElementById('revenuMensuelChart'), {
+            type: 'line',
+            data: {
+                labels: moisLabels,
+                datasets: [{
+                    label: 'Évolution Mensuel (€ HT)',
+                    data: revenuMensuelData,
+                    borderColor: '#0072bc',
+                    tension: 0.1
+                }]
+            }
+        });
+
+        // Graphique Nouveaux contrats
+        const nouveauxContratsChart = new Chart(document.getElementById('nouveauxContratsChart'), {
+            type: 'bar',
+            data: {
+                labels: moisLabels,
+                datasets: [{
+                    label: 'Nombre d\'entrées mensuel',
+                    data: nouveauxContratsData,
+                    backgroundColor: '#ff6600'
+                }]
+            }
+        });
+
+        const monthSelectorRevenu = document.getElementById('monthSelectorRevenu');
+        monthSelectorRevenu.addEventListener('change', function () {
+            const selectedMonth = this.value; // Format YYYY-MM
+
+            const monthIndex = moisLabels.indexOf(selectedMonth);
+
+            if (monthIndex !== -1) {
+                revenuMensuelChart.data.labels = [selectedMonth];
+                revenuMensuelChart.data.datasets[0].data = [revenuMensuelData[monthIndex]];
+                revenuMensuelChart.update();
+            } else {
+                revenuMensuelChart.data.labels = [];
+                revenuMensuelChart.data.datasets[0].data = [];
+                revenuMensuelChart.update();
+            }
+        });
+
+        const monthSelectorContrats = document.getElementById('monthSelectorContrats');
+        monthSelectorContrats.addEventListener('change', function () {
+            const selectedMonth = this.value; // Format YYYY-MM
+
+            const monthIndex = moisLabels.indexOf(selectedMonth);
+
+            if (monthIndex !== -1) {
+                nouveauxContratsChart.data.labels = [selectedMonth];
+                nouveauxContratsChart.data.datasets[0].data = [nouveauxContratsData[monthIndex]];
+                nouveauxContratsChart.update();
+            } else {
+                nouveauxContratsChart.data.labels = [];
+                nouveauxContratsChart.data.datasets[0].data = [];
+                nouveauxContratsChart.update();
+            }
+        });
     });
 </script>
 </body>
