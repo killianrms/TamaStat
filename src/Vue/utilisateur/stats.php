@@ -30,7 +30,7 @@ $factures->execute([$utilisateurId]);
 $factures = $factures->fetchAll(PDO::FETCH_ASSOC);
 
 // Récupérer le revenu total à partir de la table recap_vente
-$revenuTotal = $pdo->prepare('SELECT SUM(total_ht) AS total FROM recap_vente WHERE utilisateur_id = ?');
+$revenuTotal = $pdo->prepare('SELECT SUM(total_ht) AS total FROM s WHERE utilisateur_id = ?');
 $revenuTotal->execute([$utilisateurId]);
 $revenuTotal = $revenuTotal->fetchColumn();
 
@@ -53,7 +53,7 @@ foreach ($utilisateurBoxes as $box) {
 // Récupérer les revenus mensuels à partir de la table recap_vente
 $revenuMensuel = $pdo->prepare('
     SELECT DATE_FORMAT(date_vente, "%Y-%m") AS mois, SUM(total_ht) AS total 
-    FROM recap_vente 
+    FROM recap_ventes 
     WHERE utilisateur_id = ?
     GROUP BY mois
     ORDER BY mois
