@@ -23,7 +23,11 @@ $stmt = $pdo->prepare('SELECT COUNT(*) FROM factures WHERE utilisateur_id = ?');
 $stmt->execute([$utilisateurId]);
 $hasFactures = $stmt->fetchColumn() > 0;
 
-if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures) {
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM recap_ventes WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasRecapVentes = $stmt->fetchColumn() > 0;
+
+if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVentes) {
     header("Location: routeur.php?route=stats");
     exit;
 }
@@ -84,6 +88,16 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures) {
         <form id="importFacturesForm" action="routeur.php?route=importer-factures" method="POST" enctype="multipart/form-data">
             <label for="csv_factures">Importer un fichier CSV des factures :</label>
             <input type="file" id="csv_factures" name="csv_factures" accept=".csv" required>
+            <button type="submit" id="submitBtn">Importer</button>
+            <div class="loader" id="loader"></div>
+        </form>
+    </div>
+<?php elseif (!$hasRecapVentes): ?>
+    <div class="step">
+        <h2>Étape 5/5 : Importer vos recap_ventes</h2>
+        <form id="importRecapVentesForm" action="routeur.php?route=importer-recap-ventes" method="POST" enctype="multipart/form-data">
+            <label for="csv_recap_ventes">Importer un fichier CSV des recap_ventes :</label>
+            <input type="file" id="csv_recap_ventes" name="csv_recap_ventes" accept=".csv" required>
             <button type="submit" id="submitBtn">Importer</button>
             <div class="loader" id="loader"></div>
         </form>

@@ -35,14 +35,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
-    $pdo->prepare('UPDATE utilisateur_boxes SET date_dernier_import = NOW() WHERE utilisateur_id = ?')->execute([$utilisateurId]);
+    // Mettre à jour la table import_tracking pour enregistrer le dernier import des utilisateur_boxes
+    $stmt = $pdo->prepare('INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) 
+                           VALUES (?, ?, NOW()) 
+                           ON DUPLICATE KEY UPDATE date_dernier_import = NOW()');
+    $stmt->execute([$utilisateurId, 'utilisateur_boxes']);
 
     header('Location: routeur.php?route=profil');
     exit;
 }
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="fr">

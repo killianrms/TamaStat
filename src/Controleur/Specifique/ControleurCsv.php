@@ -81,6 +81,31 @@ class ControleurCsv {
             $stmt->execute([$utilisateurId]);
     }
 
+    public function importerRecapVentes($csvFile, $utilisateurId) {
+        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
+        if ($fileExt !== 'csv') {
+            throw new Exception("Le fichier doit être au format CSV.");
+        }
+
+        $fileTmpName = $csvFile['tmp_name'];
+
+        if (($handle = fopen($fileTmpName, 'r')) !== false) {
+            stream_filter_append($handle, 'convert.iconv.ISO-8859-1/UTF-8');
+            fgetcsv($handle, 1000, ';');
+
+            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+                if (count($data) >= 8) {
+                    $this->csvModele->importerRecapVente($utilisateurId, $data);
+                }
+            }
+            fclose($handle);
+
+            $stmt = $this->pdo->prepare('INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE date_dernier_import = NOW()');
+            $stmt->execute([$utilisateurId, 'recap_ventes']);
+        }
+    }
+
+
 
     /**
      * Importe les contrats à partir d'un fichier CSV.

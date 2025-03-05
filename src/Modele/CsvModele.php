@@ -16,20 +16,18 @@ class CsvModele {
     /**
      * Vérifie si une facture existe déjà avant l'insertion.
      */
-    private function factureExiste($utilisateurId, $referenceContrat, $titre, $totalTtc, $dateFacture) {
+    private function factureExiste($utilisateurId, $referenceContrat, $titre, $dateFacture) {
         $stmt = $this->pdo->prepare('
             SELECT COUNT(*) FROM factures 
             WHERE utilisateur_id = :utilisateur_id 
             AND reference_contrat = :reference_contrat
             AND titre = :titre
-            AND total_ttc = :total_ttc
             AND date_facture = :date_facture
         ');
         $stmt->execute([
             ':utilisateur_id' => $utilisateurId,
             ':reference_contrat' => $referenceContrat,
             ':titre' => $titre,
-            ':total_ttc' => $totalTtc,
             ':date_facture' => $dateFacture
         ]);
         return $stmt->fetchColumn() > 0;
@@ -51,19 +49,16 @@ class CsvModele {
                 throw new Exception("Date de facture invalide : " . $ligne[9]);
             }
 
-            $totalHt = str_replace(',', '.', $ligne[6]);
-            $tva = str_replace(',', '.', $ligne[7]);
-            $totalTtc = str_replace(',', '.', $ligne[8]);
 
-            if ($this->factureExiste($utilisateurId, $referenceContrat, $titre, $totalTtc, $dateFacture->format('Y-m-d'))) {
+            if ($this->factureExiste($utilisateurId, $referenceContrat, $titre)) {
                 return;
             }
 
             $stmt = $this->pdo->prepare('
                 INSERT INTO factures 
-                (reference_contrat, utilisateur_id, titre, parc, total_ht, tva, total_ttc, date_facture, est_lie_contrat)
+                (reference_contrat, utilisateur_id, titre, parc, date_facture, est_lie_contrat)
                 VALUES 
-                (:reference_contrat, :utilisateur_id, :titre, :parc, :total_ht, :tva, :total_ttc, :date_facture, :est_lie_contrat)
+                (:reference_contrat, :utilisateur_id, :titre, :parc, :date_facture, :est_lie_contrat)
             ');
 
             $stmt->execute([
@@ -71,9 +66,6 @@ class CsvModele {
                 ':utilisateur_id' => $utilisateurId,
                 ':titre' => $titre,
                 ':parc' => $ligne[2],
-                ':total_ht' => $totalHt,
-                ':tva' => $tva,
-                ':total_ttc' => $totalTtc,
                 ':date_facture' => $dateFacture->format('Y-m-d'),
                 ':est_lie_contrat' => $estLieContrat ? 1 : 0
             ]);
@@ -192,6 +184,37 @@ class CsvModele {
             throw new Exception("Erreur PDO : " . $e->getMessage());
         }
     }
+
+    public function importerRecapVente($utilisateurId, $ligne) {
+        try {
+            $dateVente = \DateTime::createFromFormat('d/m/Y', $ligne[1]);
+            if (!$dateVente) {
+                throw new Exception("Date de vente invalide : " . $ligne[1]);
+            }
+
+            $totalHt = str_replace(',', '.', $ligne[5]);
+            $tva = str_replace(',', '.', $ligne[6]);
+            $totalTtc = str_replace(',', '.', $ligne[7]);
+
+            $stmt = $this->pdo->prepare('
+                INSERT INTO recap_ventes 
+                (utilisateur_id, date_vente, total_ht, tva, total_ttc)
+                VALUES 
+                (:utilisateur_id, :date_vente, :total_ht, :tva, :total_ttc)
+            ');
+
+            $stmt->execute([
+                ':utilisateur_id' => $utilisateurId,
+                ':date_vente' => $dateVente->format('Y-m-d'),
+                ':total_ht' => $totalHt,
+                ':tva' => $tva,
+                ':total_ttc' => $totalTtc
+            ]);
+        } catch (\PDOException $e) {
+            throw new Exception("Erreur PDO : " . $e->getMessage());
+        }
+    }
+
 
     public function getBoxTypeIdByReference($denomination, $utilisateurId) {
         $denomination = $this->normalizeString($denomination);
