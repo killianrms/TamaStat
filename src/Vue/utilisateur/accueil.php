@@ -46,7 +46,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
             margin-bottom: 10px;
         }
         .gif-container img {
-            width: 150px;
+            width: 350px;
             cursor: pointer;
             border-radius: 8px;
         }
