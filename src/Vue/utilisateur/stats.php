@@ -135,6 +135,22 @@ $caActuel = (float) $stmt->fetchColumn();
 $caRestant = max(0, $caMaxMensuel - $caActuel);
 
 
+// Récupérer le nombre total de box disponibles par type
+$stmt = $pdo->prepare('SELECT SUM(quantite) FROM utilisateur_boxes WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$nbBoxTotal = (int) $stmt->fetchColumn();
+
+// Récupérer le nombre de box actuellement louées
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM locations WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$nbBoxLouees = (int) $stmt->fetchColumn();
+
+// Calcul du nombre de box restantes
+$nbBoxRestantes = max(0, $nbBoxTotal - $nbBoxLouees);
+
+// Calcul du taux d'occupation (si 0 box dispo, on met à 0 pour éviter division par 0)
+$tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 2) : 0;
+
 ?>
 
 
@@ -152,19 +168,24 @@ $caRestant = max(0, $caMaxMensuel - $caActuel);
 <!-- Statistiques globales -->
 <div class="stats-globales">
     <div class="stat-card">
-        <h3>CA Max Mensuel (potentiel)</h3>
-        <div class="value"><?= number_format($caMaxMensuel, 2) ?> € TTC</div>
+        <h3>Chiffre d'Affaires</h3>
+        <div class="stat-content">
+            <p><strong>CA Max Mensuel :</strong> <?= number_format($caMaxMensuel, 2) ?> €</p>
+            <p><strong>CA Actuel :</strong> <?= number_format($caActuel, 2) ?> €</p>
+            <p><strong>CA Restant :</strong> <?= number_format($caRestant, 2) ?> €</p>
+        </div>
     </div>
 
     <div class="stat-card">
-        <h3>CA Actuel</h3>
-        <div class="value"><?= number_format($caActuel, 2) ?> € HT</div>
+        <h3>Statistiques des Box</h3>
+        <div class="stat-content">
+            <p><strong>Nombre total de box :</strong> <?= $nbBoxTotal ?></p>
+            <p><strong>Nombre de box louées :</strong> <?= $nbBoxLouees ?></p>
+            <p><strong>Nombre de box restantes :</strong> <?= $nbBoxRestantes ?></p>
+            <p><strong>Taux d'occupation :</strong> <?= $tauxOccupation ?> %</p>
+        </div>
     </div>
 
-    <div class="stat-card">
-        <h3>CA Restant (progression)</h3>
-        <div class="value"><?= number_format($caRestant, 2) ?> € TTC</div>
-    </div>
 </div>
 
 
