@@ -216,17 +216,23 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             font-weight: bold;
         }
 
-        /* Graphiques */
+        /* Conteneur des graphiques (alignés horizontalement) */
+        .graph-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
         .chart-card {
             background: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-            margin-top: 20px;
-            width: 80%;
-            max-width: 800px;
-            margin-left: auto;
-            margin-right: auto;
+            width: 30%;
+            min-width: 280px;
+            text-align: center;
         }
 
         .chart-card h3 {
@@ -239,10 +245,12 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             max-width: 100%;
         }
 
-        /* Filtres pour les graphiques */
+        /* Filtres de date alignés horizontalement */
         .date-filters {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin-bottom: 15px;
-            text-align: center;
         }
 
         .date-filters label {
@@ -282,6 +290,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         .dropdown.active .dropdown-content {
             display: block;
         }
+
     </style>
 
 </head>
