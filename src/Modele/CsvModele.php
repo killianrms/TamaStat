@@ -16,24 +16,24 @@ class CsvModele {
     /**
      * Vérifie si une facture existe déjà avant l'insertion.
      */
-    private function factureExiste($utilisateurId, $referenceContrat, $titre, $dateFacture, $totalTtc) {
+    private function factureExiste($utilisateurId, $referenceContrat, $titre, $dateFacture) {
         $stmt = $this->pdo->prepare('
-        SELECT COUNT(*) FROM factures 
-        WHERE utilisateur_id = :utilisateur_id 
-        AND reference_contrat = :reference_contrat
-        AND titre = :titre
-        AND date_facture = :date_facture
-        AND total_ttc = :total_ttc
-    ');
+            SELECT COUNT(*) FROM factures 
+            WHERE utilisateur_id = :utilisateur_id 
+            AND reference_contrat = :reference_contrat
+            AND titre = :titre
+            AND date_facture = :date_facture
+        ');
         $stmt->execute([
             ':utilisateur_id' => $utilisateurId,
             ':reference_contrat' => $referenceContrat,
             ':titre' => $titre,
-            ':date_facture' => $dateFacture,
-            ':total_ttc' => $totalTtc
+            ':date_facture' => $dateFacture
         ]);
         return $stmt->fetchColumn() > 0;
     }
+
+
 
 
     /**
@@ -52,18 +52,16 @@ class CsvModele {
                 throw new Exception("Date de facture invalide : " . $ligne[9]);
             }
 
-            $totalTtc = str_replace(',', '.', $ligne[8]);
-
-            if ($this->factureExiste($utilisateurId, $referenceContrat, $titre, $dateFacture->format('Y-m-d'), $totalTtc)) {
+            if ($this->factureExiste($utilisateurId, $referenceContrat, $titre, $dateFacture->format('Y-m-d'))) {
                 return;
             }
 
             $stmt = $this->pdo->prepare('
-            INSERT INTO factures 
-            (reference_contrat, utilisateur_id, titre, parc, date_facture, est_lie_contrat)
-            VALUES 
-            (:reference_contrat, :utilisateur_id, :titre, :parc, :date_facture, :est_lie_contrat)
-        ');
+                INSERT INTO factures 
+                (reference_contrat, utilisateur_id, titre, parc, date_facture, est_lie_contrat)
+                VALUES 
+                (:reference_contrat, :utilisateur_id, :titre, :parc, :date_facture, :est_lie_contrat)
+            ');
 
             $stmt->execute([
                 ':reference_contrat' => $referenceContrat,
@@ -240,7 +238,7 @@ class CsvModele {
         FROM locations 
         WHERE reference_contrat = :reference_contrat 
         AND utilisateur_id = :utilisateur_id
-    ');
+        ');
 
         $stmt->execute([
             ':reference_contrat' => $referenceContrat,
