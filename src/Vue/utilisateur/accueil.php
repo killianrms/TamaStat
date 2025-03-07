@@ -46,7 +46,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
 
 <?php if (!$hasBoxes): ?>
     <div class="step">
-        <h2>Étape 1/4 : Importer vos box</h2>
+        <h2>Étape 1/5 : Importer vos box</h2>
         <form id="importBoxForm" action="routeur.php?route=importer-box" method="POST" enctype="multipart/form-data">
             <label for="csv_box">Importer un fichier CSV des box :</label>
             <input type="file" id="csv_box" name="csv_box" accept=".csv" required>
@@ -56,7 +56,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
     </div>
 <?php elseif (!$hasBoxesConfig): ?>
     <div class="step">
-        <h2>Étape 2/4 : Configurer vos box</h2>
+        <h2>Étape 2/5 : Configurer vos box</h2>
         <form id="configBoxForm" action="routeur.php?route=configurer-box" method="POST">
             <?php
             $stmt = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
@@ -74,7 +74,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
     </div>
 <?php elseif (!$hasContrats): ?>
     <div class="step">
-        <h2>Étape 3/4 : Importer vos contrats</h2>
+        <h2>Étape 3/5 : Importer vos contrats</h2>
         <form id="importContratsForm" action="routeur.php?route=importer-contrats" method="POST" enctype="multipart/form-data">
             <label for="csv_contrats">Importer un fichier CSV des contrats :</label>
             <input type="file" id="csv_contrats" name="csv_contrats" accept=".csv" required>
@@ -84,7 +84,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
     </div>
 <?php elseif (!$hasFactures): ?>
     <div class="step">
-        <h2>Étape 4/4 : Importer vos factures</h2>
+        <h2>Étape 4/5 : Importer vos factures</h2>
         <form id="importFacturesForm" action="routeur.php?route=importer-factures" method="POST" enctype="multipart/form-data">
             <label for="csv_factures">Importer un fichier CSV des factures :</label>
             <input type="file" id="csv_factures" name="csv_factures" accept=".csv" required>
