@@ -112,6 +112,29 @@ foreach ($locations as $location) {
     $mois = date('Y-m', strtotime($location['date_debut']));
     $nouveauxContratsParMois[$mois] = ($nouveauxContratsParMois[$mois] ?? 0) + 1;
 }
+
+$caMaxMensuel = 0;
+
+$stmt = $pdo->prepare('
+    SELECT bt.prix_ttc, ub.quantite 
+    FROM utilisateur_boxes ub 
+    INNER JOIN box_types bt ON ub.box_type_id = bt.id 
+    WHERE ub.utilisateur_id = ? AND bt.utilisateur_id = ?
+');
+$stmt->execute([$utilisateurId, $utilisateurId]);
+$boxData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($boxData as $box) {
+    $caMaxMensuel += $box['prix_ttc'] * $box['quantite'];
+}
+
+$stmt = $pdo->prepare('SELECT SUM(total_ht) FROM recap_ventes WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$caActuel = (float) $stmt->fetchColumn();
+
+$caRestant = max(0, $caMaxMensuel - $caActuel);
+
+
 ?>
 
 
@@ -129,20 +152,21 @@ foreach ($locations as $location) {
 <!-- Statistiques globales -->
 <div class="stats-globales">
     <div class="stat-card">
-        <h3>Revenu total (€ HT)</h3>
-        <div class="value"><?= number_format($revenuTotal, 2) ?> €</div>
+        <h3>CA Max Mensuel (potentiel)</h3>
+        <div class="value"><?= number_format($caMaxMensuel, 2) ?> € TTC</div>
     </div>
 
     <div class="stat-card">
-        <h3>Taux d'occupation</h3>
-        <div class="value"><?= $tauxOccupationGlobal ?> %</div>
+        <h3>CA Actuel</h3>
+        <div class="value"><?= number_format($caActuel, 2) ?> € HT</div>
     </div>
 
     <div class="stat-card">
-        <h3>Capacité utilisée</h3>
-        <div class="value"><?= $capaciteUtilisee ?> box loués</div>
+        <h3>CA Restant (progression)</h3>
+        <div class="value"><?= number_format($caRestant, 2) ?> € TTC</div>
     </div>
 </div>
+
 
 <!-- Graphiques -->
 <div class="chart-card">
