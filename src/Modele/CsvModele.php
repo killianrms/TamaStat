@@ -34,8 +34,6 @@ class CsvModele {
     }
 
 
-
-
     /**
      * Importe une facture si elle n'existe pas déjà.
      */
@@ -58,16 +56,15 @@ class CsvModele {
 
             $stmt = $this->pdo->prepare('
                 INSERT INTO factures 
-                (reference_contrat, utilisateur_id, titre, parc, date_facture, est_lie_contrat)
+                (reference_contrat, utilisateur_id, titre, date_facture, est_lie_contrat)
                 VALUES 
-                (:reference_contrat, :utilisateur_id, :titre, :parc, :date_facture, :est_lie_contrat)
+                (:reference_contrat, :utilisateur_id, :titre, :date_facture, :est_lie_contrat)
             ');
 
             $stmt->execute([
                 ':reference_contrat' => $referenceContrat,
                 ':utilisateur_id' => $utilisateurId,
                 ':titre' => $titre,
-                ':parc' => $ligne[2],
                 ':date_facture' => $dateFacture->format('Y-m-d'),
                 ':est_lie_contrat' => $estLieContrat ? 1 : 0
             ]);
