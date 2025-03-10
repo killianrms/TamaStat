@@ -292,6 +292,70 @@ try {
             }
             break;
 
+        case 'get-ca-periode':
+            if (!isset($_GET['debut']) || !isset($_GET['fin'])) {
+                echo json_encode(["success" => false, "message" => "Période non fournie"]);
+                exit;
+            }
+
+            $moisDebut = $_GET['debut'];
+            $moisFin = $_GET['fin'];
+
+            if ($moisDebut > $moisFin) {
+                echo json_encode(["success" => false, "message" => "Dates invalides"]);
+                exit;
+            }
+
+            // Récupérer l'ID de l'utilisateur
+            $utilisateurId = $_SESSION['user']['id'];
+
+            // Récupérer le nombre de mois dans la période sélectionnée
+            $dateDebut = new DateTime($moisDebut . "-01");
+            $dateFin = new DateTime($moisFin . "-01");
+            $interval = $dateDebut->diff($dateFin);
+            $nbMois = $interval->m + 1 + ($interval->y * 12); // Convertit les années en mois
+
+            // 🟢 Récupérer le CA Max Mensuel AVANT de l'utiliser
+            $stmt = $pdo->prepare('
+        SELECT SUM(bt.prix_ttc * ub.quantite) 
+        FROM utilisateur_boxes ub 
+        INNER JOIN box_types bt ON ub.box_type_id = bt.id 
+        WHERE ub.utilisateur_id = ? AND bt.utilisateur_id = ?
+    ');
+            $stmt->execute([$utilisateurId, $utilisateurId]);
+            $caMaxMensuel = (float) $stmt->fetchColumn();
+
+            // Calcul du CA Max sur la période
+            $caMax = $caMaxMensuel * $nbMois;
+
+            // 🟢 Calcul du CA Actuel sur la période sélectionnée
+            $stmt = $pdo->prepare('
+        SELECT DATE_FORMAT(date_vente, "%Y-%m") AS mois, SUM(total_ht) AS total
+        FROM recap_ventes 
+        WHERE utilisateur_id = ? 
+        AND DATE_FORMAT(date_vente, "%Y-%m") BETWEEN ? AND ?
+        GROUP BY mois
+    ');
+            $stmt->execute([$utilisateurId, $moisDebut, $moisFin]);
+            $revenuMensuel = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+            $caActuel = array_sum($revenuMensuel);
+
+            // Calcul du CA Restant
+            $caRestant = max(0, $caMax - $caActuel);
+
+            echo json_encode([
+                "success" => true,
+                "caMax" => $caMax,
+                "caActuel" => $caActuel,
+                "caRestant" => $caRestant,
+                "moisLabels" => array_keys($revenuMensuel),
+                "revenuMensuelData" => array_values($revenuMensuel),
+            ]);
+            exit;
+
+
+
         case 'profil':
             verifierConnexion();
             require_once __DIR__ . '/../src/Vue/utilisateur/profil.php';

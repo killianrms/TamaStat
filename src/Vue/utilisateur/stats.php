@@ -128,9 +128,41 @@ foreach ($boxData as $box) {
     $caMaxMensuel += $box['prix_ttc'] * $box['quantite'];
 }
 
-$stmt = $pdo->prepare('SELECT SUM(total_ht) FROM recap_ventes WHERE utilisateur_id = ?');
-$stmt->execute([$utilisateurId]);
-$caActuel = (float) $stmt->fetchColumn();
+// Récupérer le mois et l'année actuels (ex: 2025-03)
+$moisActuel = date('Y-m');
+
+// Fonction pour récupérer le CA pour un mois donné
+function getCAParMois($pdo, $utilisateurId, $mois) {
+    $stmt = $pdo->prepare('
+        SELECT SUM(total_ht) 
+        FROM recap_ventes 
+        WHERE utilisateur_id = ? 
+        AND DATE_FORMAT(date_vente, "%Y-%m") = ?
+    ');
+    $stmt->execute([$utilisateurId, $mois]);
+    return (float) $stmt->fetchColumn();
+}
+
+// Récupérer le CA pour le mois actuel au chargement
+$caActuel = getCAParMois($pdo, $utilisateurId, $moisActuel);
+
+// Calcul du CA max mensuel
+$stmt = $pdo->prepare('
+    SELECT bt.prix_ttc, ub.quantite 
+    FROM utilisateur_boxes ub 
+    INNER JOIN box_types bt ON ub.box_type_id = bt.id 
+    WHERE ub.utilisateur_id = ? AND bt.utilisateur_id = ?
+');
+$stmt->execute([$utilisateurId, $utilisateurId]);
+$caMaxMensuel = 0;
+
+foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $box) {
+    $caMaxMensuel += $box['prix_ttc'] * $box['quantite'];
+}
+
+// Calcul du CA restant
+$caRestant = max(0, $caMaxMensuel - $caActuel);
+
 
 $caRestant = max(0, $caMaxMensuel - $caActuel);
 
@@ -298,16 +330,6 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
 <h1>Statistiques de vos locations</h1>
 
 <!-- Statistiques globales -->
-<div class="stats-globales">
-    <div class="stat-card">
-        <h3>Chiffre d'Affaires</h3>
-        <div class="stat-content">
-            <p><strong>CA Max Mensuel :</strong> <?= number_format($caMaxMensuel, 2) ?> €</p>
-            <p><strong>CA Actuel :</strong> <?= number_format($caActuel, 2) ?> €</p>
-            <p><strong>CA Restant :</strong> <?= number_format($caRestant, 2) ?> €</p>
-        </div>
-    </div>
-
     <div class="stat-card">
         <h3>Statistiques des Box</h3>
         <div class="stat-content">
@@ -323,17 +345,25 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
 
 <!-- Graphiques -->
 <div class="chart-card">
-    <h3>Chiffre d'affaires</h3>
-    <div class="date-filters">
-        <label for="startDateRevenue">Mois début :</label>
-        <input type="month" id="startDateRevenue">
+    <h3>Chiffre d'Affaires</h3>
 
-        <label for="endDateRevenue">Mois fin :</label>
-        <input type="month" id="endDateRevenue">
+    <!-- Sélecteur de mois -->
+    <div class="date-filters">
+        <label for="selectMonthRevenue">Sélectionnez un mois :</label>
+        <input type="month" id="selectMonthRevenue" value="<?= $moisActuel ?>">
     </div>
 
+    <!-- Informations sur le CA -->
+    <div class="stat-content">
+        <p><strong>CA Max Mensuel :</strong> <span id="caMax"><?= number_format($caMaxMensuel, 2) ?></span> €</p>
+        <p><strong>CA Actuel :</strong> <span id="caActuel"><?= number_format($caActuel, 2) ?></span> €</p>
+        <p><strong>CA Restant :</strong> <span id="caRestant"><?= number_format($caRestant, 2) ?></span> €</p>
+    </div>
+
+    <!-- Graphique du CA -->
     <canvas id="revenuMensuelChart"></canvas>
 </div>
+
 
 
 <div class="chart-card">
@@ -381,6 +411,11 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
         const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
         const boxLabels = <?= json_encode($boxLabels) ?>;
+        const startDateInput = document.getElementById("startDateRevenue");
+        const endDateInput = document.getElementById("endDateRevenue");
+        const caMaxElem = document.getElementById("caMax");
+        const caActuelElem = document.getElementById("caActuel");
+        const caRestantElem = document.getElementById("caRestant");
 
         // 📊 Création du graphique CA
         const revenueCtx = document.getElementById('revenuMensuelChart').getContext('2d');
@@ -450,7 +485,35 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             chart.update();
         }
 
-        // 🎯 Filtres pour Chiffre d'affaires
+        function updateCAData() {
+            const startMonth = startDateInput.value;
+            const endMonth = endDateInput.value;
+
+            if (!startMonth || !endMonth || startMonth > endMonth) {
+                alert("Sélectionnez une période valide !");
+                return;
+            }
+
+            // Envoyer une requête AJAX pour récupérer les nouvelles données
+            fetch(`routeur.php?route=get-ca-periode&debut=${startMonth}&fin=${endMonth}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        caMaxElem.innerText = data.caMax.toFixed(2) + " €";
+                        caActuelElem.innerText = data.caActuel.toFixed(2) + " €";
+                        caRestantElem.innerText = data.caRestant.toFixed(2) + " €";
+
+                        // Mettre à jour le graphique CA
+                        revenueChart.data.labels = data.moisLabels;
+                        revenueChart.data.datasets[0].data = data.revenuMensuelData;
+                        revenueChart.update();
+                    } else {
+                        alert("Erreur lors de la récupération des données.");
+                    }
+                })
+                .catch(error => console.error("Erreur:", error));
+        }
+    // 🎯 Filtres pour Chiffre d'affaires
         document.getElementById('startDateRevenue').addEventListener('change', () => {
             updateChartWithDates(revenueChart, moisLabels, revenuMensuelData,
                 document.getElementById('startDateRevenue'),
@@ -504,6 +567,8 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                 dropdownContent.classList.remove("active");
             }
         });
+        startDateInput.addEventListener("change", updateCAData);
+        endDateInput.addEventListener("change", updateCAData);
     });
 
 </script>
