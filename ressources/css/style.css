@@ -359,7 +359,7 @@ canvas {
 }
 
 .etape-card button {
-    background-color: #ffcc00;
+    background-color: #ff9900;
     color: #111;
     font-weight: bold;
     cursor: pointer;
@@ -367,7 +367,7 @@ canvas {
 }
 
 .etape-card button:hover {
-    background-color: #ff9900;
+    background-color: #ffcc00;
 }
 
 /* 🔑 Changement de mot de passe */
@@ -473,14 +473,14 @@ footer {
 
 .footer-links a,
 .footer-info a {
-    color: #ffcc00;
+    color: #ff9900;
     font-weight: bold;
     transition: color 0.3s ease-in-out;
 }
 
 .footer-links a:hover,
 .footer-info a:hover {
-    color: #ff9900;
+    color: #ffcc00;
     text-decoration: underline;
 }
 
@@ -506,13 +506,13 @@ footer {
 }
 
 .footer-info a {
-    color: #ffcc00;
+    color: #ff9900;
     text-decoration: none;
     font-weight: bold;
 }
 
 .footer-info a:hover {
-    color: #ff9900;
+    color: #ffcc00;
     text-decoration: underline;
 }
 
@@ -595,7 +595,7 @@ header {
 }
 
 .nav-links a:hover {
-    color: #ff8a00;
+    color: #ff9900;
 }
 
 /* 🍔 MENU BURGER (Responsive) */
