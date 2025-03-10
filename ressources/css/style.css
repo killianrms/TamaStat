@@ -258,26 +258,44 @@ canvas {
 .dropdown {
     position: relative;
     display: inline-block;
-    margin-bottom: 10px;
+}
+
+#toggleFilter {
+    background: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
 }
 
 .dropdown-content {
     display: none;
     position: absolute;
     background-color: white;
+    min-width: 200px;
+    max-height: 200px;
+    overflow-y: auto;
     box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
     padding: 10px;
     border-radius: 5px;
-    z-index: 1000;
+    z-index: 10;
 }
 
 .dropdown-content label {
-    display: block;
-    margin-bottom: 5px;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    padding: 5px;
     cursor: pointer;
 }
 
-.dropdown.active .dropdown-content {
+.dropdown-content label:hover {
+    background-color: #f0f0f0;
+}
+
+.dropdown-content.active {
     display: block;
 }
 
@@ -757,6 +775,10 @@ button:hover:enabled {
     .footer-container {
         flex-direction: column;
         text-align: center;
+    }
+
+    .dropdown-content {
+        width: 100%;
     }
 
     .footer-links {
