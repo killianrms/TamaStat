@@ -197,54 +197,47 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
 </div>
 
 
-<!-- Graphiques -->
-<div class="chart-card">
-    <h3>Chiffre d'affaires</h3>
-    <div class="date-filters">
-        <label for="startDateRevenue">Mois début :</label>
-        <input type="month" id="startDateRevenue">
+<!-- 🛠️ CONTENEUR DES GRAPHIQUES -->
+<div class="chart-container">
+    <div class="chart-card">
+        <h3>Chiffre d'affaires</h3>
+        <div class="date-filters">
+            <label for="startDateRevenue">Mois début :</label>
+            <input type="month" id="startDateRevenue">
 
-        <label for="endDateRevenue">Mois fin :</label>
-        <input type="month" id="endDateRevenue">
-    </div>
-
-    <canvas id="revenuMensuelChart"></canvas>
-</div>
-
-
-<div class="chart-card">
-    <h3>Nombre d'entrées</h3>
-
-    <div class="date-filters">
-        <label for="startDateEntrées">Mois début :</label>
-        <input type="month" id="startDateEntrées">
-
-        <label for="endDateEntrées">Mois fin :</label>
-        <input type="month" id="endDateEntrées">
-    </div>
-
-    <canvas id="nouveauxContratsChart"></canvas>
-</div>
-
-
-<div class="chart-card">
-    <h3>Quantité de Box</h3>
-    <div class="dropdown">
-        <button id="toggleFilter">🔽 Sélectionner les box</button>
-        <div id="boxFilter" class="dropdown-content">
-            <?php foreach ($boxLabels as $index => $boxLabel): ?>
-                <label>
-                    <input type="checkbox" class="box-checkbox" value="<?= $index ?>" checked>
-                    <?= htmlspecialchars($boxLabel) ?>
-                </label>
-            <?php endforeach; ?>
+            <label for="endDateRevenue">Mois fin :</label>
+            <input type="month" id="endDateRevenue">
         </div>
+        <canvas id="revenuMensuelChart"></canvas>
     </div>
-    <canvas id="boxLibreOccupeMaxChart"></canvas>
-</div>
 
+    <div class="chart-card">
+        <h3>Nombre d'entrées</h3>
+        <div class="date-filters">
+            <label for="startDateEntrées">Mois début :</label>
+            <input type="month" id="startDateEntrées">
 
+            <label for="endDateEntrées">Mois fin :</label>
+            <input type="month" id="endDateEntrées">
+        </div>
+        <canvas id="nouveauxContratsChart"></canvas>
+    </div>
 
+    <div class="chart-card">
+        <h3>Quantité de Box</h3>
+        <div class="dropdown">
+            <button id="toggleFilter">🔽 Sélectionner les box</button>
+            <div id="boxFilter" class="dropdown-content">
+                <?php foreach ($boxLabels as $index => $boxLabel): ?>
+                    <label>
+                        <input type="checkbox" class="box-checkbox" value="<?= $index ?>" checked>
+                        <?= htmlspecialchars($boxLabel) ?>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <canvas id="boxLibreOccupeMaxChart"></canvas>
+    </div>
 </div>
 
 <script>
