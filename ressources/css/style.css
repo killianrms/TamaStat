@@ -19,7 +19,7 @@ html, body {
 }
 
 main {
-    flex: 1; /* Prend toute la place disponible */
+    flex: 1;
 }
 
 
@@ -416,40 +416,47 @@ canvas {
 /* ======================== */
 
 footer {
-    background-color: #333;
+    background: #222;
     color: white;
+    padding: 20px 0;
     text-align: center;
-    padding: 15px 10px;
-    font-size: 14px;
     width: 100%;
-    position: relative;
-    bottom: 0;
+    margin-top: auto;
 }
 
 .footer-container {
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
     max-width: 1200px;
     margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-.footer-info,
-.footer-links,
-.footer-copy {
-    flex: 1;
-    min-width: 250px;
-    margin: 5px;
+.footer-info {
+    text-align: left;
+}
+
+.footer-info p {
+    font-size: 16px;
+    font-weight: bold;
+    margin-bottom: 5px;
 }
 
 .footer-info ul {
     list-style: none;
     padding: 0;
+    margin: 0;
 }
 
+.footer-info ul li {
+    font-size: 14px;
+    margin: 5px 0;
+}
 
 .footer-info a {
-    color: #f8c16c;
+    color: #f8f8f8;
     text-decoration: none;
 }
 
@@ -457,6 +464,26 @@ footer {
     text-decoration: underline;
 }
 
+/* 📌 Liens légaux */
+.footer-links {
+    font-size: 14px;
+}
+
+.footer-links a {
+    color: #f8f8f8;
+    text-decoration: none;
+    margin: 0 10px;
+}
+
+.footer-links a:hover {
+    text-decoration: underline;
+}
+
+/* 📌 Copyright */
+.footer-copy {
+    font-size: 14px;
+    text-align: right;
+}
 
 /* ======================== */
 /* 📌 HEADER (NAVBAR) */
@@ -822,13 +849,13 @@ button:hover:enabled {
         text-align: center;
     }
 
-    .dropdown-content {
-        width: 100%;
+    .footer-info, .footer-links, .footer-copy {
+        text-align: center;
+        margin-bottom: 10px;
     }
 
-    .footer-links {
-        text-align: center;
-        margin-top: 10px;
+    .dropdown-content {
+        width: 100%;
     }
 
     .navbar {
