@@ -1,184 +1,383 @@
+/* ======================== */
+/* 🌍 1. Base du site */
+/* ======================== */
 body {
-    font-family: 'Roboto', Arial, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
+    font-family: Arial, Verdana, sans-serif;
+    background-color: #f4f4f4;
     margin: 0;
     padding: 0;
-    line-height: 1.6;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
-
-
-h1 {
-    color: #0072bc;
-    font-size: 2.5rem;
     text-align: center;
-    margin-bottom: 20px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    color: #333;
 }
 
-form {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 500px;
-    margin: 20px auto;
-    flex: 1;
-}
-
-label {
-    display: block;
-    margin-bottom: 10px;
-    color: #0072bc;
-    font-weight: bold;
-}
-
-input[type="file"] {
-    display: block;
-    width: calc(100% - 20px);
-    margin-bottom: 15px;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-/* Filtres */
-.filters-container {
-    background: white;
+/* Container principal */
+.container {
+    width: 90%;
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    margin: 20px 0;
 }
 
-.filter-group {
+/* Titres */
+h1, h2, h3 {
+    color: #222;
     margin-bottom: 15px;
 }
 
-.filter-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: #0072bc;
-    font-weight: bold;
-}
-
-/* Datepicker personnalisé */
-.flatpickr-input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-}
-
-/* Sélecteur multiple amélioré */
-.choices__list--multiple .choices__item {
-    background: #0072bc;
-    border: none;
-    color: white;
-    margin: 2px;
-}
-
-.choices__list--dropdown {
-    border: 1px solid #ddd;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.reset-button {
-    background: #2c3e50 !important;
-    margin-left: 10px;
-}
-
+/* ======================== */
+/* 🎨 2. Boutons et Inputs */
+/* ======================== */
 button {
-    background-color: #ff6600;
+    background-color: #007bff;
     color: white;
+    padding: 10px 15px;
     border: none;
-    padding: 12px 25px;
     border-radius: 5px;
     cursor: pointer;
-    font-weight: bold;
-    font-size: 1rem;
     transition: background-color 0.3s ease;
+    font-size: 14px;
+    font-weight: bold;
 }
 
 button:hover {
-    background-color: #e65c00;
+    background-color: #0056b3;
 }
 
-header {
-    background-color: #0072bc;
-    padding: 15px 0;
-    position: sticky;
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* 🌀 Loader */
+.loader {
+    display: none;
+    margin: 10px auto;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #007bff;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+}
+
+/* Animation du loader */
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Champs input */
+input[type="file"],
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    border: 1px solid #ccc;
+    padding: 8px;
+    border-radius: 5px;
+    background-color: #f9f9f9;
+    width: 100%;
+    max-width: 400px;
+}
+
+input:hover {
+    background-color: #eee;
+}
+
+/* ======================== */
+/* 📏 3. Mise en Page */
+/* ======================== */
+
+/* Conteneur centré */
+.center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Étapes */
+.step {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 500px;
+    margin: 20px auto;
+    transition: transform 0.2s ease-in-out;
+}
+
+.step:hover {
+    transform: translateY(-5px);
+}
+
+/* ======================== */
+/* 🎞️ 4. GIF et Modales */
+/* ======================== */
+.gif-container img {
+    width: 100%;
+    max-width: 350px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: transform 0.3s ease;
+}
+
+.gif-container img:hover {
+    transform: scale(1.05);
+}
+
+.gif-modal {
+    display: none;
+    position: fixed;
     top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    justify-content: center;
+    align-items: center;
     z-index: 1000;
 }
 
-.navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    margin: auto;
+.gif-modal img {
+    width: 80%;
+    max-width: 600px;
+    border-radius: 8px;
 }
 
-.navbar h1 {
-    color: white;
-    font-size: 1.8rem;
-}
-
-.navbar .nav-links {
+/* 🎯 Conteneur des statistiques globales */
+.stats-globales {
     display: flex;
+    justify-content: center;
     gap: 20px;
+    flex-wrap: wrap;
 }
 
-.navbar .nav-links a {
-    color: white;
-    text-decoration: none;
+/* 🏆 Cartes des statistiques */
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 300px;
+    transition: transform 0.2s ease-in-out;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-card h3 {
+    color: #007bff;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.stat-content {
+    font-size: 16px;
+    color: #444;
+    line-height: 1.6;
+}
+
+.stat-content p {
+    margin: 5px 0;
     font-weight: bold;
 }
 
-.navbar .nav-links a:hover {
-    text-decoration: underline;
+/* 📊 Conteneur des graphiques */
+.graph-container {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 20px;
 }
 
-.navbar .burger {
+/* 🎨 Cartes des graphiques */
+.chart-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    width: 30%;
+    min-width: 280px;
+    text-align: center;
+}
+
+.chart-card h3 {
+    color: #333;
+    font-size: 20px;
+    margin-bottom: 15px;
+}
+
+canvas {
+    max-width: 100%;
+}
+
+/* 📅 Filtres de date */
+.date-filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.date-filters label {
+    font-weight: bold;
+    margin-right: 5px;
+}
+
+.date-filters input {
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+}
+
+/* 🎯 Dropdown des box */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 10px;
+}
+
+.dropdown-content {
     display: none;
-    flex-direction: column;
+    position: absolute;
+    background-color: white;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 5px;
+    z-index: 1000;
+}
+
+.dropdown-content label {
+    display: block;
+    margin-bottom: 5px;
     cursor: pointer;
 }
 
-.navbar .burger div {
-    width: 30px;
-    height: 4px;
-    margin: 6px 0;
-    background-color: white;
-}
-
-.navbar .nav-links {
-    display: flex;
-}
-
-.navbar.active .nav-links {
+.dropdown.active .dropdown-content {
     display: block;
-    width: 100%;
-    text-align: center;
 }
 
-.navbar.active .burger {
+/* 🎯 Cartes d'actions */
+.etape-card {
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 350px;
+    margin: 20px auto;
+    transition: transform 0.2s ease-in-out;
+}
+
+.etape-card:hover {
+    transform: translateY(-5px);
+}
+
+.etape-card h3 {
+    color: #007bff;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+/* 📂 Import CSV */
+.etape-card input[type="file"] {
+    display: block;
+    margin: 10px auto;
+}
+
+.etape-card button {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.etape-card button:hover {
+    background-color: #218838;
+}
+
+/* 🔑 Changement de mot de passe */
+.password-container {
+    position: relative;
     display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Footer */
-footer {
-    background-color: #2c3e50;
-    color: #ecf0f1;
-    text-align: center;
-    padding: 20px 0;
+.password-container input {
+    padding-right: 40px;
+    width: 80%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.toggle-password img {
+    width: 20px;
+    height: 20px;
+}
+
+/* ✅ Vérification des mots de passe */
+.password-requirements {
+    list-style: none;
+    padding: 0;
+    text-align: left;
+    margin-top: 10px;
+}
+
+.password-requirements li {
     font-size: 14px;
-    margin-top: auto;
-    width: 100%;
+}
+
+.valid {
+    color: green;
+}
+
+.invalid {
+    color: red;
+}
+
+/* 🎯 Boutons et liens */
+.btn {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    border-radius: 5px;
+    text-decoration: none;
+    font-size: 16px;
+    transition: 0.3s;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+}
+
+/* ======================== */
+/* 📌 FOOTER */
+/* ======================== */
+
+footer {
+    background-color: #333;
+    color: white;
+    padding: 20px 0;
+    text-align: center;
+    font-size: 14px;
 }
 
 .footer-container {
@@ -186,6 +385,12 @@ footer {
     flex-direction: column;
     align-items: center;
     gap: 10px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.footer-info {
+    text-align: center;
 }
 
 .footer-info ul {
@@ -198,903 +403,145 @@ footer {
 }
 
 .footer-info a {
-    color: #ff6600;
+    color: #f6c576;
     text-decoration: none;
+    font-weight: bold;
 }
 
 .footer-info a:hover {
+    color: #ff8a00;
     text-decoration: underline;
-    color: #e65c00;
+}
+
+.footer-links {
+    margin-top: 10px;
 }
 
 .footer-links a {
-    color: #ff6600;
+    color: #f6c576;
     text-decoration: none;
     margin: 0 10px;
 }
 
 .footer-links a:hover {
+    color: #ff8a00;
     text-decoration: underline;
-    color: #e65c00;
 }
 
-.footer-copy p {
+.footer-copy {
     font-size: 12px;
-    color: #ecf0f1;
+    margin-top: 10px;
+    opacity: 0.8;
 }
 
-.logged-in .navbar .nav-links,
-.logged-in .navbar .burger {
+/* ======================== */
+/* 📌 HEADER (NAVBAR) */
+/* ======================== */
+
+header {
+    background-color: #007bff;
+    padding: 15px 20px;
+    color: white;
+}
+
+.navbar {
     display: flex;
-}
-
-.logged-out .navbar .nav-links,
-.logged-out .navbar .burger {
-    display: none;
-}
-
-.logged-out .navbar .connexion-btn {
-    display: block;
-}
-
-.logged-in .navbar .connexion-btn {
-    display: none;
-}
-
-/* Conteneur principal */
-.container {
-    display: flex;
-    gap: 20px;
-    padding: 20px;
+    align-items: center;
+    justify-content: space-between;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-/* Tableau des boxes */
-.table-container {
-    flex: 1;
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-table.boxes-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-table.boxes-table th, table.boxes-table td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-table.boxes-table th {
-    background-color: #0072bc;
-    color: white;
-}
-
-table.boxes-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-/* Page de connexion */
-.connexion-page form {
-    background-color: #ffffff;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    max-width: 400px;
-    width: 100%;
-}
-
-.connexion-page label {
-    display: block;
-    margin-bottom: 10px;
-    color: #0072bc;
+.navbar h1 {
+    font-size: 22px;
     font-weight: bold;
-}
-
-.connexion-page input[type="text"],
-.connexion-page input[type="password"] {
-    width: calc(100% - 20px);
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-.connexion-page button {
-    background-color: #ff6600;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-    width: 100%;
-}
-
-.connexion-page button:hover {
-    background-color: #e65c00;
-}
-
-.connexion-page .error-message {
-    color: #ff0000;
-    font-weight: bold;
-    margin-bottom: 15px;
-    text-align: center;
-}
-
-/* Page d'accueil */
-.accueil-page .form-container {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    width: 100%;
-}
-
-.accueil-page .form-column {
-    flex: 1;
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    min-width: 300px;
-}
-
-.accueil-page label {
-    display: block;
-    margin-bottom: 10px;
-    color: #0072bc;
-    font-weight: bold;
-}
-
-.accueil-page input[type="number"] {
-    width: calc(100% - 20px);
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-.accueil-page button {
-    background-color: #ff6600;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-    width: 100%;
-}
-
-.accueil-page button:hover {
-    background-color: #e65c00;
-}
-
-.accueil-page .table-container {
-    margin-top: 20px;
-    width: 100%;
-}
-
-.accueil-page table.boxes-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 10px;
-}
-
-.accueil-page table.boxes-table th,
-.accueil-page table.boxes-table td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-.accueil-page table.boxes-table th {
-    background-color: #0072bc;
-    color: white;
-}
-
-.accueil-page table.boxes-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-/* Page de gestion des utilisateurs */
-.gestion-utilisateurs-page .user-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background-color: #ffffff;
-    border-radius: 10px;
-    overflow: hidden;
-}
-
-.gestion-utilisateurs-page .user-table th,
-.gestion-utilisateurs-page .user-table td {
-    padding: 12px 15px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-}
-
-.gestion-utilisateurs-page .user-table th {
-    background-color: #0072bc;
-    color: white;
-    font-weight: bold;
-}
-
-.gestion-utilisateurs-page .user-table tr:hover {
-    background-color: #f5f5f5;
-}
-
-.gestion-utilisateurs-page .user-table tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-.gestion-utilisateurs-page .user-table td.actions {
-    display: flex;
-    gap: 10px;
-}
-
-.gestion-utilisateurs-page .user-table td.actions a {
-    color: #0072bc;
-    text-decoration: none;
-    font-weight: bold;
-    transition: color 0.3s ease;
-}
-
-.gestion-utilisateurs-page .user-table td.actions a:hover {
-    color: #ff6600;
-}
-
-.gestion-utilisateurs-page .user-table td.actions a.delete-link {
-    color: #ff0000;
-}
-
-.gestion-utilisateurs-page .user-table td.actions a.delete-link:hover {
-    color: #cc0000;
-}
-
-.gestion-utilisateurs-page .add-user-button {
-    display: inline-block;
-    background-color: #0072bc;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: bold;
-    margin-top: 20px;
-    transition: background-color 0.3s ease;
-}
-
-.gestion-utilisateurs-page .add-user-button:hover {
-    background-color: #005f9e;
-}
-
-/* Page de modification des utilisateurs */
-.modifier-utilisateur-page form {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.modifier-utilisateur-page label {
-    display: block;
-    margin-bottom: 10px;
-    color: #0072bc;
-    font-weight: bold;
-}
-
-.modifier-utilisateur-page input[type="text"],
-.modifier-utilisateur-page input[type="email"],
-.modifier-utilisateur-page select {
-    width: calc(100% - 20px);
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-.modifier-utilisateur-page button {
-    background-color: #ff6600;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-    width: 100%;
-}
-
-.modifier-utilisateur-page button:hover {
-    background-color: #e65c00;
-}
-
-/* Page d'ajout d'utilisateurs */
-.ajouter-utilisateur-page form {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.ajouter-utilisateur-page label {
-    display: block;
-    margin-bottom: 10px;
-    color: #0072bc;
-    font-weight: bold;
-}
-
-.ajouter-utilisateur-page input[type="text"],
-.ajouter-utilisateur-page input[type="password"],
-.ajouter-utilisateur-page input[type="email"],
-.ajouter-utilisateur-page select {
-    width: calc(100% - 20px);
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-.ajouter-utilisateur-page button {
-    background-color: #ff6600;
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-    width: 100%;
-}
-
-.ajouter-utilisateur-page button:hover {
-    background-color: #e65c00;
-}
-
-.stats-page {
-    padding: 20px;
-}
-
-.filters {
-    margin-bottom: 20px;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-}
-
-.filters label {
-    font-weight: bold;
-}
-
-.filters input, .filters select {
-    padding: 5px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-.stats-globales {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.stat-card {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    text-align: center;
-}
-
-.stat-card h3 {
-    color: #0072bc;
-    margin: 0 0 10px 0;
-    font-size: 1.2rem;
-}
-
-.stat-card .value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #ff6600;
-}
-
-.charts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-.chart-card {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.chart-card h3 {
-    color: #0072bc;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-.date-selector {
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-.date-selector label {
-    font-size: 14px;
-    margin-right: 10px;
-}
-
-.date-selector input[type="month"] {
-    padding: 5px;
-    font-size: 14px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    margin-right: 10px;
-}
-
-.button {
-    display: inline-block;
-    background-color: #ff6600;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
-    text-decoration: none;
-    margin-bottom: 20px;
-}
-
-.button:hover {
-    background-color: #e65c00;
-}
-
-.charts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    margin-top: 30px;
-}
-
-.chart-card {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.chart-card h3 {
-    color: #0072bc;
-    margin-bottom: 20px;
-    text-align: center;
-}
-
-canvas {
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
-.stats-globales {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.stat-card {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    text-align: center;
-}
-
-.stat-card h3 {
-    color: #0072bc;
-    margin: 0 0 10px 0;
-    font-size: 1.2rem;
-}
-
-.stat-card .value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #ff6600;
-}
-
-.stats-globales {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
-.stat-card {
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    text-align: center;
-}
-
-.stat-card h3 {
-    color: #0072bc;
-    margin: 0 0 10px 0;
-    font-size: 1.2rem;
-}
-
-.stat-card .value {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #ff6600;
-}
-
-.stat-card small {
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.chart-container {
-    margin: 30px 0;
-    height: 400px;
-    position: relative;
-}
-
-.period-buttons {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 15px;
-}
-
-.period-btn {
-    background: #0072bc;
-    color: white;
-    border: none;
-    padding: 8px 15px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background 0.3s;
-}
-
-.period-btn:hover {
-    background: #005f9e;
-}
-
-.size-checkboxes {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-    gap: 10px;
-}
-
-.checkbox-label {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 8px;
-    background: #f5f5f5;
-    border-radius: 5px;
-}
-
-.checkbox-label input {
     margin: 0;
 }
 
-.step {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
+.nav-links {
+    display: flex;
+    gap: 15px;
 }
 
-.step h2 {
-    color: #0072bc;
-    margin-bottom: 15px;
-}
-
-.step label {
-    display: block;
-    margin-bottom: 10px;
-    color: #0072bc;
-    font-weight: bold;
-}
-
-.step input[type="file"],
-.step input[type="number"] {
-    width: calc(100% - 20px);
-    padding: 10px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    border: 1px solid #ddd;
-}
-
-.step button {
-    background-color: #ff6600;
+.nav-links a {
     color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 5px;
-    cursor: pointer;
+    text-decoration: none;
+    font-size: 16px;
     font-weight: bold;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
+    transition: color 0.3s;
 }
 
-.step button:hover {
-    background-color: #e65c00;
+.nav-links a:hover {
+    color: #ff8a00;
 }
 
-.error-message {
-    color: red;
-    background-color: #ffeeee;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 4px;
+/* 🍔 MENU BURGER (Responsive) */
+.burger {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
 }
 
-.success-message {
-    color: green;
-    background-color: #eeffee;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 4px;
+.burger div {
+    width: 25px;
+    height: 3px;
+    background-color: white;
+    margin: 4px 0;
+    transition: 0.3s;
 }
 
-.confirmation-box {
-    background-color: #ffffdd;
-    border: 1px solid #ddddaa;
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 4px;
+form {
+    max-width: 400px;
+    margin: 20px auto;
+    padding: 20px;
+    background: #f8f8f8;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
 }
 
-.etape-card {
-    border: 1px solid #ddd;
-    padding: 15px;
-    margin-bottom: 15px;
-    border-radius: 4px;
-}
-
-.etape-complete {
-    border-left: 5px solid #4CAF50;
-}
-
-.etape-title {
-    margin-top: 0;
+label {
+    display: block;
+    font-weight: bold;
+    text-align: left;
+    margin: 10px 0 5px;
     color: #333;
 }
 
-.button-group {
-    margin-top: 10px;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-}
-
-.btn-danger {
-    background-color: #dc3545;
-}
-
-/* Conteneur du graphique */
-.chart-card {
-    position: relative;
-    padding: 20px;
-    text-align: center;
-}
-
-/* Style du bouton déroulant */
-.dropdown {
-    position: relative;
-    display: inline-block;
-    margin-bottom: 10px;
-}
-
-#toggleFilter {
-    background-color: #007bff;
-    color: white;
-    padding: 5px 10px;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-    font-size: 13px;
-    margin-top: 5px; /* Espacement sous le titre */
-}
-
-/* Contenu du menu déroulant */
-.dropdown-content {
-    display: none;
-    position: absolute;
-    background-color: white;
-    min-width: 180px;
-    max-height: 200px;
-    overflow-y: auto;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-    padding: 10px;
-    border-radius: 5px;
-    z-index: 10;
-    left: 50%;
-    transform: translateX(-50%); /* Centre le menu sous le bouton */
-}
-
-/* Labels des checkboxes */
-.dropdown-content label {
-    display: block;
-    padding: 5px;
-    font-size: 13px;
-    cursor: pointer;
-}
-
-/* Affichage du menu déroulant */
-.dropdown-content.active {
-    display: block;
-}
-
-/* Effet hover sur le bouton */
-#toggleFilter:hover {
-    background-color: #0056b3;
-}
-
-
-.loader {
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #3498db;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 2s linear infinite;
-    display: none;
-    margin-left: 10px;
-    vertical-align: middle;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-
-input[type="password"],
-input[type="file"] {
-    padding: 8px;
-    margin: 5px 0 15px 0;
-    display: block;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
+input, select, button {
     width: 100%;
-    max-width: 400px;
-}
-
-/* Profil - Conteneur principal */
-.profil-page {
-    padding: 20px;
-    max-width: 1200px;
-    margin: 0 auto;
-}
-
-/* Section de chaque étape */
-.etape-card {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-    border-left: 5px solid #0072bc;
-}
-
-.etape-title {
-    font-size: 1.5rem;
-    color: #0072bc;
-    margin-bottom: 10px;
-    font-weight: bold;
-}
-
-/* Style pour les étapes complètes */
-.etape-complete {
-    border-left: 5px solid #4CAF50; /* Vert pour les étapes complétées */
-}
-
-/* Formulaires */
-.profil-page form {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-}
-
-.profil-page label {
-    display: block;
-    margin-bottom: 10px;
-    color: #0072bc;
-    font-weight: bold;
-}
-
-.profil-page input[type="password"],
-.profil-page input[type="file"],
-.profil-page input[type="text"],
-.profil-page input[type="number"] {
-    width: calc(100% - 20px);
     padding: 10px;
     margin-bottom: 15px;
     border-radius: 5px;
-    border: 1px solid #ddd;
+    border: 1px solid #ccc;
+    font-size: 16px;
 }
 
-/* Boutons */
-.profil-page button {
-    background-color: #ff6600;
-    color: white;
-    border: none;
-    padding: 12px 25px;
+input:focus, select:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+.error-message {
+    background-color: #ffdddd;
+    color: #d8000c;
+    padding: 10px;
     border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-    font-size: 1rem;
-    transition: background-color 0.3s ease;
-}
-
-.profil-page button:hover {
-    background-color: #e65c00;
-}
-
-/* Messages de confirmation */
-.confirmation-box {
-    background-color: #ffffdd;
-    border: 1px solid #ddddaa;
-    padding: 15px;
-    margin: 15px 0;
-    border-radius: 4px;
     text-align: center;
-}
-
-/* Étapes du profil */
-.etape-card {
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-bottom: 20px;
-    border-left: 5px solid #0072bc;
-}
-
-.etape-title {
-    font-size: 1.5rem;
-    color: #0072bc;
+    margin-bottom: 15px;
     font-weight: bold;
-    margin-bottom: 10px;
 }
 
-.etape-complete {
-    border-left: 5px solid #4CAF50; /* Vert si étape complétée */
-}
-
-.etape-card button {
-    margin-top: 10px;
-}
-
+/* ======================== */
+/* 📌 CHAMPS MOT DE PASSE (AVEC AFFICHAGE DE L'ICÔNE) */
+/* ======================== */
 
 .password-container {
     position: relative;
-    width: 100%;
 }
 
 .password-container input {
-    width: 100%;
-    padding-right: 40px;
+    padding-right: 40px; /* Espace pour l'icône */
 }
 
 .toggle-password {
@@ -1106,428 +553,270 @@ input[type="file"] {
 }
 
 .toggle-password img {
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
 }
 
-
-
-.password-container .toggle-password {
-    position: absolute;
-    right: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    cursor: pointer;
-}
-
-.toggle-password:hover {
-    color: #ff6600;
-}
+/* ======================== */
+/* 📌 LISTE DES CRITÈRES DE MOT DE PASSE */
+/* ======================== */
 
 .password-requirements {
     list-style: none;
     padding: 0;
-}
-
-.password-requirements li, #message-confirmation, #message-email {
-    font-size: 0.9rem;
-    font-weight: bold;
-}
-
-.invalid {
-    color: red;
-}
-
-.valid {
-    color: green;
-}
-
-
-/* Formulaire de changement de mot de passe */
-.password-requirements {
-    list-style-type: none;
-    padding: 0;
+    margin: 10px 0;
+    text-align: left;
+    font-size: 14px;
 }
 
 .password-requirements li {
-    color: red;
-    font-size: 0.9rem;
-    margin-bottom: 5px;
+    margin: 5px 0;
 }
 
-.password-requirements .valid {
-    color: green;
-    font-weight: bold;
+button:hover:enabled {
+    background-color: #0056b3;
 }
 
 
-.confirmation-box h3 {
-    color: #ff6600;
-    font-size: 1.4rem;
-    margin-bottom: 10px;
+/* ======================== */
+/* 📌 TABLEAU DES UTILISATEURS */
+/* ======================== */
+
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px auto;
+    background: #fff;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    overflow: hidden;
 }
 
-.confirmation-box p {
-    color: #333;
-    font-size: 1rem;
-    margin-bottom: 15px;
+.user-table th, .user-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
 }
 
-.confirmation-box .btn {
-    background-color: #0072bc;
+.user-table thead {
+    background-color: #007bff;
     color: white;
-    padding: 10px 20px;
-    border-radius: 5px;
+}
+
+.user-table tbody tr:hover {
+    background-color: #f1f1f1;
+}
+
+.user-table .actions {
+    text-align: center;
+}
+
+.user-table a {
+    color: #007bff;
     text-decoration: none;
     font-weight: bold;
-    display: inline-block;
+    margin: 0 5px;
 }
 
-.confirmation-box .btn:hover {
-    background-color: #005f9e;
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-}
-
-.btn-secondary:hover {
-    background-color: #5a6268;
-}
-
-/* Gestion des erreurs et messages de succès */
-.error-message {
+.user-table a.delete-link {
     color: red;
-    background-color: #ffeeee;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 4px;
+}
+
+.user-table a:hover {
+    text-decoration: underline;
+}
+
+/* ======================== */
+/* 📌 BOUTON D'AJOUT UTILISATEUR */
+/* ======================== */
+
+.add-user-button {
+    display: block;
+    width: fit-content;
+    margin: 20px auto;
+    padding: 10px 15px;
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background 0.3s ease;
+}
+
+.add-user-button:hover {
+    background-color: #0056b3;
+}
+
+.changer-mdp-container {
+    max-width: 400px;
+    margin: 30px auto;
+    padding: 20px;
+    background: #f8f8f8;
+    border-radius: 8px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
-.success-message {
-    color: green;
-    background-color: #eeffee;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 4px;
-    text-align: center;
+.changer-mdp-container h1 {
+    font-size: 22px;
+    margin-bottom: 20px;
+    color: #333;
 }
 
-/* Loader */
-.loader {
-    border: 5px solid #f3f3f3;
-    border-top: 5px solid #3498db;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    animation: spin 2s linear infinite;
-    display: none;
-    margin-left: 10px;
-    vertical-align: middle;
-}
+/* ======================== */
+/* 📱 5. Responsive Design */
+/* ======================== */
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-
-@media (max-width: 768px) {
-    h1 {
-        font-size: 1.5rem;
-    }
-
-    .profil-page {
-        padding: 10px;
-    }
-
-    .etape-title {
-        font-size: 1.3rem;
-    }
-
-    .profil-page button {
-        width: 100%;
-        padding: 10px;
-    }
-
-    .confirmation-box {
-        padding: 10px;
-    }
-
-    .charts-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .stat-card .value {
-        font-size: 1.5rem;
-    }
-
-    .chart-container {
-        height: 300px;
-    }
-
-    .filters-container form {
-        flex-direction: column;
-    }
-
-    .reset-button {
-        margin-left: 0;
-        margin-top: 10px;
-    }
-
+/* Tablettes et petits écrans */
+@media screen and (max-width: 1024px) {
     .container {
-        flex-direction: column;
+        width: 95%;
     }
 
-    .accueil-page .form-container {
-        flex-direction: column;
+    .step {
+        max-width: 90%;
     }
 
-    .accueil-page .form-column {
-        min-width: auto;
-    }
-
-    table.boxes-table input[type="number"] {
-        width: 100%;
-        padding: 8px;
-        margin: 0;
-        border-radius: 5px;
-        border: 1px solid #ddd;
-    }
-
-    table.user-table {
-        width: 100%;
-        margin-top: 20px;
-        border-collapse: collapse;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        background-color: #ffffff;
-        border-radius: 10px;
-        overflow: hidden;
-    }
-
-    table.user-table th, table.user-table td {
-        padding: 12px 15px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-    }
-
-    table.user-table th {
-        background-color: #0072bc;
-        color: white;
-        font-weight: bold;
-    }
-
-    table.user-table tr:hover {
-        background-color: #f5f5f5;
-    }
-
-    table.user-table tr:nth-child(even) {
-        background-color: #f9f9f9;
-    }
-
-    table.user-table td.actions {
-        display: flex;
-        gap: 10px;
-    }
-
-    table.user-table td.actions a {
-        color: #0072bc;
-        text-decoration: none;
-        font-weight: bold;
-        transition: color 0.3s ease;
-    }
-
-    table.user-table td.actions a:hover {
-        color: #ff6600;
-    }
-
-    table.user-table td.actions a.delete-link {
-        color: #ff0000;
-    }
-
-    table.user-table td.actions a.delete-link:hover {
-        color: #cc0000;
-    }
-
-    .add-user-button {
-        display: inline-block;
-        background-color: #0072bc;
-        color: white;
-        padding: 10px 20px;
-        border-radius: 5px;
-        text-decoration: none;
-        font-weight: bold;
-        margin-top: 20px;
-        transition: background-color 0.3s ease;
-    }
-
-    .add-user-button:hover {
-        background-color: #005f9e;
-    }
-
-
-    .stat-card .value {
-        font-size: 1.5rem;
-    }
-
-    #revenueChart {
-        max-height: 300px;
-    }
-
-    .navbar .nav-links a {
-        font-size: 0.9rem;
-    }
-
-    .navbar .nav-links {
-        display: none;
-    }
-
-    .navbar.active .nav-links {
-        display: block;
-        width: 100%;
-        text-align: center;
-        background-color: #0072bc;
-    }
-
-    .navbar .burger {
-        display: flex;
-    }
-
-    table.user-table, table.user-table th, table.user-table td {
-        display: block;
+    button {
         width: 100%;
     }
 
-    table.user-table th {
-        display: none;
+    .chart-card {
+        width: 45%;
+    }
+}
+
+/* Smartphones */
+@media screen and (max-width: 768px) {
+    body {
+        font-size: 16px;
     }
 
-    table.user-table tr {
-        margin-bottom: 10px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
+    .step {
+        width: 100%;
+        padding: 15px;
     }
 
-    table.user-table td {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px;
-    }
-
-    table.user-table td::before {
-        content: attr(data-label);
-        font-weight: bold;
-        margin-right: 10px;
-    }
-
-    table.user-table td.actions {
-        justify-content: center;
-    }
-
-    table.boxes-table, table.boxes-table th, table.boxes-table td {
-        display: block;
+    input[type="file"],
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
         width: 100%;
     }
 
-    table.boxes-table th {
-        display: none;
+    button {
+        width: 100%;
     }
 
-    table.boxes-table tr {
-        margin-bottom: 10px;
-    }
-
-    table.boxes-table td {
-        display: flex;
-        justify-content: space-between;
-        padding: 8px;
-    }
-
-    table.boxes-table td input {
-        width: 60%;
-    }
-
-    table.boxes-table td:first-child {
-        font-weight: bold;
-    }
-
-    .footer-container {
+    .stats-globales {
         flex-direction: column;
         align-items: center;
-        text-align: center;
     }
 
-    .footer-info ul {
-        text-align: center;
+    .stat-card {
+        width: 90%;
     }
 
-    .footer-links {
-        margin-top: 10px;
-    }
-}
-
-@media (min-width: 1200px) {
-    h1 {
-        font-size: 3rem;
+    .chart-card {
+        width: 90%;
     }
 
-    .navbar h1 {
-        font-size: 2rem;
-    }
-
-    .navbar .nav-links a {
-        font-size: 1.1rem;
-    }
-}
-
-@media (max-width: 992px) {
-    h1 {
-        font-size: 2rem;
-    }
-
-    .navbar .nav-links a {
-        font-size: 1rem;
-    }
-}
-
-
-@media (max-width: 480px) {
-    h1 {
-        font-size: 1.2rem;
-    }
-
-    .container {
+    .date-filters {
         flex-direction: column;
+        align-items: center;
     }
 
-    .navbar .nav-links a {
-        font-size: 0.8rem;
+    .date-filters label {
+        margin-bottom: 5px;
+    }
+
+    .etape-card {
+        width: 90%;
+    }
+
+    .password-container input {
+        width: 100%;
+    }
+
+    .btn {
+        width: 100%;
+        text-align: center;
     }
 
     .footer-container {
-        flex-direction: row;
-        justify-content: space-between;
-        text-align: left;
-        padding: 20px 40px;
-    }
-
-    .footer-info, .footer-links, .footer-copy {
-        flex: 1;
-    }
-
-    .footer-info ul {
-        display: flex;
         flex-direction: column;
-        align-items: flex-start;
+        text-align: center;
     }
 
     .footer-links {
         text-align: center;
+        margin-top: 10px;
     }
 
-    .footer-copy {
-        text-align: right;
+    .navbar {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 60px;
+        right: 0;
+        background-color: #007bff;
+        width: 100%;
+        text-align: center;
+        padding: 10px 0;
+    }
+
+    .nav-links.active {
+        display: flex;
+    }
+
+    .nav-links a {
+        padding: 10px;
+        display: block;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .burger {
+        display: flex;
+    }
+
+    .user-table {
+        font-size: 14px;
+    }
+
+    .user-table th, .user-table td {
+        padding: 8px;
+    }
+
+    form {
+        width: 90%;
+        padding: 15px;
+    }
+
+    input, select, button {
+        font-size: 14px;
+        padding: 8px;
+    }
+
+    .changer-mdp-container {
+        width: 90%;
+        padding: 15px;
     }
 }
 
+@media screen and (max-width: 480px) {
+    form {
+        width: 90%;
+        padding: 15px;
+    }
+
+    input, select, button {
+        font-size: 14px;
+        padding: 8px;
+    }
+}

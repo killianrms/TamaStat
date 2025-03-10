@@ -1,4 +1,3 @@
-// js/script.js
 document.addEventListener('DOMContentLoaded', function() {
     const forms = document.querySelectorAll('form');
 
