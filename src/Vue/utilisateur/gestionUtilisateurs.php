@@ -25,7 +25,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <table class="user-table">
     <thead>
     <tr>
-        <th>ID</th>
         <th>Nom d'utilisateur</th>
         <th>Email</th>
         <th>Admin</th>
@@ -35,7 +34,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
     <tbody>
     <?php foreach ($utilisateurs as $utilisateur): ?>
         <tr>
-            <td><?= htmlspecialchars($utilisateur['id']) ?></td>
             <td><?= htmlspecialchars($utilisateur['nom_utilisateur']) ?></td>
             <td><?= htmlspecialchars($utilisateur['email']) ?></td>
             <td><?= $utilisateur['is_admin'] ? 'Oui' : 'Non' ?></td>
