@@ -442,11 +442,6 @@ footer {
     margin-top: auto;
 }
 
-.footer-logos {
-    display: flex;
-    gap: 10px;
-}
-
 .footer-socials {
     display: flex;
     justify-content: center;
@@ -925,7 +920,7 @@ button:hover:enabled {
         text-align: center;
     }
 
-    .footer-logos {
+    .footer-socials{
         justify-content: center;
         margin-top: 10px;
     }
