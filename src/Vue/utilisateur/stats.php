@@ -347,15 +347,18 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
 <div class="chart-card">
     <h3>Chiffre d'Affaires</h3>
 
-    <!-- Sélecteur de mois -->
+    <!-- Sélecteur de période -->
     <div class="date-filters">
-        <label for="selectMonthRevenue">Sélectionnez un mois :</label>
-        <input type="month" id="selectMonthRevenue" value="<?= $moisActuel ?>">
+        <label for="startDateRevenue">Début :</label>
+        <input type="month" id="startDateRevenue" value="<?= date('Y-m', strtotime('-1 month')) ?>">
+
+        <label for="endDateRevenue">Fin :</label>
+        <input type="month" id="endDateRevenue" value="<?= date('Y-m') ?>">
     </div>
 
     <!-- Informations sur le CA -->
     <div class="stat-content">
-        <p><strong>CA Max Mensuel :</strong> <span id="caMax"><?= number_format($caMaxMensuel, 2) ?></span> €</p>
+        <p><strong>CA Max sur la période :</strong> <span id="caMax"><?= number_format($caMaxMensuel, 2) ?></span> €</p>
         <p><strong>CA Actuel :</strong> <span id="caActuel"><?= number_format($caActuel, 2) ?></span> €</p>
         <p><strong>CA Restant :</strong> <span id="caRestant"><?= number_format($caRestant, 2) ?></span> €</p>
     </div>
@@ -363,6 +366,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
     <!-- Graphique du CA -->
     <canvas id="revenuMensuelChart"></canvas>
 </div>
+
 
 
 
