@@ -39,27 +39,51 @@ class CsvModele {
      */
     public function importerFacture($utilisateurId, $ligne) {
         try {
-            $titre = $ligne[1];
-            preg_match('/"([A-Z0-9]+)"/', $titre, $matches);
-            $referenceContrat = $matches[1] ?? null;
+            $titre = trim($ligne[1]);
 
+            // Extraction de la référence du contrat
+            preg_match('/"([A-Z0-9]+)"/', $titre, $matches);
+            $referenceContrat = isset($matches[1]) ? trim($matches[1]) : null;
+
+            // Vérifie si le contrat est lié
             $estLieContrat = $referenceContrat && $this->contratExiste($referenceContrat, $utilisateurId);
 
-            $dateFacture = \DateTime::createFromFormat('d/m/Y', $ligne[9]);
-            if (!$dateFacture) {
-                throw new Exception("Date de facture invalide : " . $ligne[9]);
+            // Nettoyage de la valeur de la date et tentative de conversion
+            $dateFactureStr = trim($ligne[9]);
+
+            // Vérifie si la valeur est vide
+            if (empty($dateFactureStr)) {
+                throw new Exception("Date de facture absente pour la ligne : " . json_encode($ligne));
             }
 
+            // Essayer plusieurs formats
+            $formats = ['d/m/Y', 'Y-m-d', 'd-m-Y'];
+            $dateFacture = false;
+
+            foreach ($formats as $format) {
+                $dateFacture = \DateTime::createFromFormat($format, $dateFactureStr);
+                if ($dateFacture !== false) {
+                    break;
+                }
+            }
+
+            // Si la conversion échoue, afficher la date erronée
+            if (!$dateFacture) {
+                throw new Exception("Date de facture invalide : '" . $dateFactureStr . "' - Formats testés : " . implode(', ', $formats));
+            }
+
+            // Vérifie si la facture existe déjà pour éviter les doublons
             if ($this->factureExiste($utilisateurId, $referenceContrat, $titre, $dateFacture->format('Y-m-d'))) {
                 return;
             }
 
+            // Insérer la facture dans la base de données
             $stmt = $this->pdo->prepare('
-                INSERT INTO factures 
-                (reference_contrat, utilisateur_id, titre, date_facture, est_lie_contrat)
-                VALUES 
-                (:reference_contrat, :utilisateur_id, :titre, :date_facture, :est_lie_contrat)
-            ');
+            INSERT INTO factures 
+            (reference_contrat, utilisateur_id, titre, date_facture, est_lie_contrat)
+            VALUES 
+            (:reference_contrat, :utilisateur_id, :titre, :date_facture, :est_lie_contrat)
+        ');
 
             $stmt->execute([
                 ':reference_contrat' => $referenceContrat,
@@ -68,10 +92,14 @@ class CsvModele {
                 ':date_facture' => $dateFacture->format('Y-m-d'),
                 ':est_lie_contrat' => $estLieContrat ? 1 : 0
             ]);
+
         } catch (\PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw new Exception("Erreur : " . $e->getMessage());
         }
     }
+
 
 
     /**
