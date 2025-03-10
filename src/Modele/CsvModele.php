@@ -215,33 +215,58 @@ class CsvModele {
 
     public function importerRecapVente($utilisateurId, $ligne) {
         try {
-            $dateVente = \DateTime::createFromFormat('d/m/Y', $ligne[1]);
-            if (!$dateVente) {
-                throw new Exception("Date de vente invalide : " . $ligne[1]);
+            // Nettoyage de la valeur de la date
+            $dateVenteStr = trim($ligne[1]);
+
+            // Vérifier si la valeur est vide
+            if (empty($dateVenteStr)) {
+                throw new Exception("Date de vente absente pour la ligne : " . json_encode($ligne));
             }
 
-            $totalHt = str_replace(',', '.', $ligne[5]);
-            $tva = str_replace(',', '.', $ligne[6]);
-            $totalTtc = str_replace(',', '.', $ligne[7]);
+            // Essayer plusieurs formats
+            $formats = ['d/m/Y', 'Y-m-d', 'd-m-Y'];
+            $dateVente = false;
 
+            foreach ($formats as $format) {
+                $dateVente = \DateTime::createFromFormat($format, $dateVenteStr);
+                if ($dateVente !== false) {
+                    break;
+                }
+            }
+
+            // Si la conversion échoue, afficher la date erronée
+            if (!$dateVente) {
+                throw new Exception("Date de vente invalide : '" . $dateVenteStr . "' - Formats testés : " . implode(', ', $formats));
+            }
+
+            // Nettoyage et conversion des montants (remplace les virgules par des points)
+            $totalHt = floatval(str_replace(',', '.', $ligne[5]));
+            $tva = floatval(str_replace(',', '.', $ligne[6]));
+            $totalTtc = floatval(str_replace(',', '.', $ligne[7]));
+
+            // Insertion dans la base de données
             $stmt = $this->pdo->prepare('
-                INSERT INTO recap_ventes 
-                (utilisateur_id, date_vente, total_ht, tva, total_ttc)
-                VALUES 
-                (:utilisateur_id, :date_vente, :total_ht, :tva, :total_ttc)
-            ');
+            INSERT INTO recap_ventes 
+            (utilisateur_id, date_vente, total_ht, tva, total_ttc)
+            VALUES 
+            (:utilisateur_id, :date_vente, :total_ht, :tva, :total_ttc)
+        ');
 
             $stmt->execute([
                 ':utilisateur_id' => $utilisateurId,
-                ':date_vente' => $dateVente->format('Y-m-d'),
+                ':date_vente' => $dateVente->format('Y-m-d'), // Format MySQL
                 ':total_ht' => $totalHt,
                 ':tva' => $tva,
                 ':total_ttc' => $totalTtc
             ]);
+
         } catch (\PDOException $e) {
             throw new Exception("Erreur PDO : " . $e->getMessage());
+        } catch (\Exception $e) {
+            throw new Exception("Erreur : " . $e->getMessage());
         }
     }
+
 
 
     public function getBoxTypeIdByReference($denomination, $utilisateurId) {
