@@ -304,25 +304,47 @@ canvas {
 }
 
 /* 🎯 Cartes d'actions */
-.etape-card {
-    background: white;
+.profil-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 2 ou 3 colonnes selon la largeur */
+    gap: 20px;
+    max-width: 1100px;
+    margin: 0 auto;
     padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    text-align: center;
-    width: 350px;
-    margin: 20px auto;
-    transition: transform 0.2s ease-in-out;
+}
+
+.etape-card {
+    background: #222;
+    color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease-in-out;
 }
 
 .etape-card:hover {
-    transform: translateY(-5px);
+    transform: scale(1.02);
+}
+
+.etape-title {
+    font-size: 1.2em;
+    margin-bottom: 10px;
 }
 
 .etape-card h3 {
     color: #007bff;
     font-size: 18px;
     margin-bottom: 10px;
+}
+
+.etape-card input,
+.etape-card button,
+.etape-card select {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+    border-radius: 5px;
+    border: none;
 }
 
 /* 📂 Import CSV */
@@ -332,42 +354,34 @@ canvas {
 }
 
 .etape-card button {
-    background-color: #28a745;
-    color: white;
-    border: none;
-    padding: 10px 15px;
-    border-radius: 5px;
+    background-color: #ffcc00;
+    color: #111;
+    font-weight: bold;
     cursor: pointer;
-    font-size: 16px;
-    transition: 0.3s;
+    transition: background 0.3s ease-in-out;
 }
 
 .etape-card button:hover {
-    background-color: #218838;
+    background-color: #ff9900;
 }
 
 /* 🔑 Changement de mot de passe */
+
 .password-container {
-    position: relative;
     display: flex;
     align-items: center;
-    justify-content: center;
+    position: relative;
 }
 
 .password-container input {
+    flex: 1;
     padding-right: 40px;
-    width: 80%;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
 }
 
 .toggle-password {
     position: absolute;
     right: 10px;
     cursor: pointer;
-    display: flex;
-    align-items: center;
 }
 
 .toggle-password img {
@@ -986,6 +1000,10 @@ button:hover:enabled {
     .cgu-content p,
     .mentions-legales-content p {
         font-size: 14px;
+    }
+
+    .profil-container {
+        grid-template-columns: 1fr;
     }
 }
 

@@ -81,6 +81,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 </head>
 <body>
 <h1>Profil</h1>
+<div class="profil-container">
 <div class="etape-card">
     <h3 class="etape-title">Changer de mot de passe</h3>
     <p>Dernier changement
@@ -179,7 +180,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="loader"></div>
     </form>
 </div>
-
+</div>
 <script>
     function showLoader(form) {
         const button = form.querySelector('button[type="submit"]');
