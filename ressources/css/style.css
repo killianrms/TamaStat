@@ -306,7 +306,7 @@ canvas {
 /* 🎯 Cartes d'actions */
 .profil-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* 2 ou 3 colonnes selon la largeur */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 20px;
     max-width: 1100px;
     margin: 0 auto;
@@ -314,13 +314,15 @@ canvas {
 }
 
 .etape-card {
-    background: #222;
-    color: white;
+    background: #f9f9f9;
+    color: #333;
     padding: 15px;
     border-radius: 8px;
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease-in-out;
+    border: 1px solid #ddd;
 }
+
 
 .etape-card:hover {
     transform: scale(1.02);
@@ -438,6 +440,11 @@ footer {
     margin-top: auto;
 }
 
+.footer-logos {
+    display: flex;
+    gap: 10px;
+}
+
 .footer-socials {
     display: flex;
     justify-content: center;
@@ -475,12 +482,6 @@ footer {
     text-decoration: underline;
 }
 
-.footer-container {
-    background: #333333;
-    color: white;
-    padding: 20px 0;
-    text-align: center;
-}
 
 .footer-main {
     display: flex;
@@ -918,6 +919,17 @@ button:hover:enabled {
         text-align: center;
     }
 
+    .footer-logos {
+        justify-content: center;
+        margin-top: 10px;
+    }
+
+    .user-table th,
+    .user-table td {
+        font-size: 0.9em;
+        padding: 8px;
+    }
+
     .footer-info, .footer-links, .footer-copy {
         text-align: center;
         margin-bottom: 10px;
@@ -1004,6 +1016,16 @@ button:hover:enabled {
 
     .profil-container {
         grid-template-columns: 1fr;
+    }
+
+    .footer-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .footer-socials {
+        justify-content: center;
+        margin-top: 10px;
     }
 }
 
