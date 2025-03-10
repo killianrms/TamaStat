@@ -28,6 +28,9 @@
                 <a href="routeur.php?route=mentions-legales">Mentions Légales</a> |
                 <a href="routeur.php?route=cgu">Conditions Générales d'Utilisation</a>
             </div>
+            <div class="footer-copy">
+                <p>TamaBox - Tous droits réservés</p>
+            </div>
         </div>
     </div>
 </footer>

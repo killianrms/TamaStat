@@ -904,7 +904,7 @@ button:hover:enabled {
         text-align: center;
     }
 
-    .footer-info, .footer-links {
+    .footer-info, .footer-links, .footer-copy {
         text-align: center;
         margin-bottom: 10px;
     }
