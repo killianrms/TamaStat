@@ -128,40 +128,16 @@ foreach ($boxData as $box) {
     $caMaxMensuel += $box['prix_ttc'] * $box['quantite'];
 }
 
-// Récupérer le mois et l'année actuels (ex: 2025-03)
 $moisActuel = date('Y-m');
 
-// Fonction pour récupérer le CA pour un mois donné
-function getCAParMois($pdo, $utilisateurId, $mois) {
-    $stmt = $pdo->prepare('
-        SELECT SUM(total_ht) 
-        FROM recap_ventes 
-        WHERE utilisateur_id = ? 
-        AND DATE_FORMAT(date_vente, "%Y-%m") = ?
-    ');
-    $stmt->execute([$utilisateurId, $mois]);
-    return (float) $stmt->fetchColumn();
-}
-
-// Récupérer le CA pour le mois actuel au chargement
-$caActuel = getCAParMois($pdo, $utilisateurId, $moisActuel);
-
-// Calcul du CA max mensuel
 $stmt = $pdo->prepare('
-    SELECT bt.prix_ttc, ub.quantite 
-    FROM utilisateur_boxes ub 
-    INNER JOIN box_types bt ON ub.box_type_id = bt.id 
-    WHERE ub.utilisateur_id = ? AND bt.utilisateur_id = ?
+    SELECT SUM(total_ht) 
+    FROM recap_ventes 
+    WHERE utilisateur_id = ? 
+    AND DATE_FORMAT(date_vente, "%Y-%m") = ?
 ');
-$stmt->execute([$utilisateurId, $utilisateurId]);
-$caMaxMensuel = 0;
-
-foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $box) {
-    $caMaxMensuel += $box['prix_ttc'] * $box['quantite'];
-}
-
-// Calcul du CA restant
-$caRestant = max(0, $caMaxMensuel - $caActuel);
+$stmt->execute([$utilisateurId, $moisActuel]);
+$caActuel = (float) $stmt->fetchColumn();
 
 
 $caRestant = max(0, $caMaxMensuel - $caActuel);
@@ -330,6 +306,16 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
 <h1>Statistiques de vos locations</h1>
 
 <!-- Statistiques globales -->
+<div class="stats-globales">
+    <div class="stat-card">
+        <h3>Chiffre d'Affaires</h3>
+        <div class="stat-content">
+            <p><strong>CA Max Mensuel :</strong> <?= number_format($caMaxMensuel, 2) ?> €</p>
+            <p><strong>CA Actuel :</strong> <?= number_format($caActuel, 2) ?> €</p>
+            <p><strong>CA Restant :</strong> <?= number_format($caRestant, 2) ?> €</p>
+        </div>
+    </div>
+
     <div class="stat-card">
         <h3>Statistiques des Box</h3>
         <div class="stat-content">
@@ -345,29 +331,17 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
 
 <!-- Graphiques -->
 <div class="chart-card">
-    <h3>Chiffre d'Affaires</h3>
-
-    <!-- Sélecteur de période -->
+    <h3>Chiffre d'affaires</h3>
     <div class="date-filters">
-        <label for="startDateRevenue">Début :</label>
-        <input type="month" id="startDateRevenue" value="<?= date('Y-m', strtotime('-1 month')) ?>">
+        <label for="startDateRevenue">Mois début :</label>
+        <input type="month" id="startDateRevenue">
 
-        <label for="endDateRevenue">Fin :</label>
-        <input type="month" id="endDateRevenue" value="<?= date('Y-m') ?>">
+        <label for="endDateRevenue">Mois fin :</label>
+        <input type="month" id="endDateRevenue">
     </div>
 
-    <!-- Informations sur le CA -->
-    <div class="stat-content">
-        <p><strong>CA Max sur la période :</strong> <span id="caMax"><?= number_format($caMaxMensuel, 2) ?></span> €</p>
-        <p><strong>CA Actuel :</strong> <span id="caActuel"><?= number_format($caActuel, 2) ?></span> €</p>
-        <p><strong>CA Restant :</strong> <span id="caRestant"><?= number_format($caRestant, 2) ?></span> €</p>
-    </div>
-
-    <!-- Graphique du CA -->
     <canvas id="revenuMensuelChart"></canvas>
 </div>
-
-
 
 
 <div class="chart-card">
@@ -415,11 +389,6 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
         const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
         const boxLabels = <?= json_encode($boxLabels) ?>;
-        const startDateInput = document.getElementById("startDateRevenue");
-        const endDateInput = document.getElementById("endDateRevenue");
-        const caMaxElem = document.getElementById("caMax");
-        const caActuelElem = document.getElementById("caActuel");
-        const caRestantElem = document.getElementById("caRestant");
 
         // 📊 Création du graphique CA
         const revenueCtx = document.getElementById('revenuMensuelChart').getContext('2d');
@@ -462,43 +431,45 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         };
         const boxChart = new Chart(boxCtx, { type: "bar", data: boxChartData });
 
-        // 🎯 Fonction pour mettre à jour les données du CA et du graphique ensemble
-        function updateData() {
-            const startMonth = startDateInput.value;
-            const endMonth = endDateInput.value;
+        // 🎯 Gestion des filtres DATE pour les graphiques temporels
+        function updateChartWithDates(chart, labels, data, startInput, endInput) {
+            const startDate = startInput.value || null;
+            const endDate = endInput.value || null;
 
-            if (!startMonth || !endMonth || startMonth > endMonth) {
-                alert("Sélectionnez une période valide !");
-                return;
+            let filteredLabels = [];
+            let filteredData = [];
+
+            labels.forEach((mois, index) => {
+                if ((startDate === null || mois >= startDate) &&
+                    (endDate === null || mois <= endDate)) {
+                    filteredLabels.push(mois);
+                    filteredData.push(data[index]);
+                }
+            });
+
+            if (filteredLabels.length === 0) {
+                alert("Aucune donnée à afficher pour cette période !");
+                filteredLabels = labels;
+                filteredData = data;
             }
 
-            // Envoyer une requête AJAX pour récupérer les nouvelles données
-            fetch(`routeur.php?route=get-ca-periode&debut=${startMonth}&fin=${endMonth}`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // 🔹 Mise à jour des valeurs du CA
-                        caMaxElem.innerText = data.caMax.toFixed(2) + " €";
-                        caActuelElem.innerText = data.caActuel.toFixed(2) + " €";
-                        caRestantElem.innerText = data.caRestant.toFixed(2) + " €";
-
-                        // 🔹 Mise à jour du graphique du CA
-                        revenueChart.data.labels = data.moisLabels;
-                        revenueChart.data.datasets[0].data = data.revenuMensuelData;
-                        revenueChart.update();
-                    } else {
-                        alert("Erreur lors de la récupération des données: " + data.message);
-                    }
-                })
-                .catch(error => {
-                    console.error("🚨 Erreur AJAX :", error);
-                    alert("Une erreur s'est produite lors de la récupération des données.");
-                });
+            chart.data.labels = filteredLabels;
+            chart.data.datasets[0].data = filteredData;
+            chart.update();
         }
 
-        // 🎯 Déclencher la mise à jour au changement des dates
-        startDateInput.addEventListener("change", updateData);
-        endDateInput.addEventListener("change", updateData);
+        // 🎯 Filtres pour Chiffre d'affaires
+        document.getElementById('startDateRevenue').addEventListener('change', () => {
+            updateChartWithDates(revenueChart, moisLabels, revenuMensuelData,
+                document.getElementById('startDateRevenue'),
+                document.getElementById('endDateRevenue'));
+        });
+
+        document.getElementById('endDateRevenue').addEventListener('change', () => {
+            updateChartWithDates(revenueChart, moisLabels, revenuMensuelData,
+                document.getElementById('startDateRevenue'),
+                document.getElementById('endDateRevenue'));
+        });
 
         // 🎯 Filtres pour Nombre d'entrées
         document.getElementById('startDateEntrées').addEventListener('change', () => {
@@ -542,6 +513,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             }
         });
     });
+
 </script>
 </body>
 </html>
