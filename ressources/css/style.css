@@ -416,28 +416,30 @@ canvas {
 /* ======================== */
 
 footer {
-    background: #333;
+    background-color: #333;
     color: white;
     text-align: center;
-    padding: 15px 0;
+    padding: 15px 10px;
     font-size: 14px;
     width: 100%;
-    position: fixed;
+    position: relative;
     bottom: 0;
-    left: 0;
 }
 
 .footer-container {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     flex-wrap: wrap;
-    gap: 20px;
     max-width: 1200px;
     margin: 0 auto;
 }
 
-.footer-info p {
-    font-weight: bold;
+.footer-info,
+.footer-links,
+.footer-copy {
+    flex: 1;
+    min-width: 250px;
+    margin: 5px;
 }
 
 .footer-info ul {
@@ -445,25 +447,16 @@ footer {
     padding: 0;
 }
 
-.footer-info ul li {
-    margin: 5px 0;
-}
 
-.footer-links a {
-    color: #f8f8f8;
-    margin: 0 10px;
+.footer-info a {
+    color: #f8c16c;
     text-decoration: none;
 }
 
-.footer-links a:hover {
+.footer-info a:hover {
     text-decoration: underline;
 }
 
-.footer-copy {
-    width: 100%;
-    text-align: center;
-    margin-top: 10px;
-}
 
 /* ======================== */
 /* 📌 HEADER (NAVBAR) */
@@ -805,9 +798,11 @@ button:hover:enabled {
         width: 90%;
     }
 
+
     .chart-container {
         grid-template-columns: 1fr;
     }
+
 
     .etape-card {
         width: 90%;
