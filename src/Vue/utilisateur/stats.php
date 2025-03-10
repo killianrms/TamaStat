@@ -489,7 +489,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             chart.update();
         }
 
-        function updateCAData() {
+        function updateData() {
             const startMonth = startDateInput.value;
             const endMonth = endDateInput.value;
 
@@ -503,11 +503,12 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
+                        // 🔹 Mise à jour des valeurs du CA
                         caMaxElem.innerText = data.caMax.toFixed(2) + " €";
                         caActuelElem.innerText = data.caActuel.toFixed(2) + " €";
                         caRestantElem.innerText = data.caRestant.toFixed(2) + " €";
 
-                        // Mettre à jour le graphique CA
+                        // 🔹 Mise à jour du graphique du CA
                         revenueChart.data.labels = data.moisLabels;
                         revenueChart.data.datasets[0].data = data.revenuMensuelData;
                         revenueChart.update();
@@ -517,18 +518,11 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                 })
                 .catch(error => console.error("Erreur:", error));
         }
-    // 🎯 Filtres pour Chiffre d'affaires
-        document.getElementById('startDateRevenue').addEventListener('change', () => {
-            updateChartWithDates(revenueChart, moisLabels, revenuMensuelData,
-                document.getElementById('startDateRevenue'),
-                document.getElementById('endDateRevenue'));
-        });
 
-        document.getElementById('endDateRevenue').addEventListener('change', () => {
-            updateChartWithDates(revenueChart, moisLabels, revenuMensuelData,
-                document.getElementById('startDateRevenue'),
-                document.getElementById('endDateRevenue'));
-        });
+// 🎯 Déclencher la mise à jour au changement des dates
+        startDateInput.addEventListener("change", updateData);
+        endDateInput.addEventListener("change", updateData);
+
 
         // 🎯 Filtres pour Nombre d'entrées
         document.getElementById('startDateEntrées').addEventListener('change', () => {
@@ -571,8 +565,6 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                 dropdownContent.classList.remove("active");
             }
         });
-        startDateInput.addEventListener("change", updateCAData);
-        endDateInput.addEventListener("change", updateCAData);
     });
 
 </script>

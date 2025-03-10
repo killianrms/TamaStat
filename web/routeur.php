@@ -292,7 +292,7 @@ try {
             }
             break;
 
-        case 'get-ca-periode':
+        case 'get_ca_periode':
             if (!isset($_GET['debut']) || !isset($_GET['fin'])) {
                 echo json_encode(["success" => false, "message" => "Période non fournie"]);
                 exit;
@@ -315,7 +315,7 @@ try {
             $interval = $dateDebut->diff($dateFin);
             $nbMois = $interval->m + 1 + ($interval->y * 12); // Convertit les années en mois
 
-            // 🟢 Récupérer le CA Max Mensuel AVANT de l'utiliser
+            // 🟢 Récupérer le CA Max Mensuel
             $stmt = $pdo->prepare('
         SELECT SUM(bt.prix_ttc * ub.quantite) 
         FROM utilisateur_boxes ub 
@@ -353,6 +353,7 @@ try {
                 "revenuMensuelData" => array_values($revenuMensuel),
             ]);
             exit;
+
 
 
 
