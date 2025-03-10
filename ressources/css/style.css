@@ -81,15 +81,15 @@ button:disabled {
 
 /* Champs input */
 input[type="file"],
+input[type="password"],
 input[type="text"],
 input[type="email"],
-input[type="password"] {
-    border: 1px solid #ccc;
-    padding: 8px;
-    border-radius: 5px;
-    background-color: #f9f9f9;
+select {
     width: 100%;
-    max-width: 400px;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
 input:hover {
@@ -306,15 +306,19 @@ canvas {
 /* 🎯 Cartes d'actions */
 .profil-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
-    max-width: 1100px;
-    margin: 0 auto;
+    grid-template-columns: 1.5fr 1fr 1fr;
+    gap: 15px;
+    max-width: 1200px;
+    margin: auto;
     padding: 20px;
 }
 
+.profil-container .etape-card:first-child {
+    grid-column: span 1;
+}
+
 .etape-card {
-    background: #f9f9f9;
+    background: antiquewhite;
     color: #333;
     padding: 15px;
     border-radius: 8px;
@@ -322,7 +326,6 @@ canvas {
     transition: transform 0.3s ease-in-out;
     border: 1px solid #ddd;
 }
-
 
 .etape-card:hover {
     transform: scale(1.02);
@@ -393,14 +396,12 @@ canvas {
 
 /* ✅ Vérification des mots de passe */
 .password-requirements {
-    list-style: none;
-    padding: 0;
-    text-align: left;
-    margin-top: 10px;
+    font-size: 14px;
+    padding: 5px 0;
 }
 
 .password-requirements li {
-    font-size: 14px;
+    list-style: none;
 }
 
 .valid {
@@ -414,13 +415,14 @@ canvas {
 /* 🎯 Boutons et liens */
 .btn {
     display: inline-block;
-    padding: 10px 15px;
-    background-color: #007bff;
+    background: #007bff;
     color: white;
+    padding: 10px 15px;
     border-radius: 5px;
     text-decoration: none;
-    font-size: 16px;
-    transition: 0.3s;
+    font-weight: bold;
+    text-align: center;
+    transition: background 0.3s;
 }
 
 .btn:hover {
@@ -857,6 +859,10 @@ button:hover:enabled {
 
     .chart-container {
         grid-template-columns: repeat(2, 1fr);
+    }
+
+    .profil-container {
+        grid-template-columns: 1fr 1fr;
     }
 }
 
