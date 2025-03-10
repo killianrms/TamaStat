@@ -9,9 +9,9 @@ ob_start();
 
 include __DIR__ . '/../src/Vue/utilisateur/header.php';
 
-use App\Controleur\Specifique\ControleurUtilisateur;
-use App\Controleur\Specifique\ControleurCsv;
 use App\Configuration\ConnexionBD;
+use App\Controleur\Specifique\ControleurCsv;
+use App\Controleur\Specifique\ControleurUtilisateur;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
@@ -169,7 +169,6 @@ try {
             break;
 
 
-
         case 'modifierUtilisateur':
             verifierConnexion();
             if ($_SESSION['user']['is_admin'] !== 1) {
@@ -264,6 +263,20 @@ try {
                 exit;
             }
             break;
+
+        case 'importer-recap-ventes':
+            verifierConnexion();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_recap_ventes'])) {
+                try {
+                    $controleurCsv->importerRecapVentes($_FILES['csv_recap_ventes'], $_SESSION['user']['id']);
+                    header('Location: routeur.php?route=accueil');
+                    exit;
+                } catch (Exception $e) {
+                    echo "<div class='error-message'>Erreur : " . $e->getMessage() . "</div>";
+                }
+            }
+            break;
+
 
         case 'importer-contrats':
             verifierConnexion();
