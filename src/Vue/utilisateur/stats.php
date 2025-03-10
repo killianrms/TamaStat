@@ -462,33 +462,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         };
         const boxChart = new Chart(boxCtx, { type: "bar", data: boxChartData });
 
-        // 🎯 Gestion des filtres DATE pour les graphiques temporels
-        function updateChartWithDates(chart, labels, data, startInput, endInput) {
-            const startDate = startInput.value || null;
-            const endDate = endInput.value || null;
-
-            let filteredLabels = [];
-            let filteredData = [];
-
-            labels.forEach((mois, index) => {
-                if ((startDate === null || mois >= startDate) &&
-                    (endDate === null || mois <= endDate)) {
-                    filteredLabels.push(mois);
-                    filteredData.push(data[index]);
-                }
-            });
-
-            if (filteredLabels.length === 0) {
-                alert("Aucune donnée à afficher pour cette période !");
-                filteredLabels = labels;
-                filteredData = data;
-            }
-
-            chart.data.labels = filteredLabels;
-            chart.data.datasets[0].data = filteredData;
-            chart.update();
-        }
-
+        // 🎯 Fonction pour mettre à jour les données du CA et du graphique ensemble
         function updateData() {
             const startMonth = startDateInput.value;
             const endMonth = endDateInput.value;
@@ -513,16 +487,18 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                         revenueChart.data.datasets[0].data = data.revenuMensuelData;
                         revenueChart.update();
                     } else {
-                        alert("Erreur lors de la récupération des données.");
+                        alert("Erreur lors de la récupération des données: " + data.message);
                     }
                 })
-                .catch(error => console.error("Erreur:", error));
+                .catch(error => {
+                    console.error("🚨 Erreur AJAX :", error);
+                    alert("Une erreur s'est produite lors de la récupération des données.");
+                });
         }
 
-// 🎯 Déclencher la mise à jour au changement des dates
+        // 🎯 Déclencher la mise à jour au changement des dates
         startDateInput.addEventListener("change", updateData);
         endDateInput.addEventListener("change", updateData);
-
 
         // 🎯 Filtres pour Nombre d'entrées
         document.getElementById('startDateEntrées').addEventListener('change', () => {
@@ -566,7 +542,6 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             }
         });
     });
-
 </script>
 </body>
 </html>
