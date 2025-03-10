@@ -41,7 +41,7 @@ h1, h2, h3 {
 /* 🎨 2. Boutons et Inputs */
 /* ======================== */
 button {
-    background-color: #0056b3;
+    background-color: #007bff;
     color: white;
     padding: 10px 15px;
     border: none;
@@ -693,7 +693,7 @@ input:focus, select:focus {
 }
 
 button:hover:enabled {
-    background-color: #ffcc00;
+    background-color: #0056b3;
 }
 
 
