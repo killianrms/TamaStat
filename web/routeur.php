@@ -250,7 +250,11 @@ try {
                         $boxTypeId = str_replace('box_', '', $key);
                         $quantite = intval($value);
 
-                        $stmt = $pdo->prepare('INSERT INTO utilisateur_boxes (utilisateur_id, box_type_id, quantite) VALUES (:utilisateur_id, :box_type_id, :quantite)');
+                        $stmt = $pdo->prepare('
+                    INSERT INTO utilisateur_boxes (utilisateur_id, box_type_id, quantite) 
+                    VALUES (:utilisateur_id, :box_type_id, :quantite)
+                    ON DUPLICATE KEY UPDATE quantite = VALUES(quantite)
+                ');
                         $stmt->execute([
                             ':utilisateur_id' => $utilisateurId,
                             ':box_type_id' => $boxTypeId,
@@ -259,10 +263,18 @@ try {
                     }
                 }
 
+                $stmt = $pdo->prepare('
+            INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) 
+            VALUES (?, ?, NOW()) 
+            ON DUPLICATE KEY UPDATE date_dernier_import = NOW()
+        ');
+                $stmt->execute([$utilisateurId, 'utilisateur_boxes']);
+
                 header('Location: routeur.php?route=accueil');
                 exit;
             }
             break;
+
 
         case 'importer-recap-ventes':
             verifierConnexion();

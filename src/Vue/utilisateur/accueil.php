@@ -90,7 +90,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
     <!-- Étape 2 -->
 <?php elseif (!$hasBoxesConfig): ?>
     <div class="step">
-        <h2>Étape 2/4 : Configurer vos box</h2>
+        <h2>Étape 2/5 : Configurer vos box</h2>
         <form id="configBoxForm" action="routeur.php?route=configurer-box" method="POST">
             <?php
             $stmt = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
