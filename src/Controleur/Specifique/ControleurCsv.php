@@ -77,8 +77,13 @@ class ControleurCsv {
             }
             fclose($handle);
 
-        $stmt = $this->pdo->prepare('INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE date_dernier_import = NOW()');
-            $stmt->execute([$utilisateurId]);
+        $stmt = $this->pdo->prepare('
+    INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) 
+    VALUES (?, ?, NOW()) 
+    ON DUPLICATE KEY UPDATE date_dernier_import = NOW()
+');
+        $stmt->execute([$utilisateurId, 'box_types']);
+
     }
 
     public function importerRecapVentes($csvFile, $utilisateurId) {
