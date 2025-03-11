@@ -25,28 +25,40 @@ class ControleurCsv {
      * @return void
      */
     public function importerFactures($csvFile, $utilisateurId) {
-            $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
-            if ($fileExt !== 'csv') {
-                throw new Exception("Le fichier doit être au format CSV.");
-            }
+        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
+        if ($fileExt !== 'csv') {
+            throw new Exception("Le fichier doit être au format CSV.");
+        }
 
-            $fileTmpName = $csvFile['tmp_name'];
+        $fileTmpName = $csvFile['tmp_name'];
 
-            if (($handle = fopen($fileTmpName, 'r')) !== false) {
-                stream_filter_append($handle, 'convert.iconv.ISO-8859-1/UTF-8');
-                fgetcsv($handle);
+        if (($handle = fopen($fileTmpName, 'r')) !== false) {
+            stream_filter_append($handle, 'convert.iconv.ISO-8859-1/UTF-8');
+            fgetcsv($handle); // Sauter l'en-tête
 
-                while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-                    if (count($data) >= 10) {
-                        $this->csvModele->importerFacture($utilisateurId, $data);
+            while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+                if (count($data) >= 10) {
+                    $dateFactureStr = trim($data[9]);
+
+                    if (empty($dateFactureStr)) {
+                        continue;
                     }
-                }
-                fclose($handle);
 
-                $stmt = $this->pdo->prepare('INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE date_dernier_import = NOW()');
-                $stmt->execute([$utilisateurId, 'factures']);
+                    $this->csvModele->importerFacture($utilisateurId, $data);
+                }
             }
+            fclose($handle);
+
+            // Enregistrer l'import dans `import_tracking`
+            $stmt = $this->pdo->prepare('
+            INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) 
+            VALUES (?, ?, NOW()) 
+            ON DUPLICATE KEY UPDATE date_dernier_import = NOW()
+        ');
+            $stmt->execute([$utilisateurId, 'factures']);
+        }
     }
+
 
 
     /**
