@@ -22,6 +22,62 @@ main {
     flex: 1;
 }
 
+/* Formulaire des box */
+#configBoxForm {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Labels pour les champs */
+#configBoxForm label {
+    font-size: 16px;
+    margin-top: 10px;
+    color: #555;
+    display: block;
+    text-align: left;
+}
+
+/* Champs de saisie */
+#configBoxForm input[type="number"] {
+    width: 60%;
+    max-width: 250px;
+    padding: 8px;
+    margin-top: 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-align: center;
+}
+
+/* Bouton d'enregistrement */
+#configBoxForm button {
+    margin-top: 15px;
+    padding: 10px 20px;
+    background: #0072bc;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#configBoxForm button:hover {
+    background: #005fa3;
+}
+
+/* Loader */
+#configBoxForm .loader {
+    display: none;
+    margin-top: 10px;
+    width: 30px;
+    height: 30px;
+    border: 4px solid #ccc;
+    border-top: 4px solid #0072bc;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
 
 /* Container principal */
 .container {
@@ -905,6 +961,13 @@ button:hover:enabled {
         width: 90%;
     }
 
+    #configBoxForm input[type="number"] {
+        width: 80%;
+    }
+
+    #configBoxForm button {
+        width: 80%;
+    }
 
     .chart-container {
         grid-template-columns: 1fr;

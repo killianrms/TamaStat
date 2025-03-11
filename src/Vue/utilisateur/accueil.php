@@ -87,6 +87,26 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
         </form>
     </div>
 
+    <!-- Étape 2 -->
+<?php elseif (!$hasBoxesConfig): ?>
+    <div class="step">
+        <h2>Étape 2/4 : Configurer vos box</h2>
+        <form id="configBoxForm" action="routeur.php?route=configurer-box" method="POST">
+            <?php
+            $stmt = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
+            $stmt->execute([$utilisateurId]);
+            $boxTypes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($boxTypes as $boxType) {
+                echo '<label for="box_' . $boxType['id'] . '">Nombre de box ' . $boxType['denomination'] . ' :</label>';
+                echo '<input type="number" id="box_' . $boxType['id'] . '" name="box_' . $boxType['id'] . '" min="0" required><br>';
+            }
+            ?>
+            <button type="submit" id="submitBtn">Enregistrer</button>
+            <div class="loader" id="loader"></div>
+        </form>
+    </div>
+
     <!-- Étape 3 -->
 <?php elseif (!$hasContrats): ?>
     <div class="step">
