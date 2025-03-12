@@ -108,19 +108,30 @@ class ControleurCsv {
 
         if (($handle = fopen($fileTmpName, 'r')) !== false) {
             stream_filter_append($handle, 'convert.iconv.ISO-8859-1/UTF-8');
-            fgetcsv($handle, 1000, ';');
+            fgetcsv($handle); // Sauter l'en-tête
 
             while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                 if (count($data) >= 8) {
+                    $dateVenteStr = trim($data[1]);
+
+                    if (empty($dateVenteStr)) {
+                        continue;
+                    }
+
                     $this->csvModele->importerRecapVente($utilisateurId, $data);
                 }
             }
             fclose($handle);
 
-            $stmt = $this->pdo->prepare('INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE date_dernier_import = NOW()');
+            $stmt = $this->pdo->prepare('
+            INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) 
+            VALUES (?, ?, NOW()) 
+            ON DUPLICATE KEY UPDATE date_dernier_import = NOW()
+        ');
             $stmt->execute([$utilisateurId, 'recap_ventes']);
         }
     }
+
 
 
 
