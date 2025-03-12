@@ -215,7 +215,6 @@ class CsvModele {
 
     public function importerRecapVente($utilisateurId, $ligne) {
         try {
-            // Nettoyage de la valeur de la date
             $dateVenteStr = trim($ligne[1]);
 
             // Vérifier si la valeur est vide
@@ -244,13 +243,18 @@ class CsvModele {
             $tva = floatval(str_replace(',', '.', $ligne[6]));
             $totalTtc = floatval(str_replace(',', '.', $ligne[7]));
 
+            // Vérifie si la vente existe déjà
+            if ($this->recapVenteExiste($utilisateurId, $dateVente->format('Y-m-d'), $totalHt, $tva, $totalTtc)) {
+                return; // Si la vente existe, on la saute
+            }
+
             // Insertion dans la base de données
             $stmt = $this->pdo->prepare('
-            INSERT INTO recap_ventes 
-            (utilisateur_id, date_vente, total_ht, tva, total_ttc)
-            VALUES 
-            (:utilisateur_id, :date_vente, :total_ht, :tva, :total_ttc)
-        ');
+        INSERT INTO recap_ventes 
+        (utilisateur_id, date_vente, total_ht, tva, total_ttc)
+        VALUES 
+        (:utilisateur_id, :date_vente, :total_ht, :tva, :total_ttc)
+    ');
 
             $stmt->execute([
                 ':utilisateur_id' => $utilisateurId,
@@ -265,6 +269,25 @@ class CsvModele {
         } catch (\Exception $e) {
             throw new Exception("Erreur : " . $e->getMessage());
         }
+    }
+
+    private function recapVenteExiste($utilisateurId, $dateVente, $totalHt, $tva, $totalTtc) {
+        $stmt = $this->pdo->prepare('
+        SELECT COUNT(*) FROM recap_ventes 
+        WHERE utilisateur_id = :utilisateur_id 
+        AND date_vente = :date_vente 
+        AND total_ht = :total_ht 
+        AND tva = :tva 
+        AND total_ttc = :total_ttc
+    ');
+        $stmt->execute([
+            ':utilisateur_id' => $utilisateurId,
+            ':date_vente' => $dateVente,
+            ':total_ht' => $totalHt,
+            ':tva' => $tva,
+            ':total_ttc' => $totalTtc
+        ]);
+        return $stmt->fetchColumn() > 0;
     }
 
 
