@@ -362,7 +362,7 @@ canvas {
 /* 🎯 Cartes d'actions */
 .profil-container {
     display: grid;
-    grid-template-columns: 1.5fr 1fr 1fr;
+    grid-template-columns: repeat(3, 1fr);
     gap: 15px;
     max-width: 1200px;
     margin: auto;
@@ -503,7 +503,7 @@ footer {
     display: flex;
     justify-content: center;
     gap: 15px;
-    margin: 15px 0;
+    flex-wrap: wrap;
 }
 
 .footer-socials .social-link {
@@ -566,28 +566,6 @@ footer {
 .footer-info a:hover {
     color: #ffcc00;
     text-decoration: underline;
-}
-
-.footer-socials {
-    display: flex;
-    gap: 15px;
-}
-
-.footer-socials .social-link {
-    display: inline-block;
-    width: 35px;
-    height: 35px;
-    transition: transform 0.3s ease-in-out;
-}
-
-.footer-socials .social-link img {
-    width: 100%;
-    height: 100%;
-    filter: brightness(0) invert(1);
-}
-
-.footer-socials .social-link:hover {
-    transform: scale(1.2);
 }
 
 .footer-bottom {
@@ -998,24 +976,26 @@ button:hover:enabled {
         text-align: center;
     }
 
-    .footer-info, .footer-socials {
+    .footer-info{
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
     }
 
+    .footer-socials {
+        flex-direction: row;
+        justify-content: center;
+    }
+
+    .footer-socials .social-link {
+        width: 30px;
+        height: 30px;
+    }
+
     .footer-info ul {
         padding: 0;
         list-style: none;
-    }
-
-    .footer-socials {
-        margin-top: 10px;
-    }
-
-    .footer-socials a {
-        margin: 5px;
     }
 
     .dropdown-content {
@@ -1106,10 +1086,6 @@ button:hover:enabled {
         text-align: center;
     }
 
-    .footer-socials {
-        justify-content: center;
-        margin-top: 10px;
-    }
 }
 
 @media screen and (max-width: 480px) {
