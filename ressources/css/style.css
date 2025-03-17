@@ -265,7 +265,7 @@ input:hover {
 /* 🎨 Cartes des graphiques */
 .chart-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
     padding: 20px;
     justify-content: center;
@@ -362,8 +362,8 @@ canvas {
 /* 🎯 Cartes d'actions */
 .profil-container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 15px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
     max-width: 1200px;
     margin: auto;
     padding: 20px;
@@ -892,11 +892,11 @@ button:hover:enabled {
     }
 
     .chart-container {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: 1fr;
     }
 
     .profil-container {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: 1fr;
     }
 }
 
@@ -950,7 +950,6 @@ button:hover:enabled {
     .chart-container {
         grid-template-columns: 1fr;
     }
-
 
     .etape-card {
         width: 90%;
