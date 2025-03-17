@@ -149,13 +149,12 @@ class CsvModele {
     /**
      * Vérifie si une location existe déjà avant l'insertion.
      */
-    private function locationExiste($utilisateurId, $referenceContrat, $boxTypeId, $clientNom, $dateDebut, $dateFin) {
+    private function locationExiste($utilisateurId, $referenceContrat, $boxTypeId, $dateDebut, $dateFin) {
         $stmt = $this->pdo->prepare('
             SELECT COUNT(*) FROM locations 
             WHERE utilisateur_id = :utilisateur_id
             AND reference_contrat = :reference_contrat
             AND box_type_id = :box_type_id
-            AND client_nom = :client_nom
             AND date_debut = :date_debut
             AND (date_fin = :date_fin OR (date_fin IS NULL AND :date_fin IS NULL))
         ');
@@ -163,7 +162,6 @@ class CsvModele {
             ':utilisateur_id' => $utilisateurId,
             ':reference_contrat' => $referenceContrat,
             ':box_type_id' => $boxTypeId,
-            ':client_nom' => $clientNom,
             ':date_debut' => $dateDebut,
             ':date_fin' => $dateFin
         ]);
@@ -187,24 +185,21 @@ class CsvModele {
                 throw new Exception("Type de box non trouvé pour la référence : " . $ligne[9]);
             }
 
-            $clientNom = trim($ligne[2] . ' ' . $ligne[3]);
-
-            if ($this->locationExiste($utilisateurId, $ligne[1], $boxTypeId, $clientNom, $dateDebut->format('Y-m-d'), $dateFin ? $dateFin->format('Y-m-d') : null)) {
+            if ($this->locationExiste($utilisateurId, $ligne[1], $boxTypeId, $dateDebut->format('Y-m-d'), $dateFin ? $dateFin->format('Y-m-d') : null)) {
                 return;
             }
 
             $stmt = $this->pdo->prepare('
                 INSERT INTO locations 
-                (reference_contrat, utilisateur_id, box_type_id, client_nom, date_debut, date_fin)
+                (reference_contrat, utilisateur_id, box_type_id, date_debut, date_fin)
                 VALUES 
-                (:reference_contrat, :utilisateur_id, :box_type_id, :client_nom, :date_debut, :date_fin)
+                (:reference_contrat, :utilisateur_id, :box_type_id, :date_debut, :date_fin)
             ');
 
             $stmt->execute([
                 'reference_contrat' => $ligne[1],
                 'utilisateur_id' => $utilisateurId,
                 'box_type_id' => $boxTypeId,
-                'client_nom' => $clientNom,
                 'date_debut' => $dateDebut->format('Y-m-d'),
                 'date_fin' => $dateFin ? $dateFin->format('Y-m-d') : null
             ]);
