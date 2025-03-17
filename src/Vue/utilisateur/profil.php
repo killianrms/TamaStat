@@ -70,6 +70,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $erreur = "Erreur : " . $e->getMessage();
         }
     }
+
+    if (isset($_FILES['csv_contrats_clos']) && $_FILES['csv_contrats_clos']['size'] > 0) {
+        try {
+            $controleurCsv->importerContratsClos($_FILES['csv_contrats_clos'], $utilisateurId);
+            $pdo->prepare('INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) VALUES (?, ?, NOW()) 
+                          ON DUPLICATE KEY UPDATE date_dernier_import = NOW()')->execute([$utilisateurId, 'contrats_clos']);
+            $succes = "Fichier CSV des contrats clos importé avec succès.";
+        } catch (Exception $e) {
+            $erreur = "Erreur : " . $e->getMessage();
+        }
+    }
 }
 ?>
 <!DOCTYPE html>

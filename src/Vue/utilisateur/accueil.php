@@ -141,6 +141,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
             <label for="csv_contrats_clos">Importer un fichier CSV des contrats clos :</label>
             <input type="file" id="csv_contrats_clos" name="csv_contrats_clos" accept=".csv" required>
             <button type="submit" id="submitBtn">Importer</button>
+            <div class="loader" id="loader"></div>
         </form>
     </div>
 
