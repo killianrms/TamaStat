@@ -219,23 +219,25 @@ class CsvModele
     /**
      * Vérifie si un contrat clos existe déjà avant l'insertion.
      */
-    private function contratClosExiste($utilisateurId, $reference, $dateEntree, $sortieEffective)
-    {
+    public function contratClosExiste($utilisateurId, $reference, $dateEntree, $sortieEffective) {
         $stmt = $this->pdo->prepare('
-            SELECT COUNT(*) FROM contrats_clos
-            WHERE utilisateur_id = :utilisateur_id 
-            AND reference = :reference
-            AND date_entree = :date_entree
-            AND sortie_effective = :sortie_effective
-        ');
+        SELECT COUNT(*) FROM contrats_clos 
+        WHERE utilisateur_id = :utilisateur_id 
+        AND reference = :reference 
+        AND date_entree = :date_entree 
+        AND sortie_effective = :sortie_effective
+    ');
+
         $stmt->execute([
-            ':utilisateur_id' => $utilisateurId,
-            ':reference' => $reference,
-            ':date_entree' => $dateEntree,
-            ':sortie_effective' => $sortieEffective
+            'utilisateur_id' => $utilisateurId,
+            'reference' => $reference,
+            'date_entree' => $dateEntree ? $dateEntree->format('Y-m-d') : null,
+            'sortie_effective' => $sortieEffective ? $sortieEffective->format('Y-m-d') : null
         ]);
+
         return $stmt->fetchColumn() > 0;
     }
+
 
     /**
      * Importe un contrat clos si il n'existe pas déjà.
