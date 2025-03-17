@@ -89,7 +89,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
                  onclick="openGif('../../../ressources/gifs/listebox.gif')">
         </div>
         <form id="importBoxForm" action="routeur.php?route=importer-box" method="POST" enctype="multipart/form-data">
-            <label for="csv_box">Importer un fichier CSV des box :</label>
+            <label for="csv_box">Importer un fichier CSV des différents types de boxes :</label>
             <input type="file" id="csv_box" name="csv_box" accept=".csv" required>
             <button type="submit" id="submitBtn">Importer</button>
             <div class="loader" id="loader"></div>
@@ -119,7 +119,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
     <!-- Étape 3 -->
 <?php elseif (!$hasContrats): ?>
 <div class="step">
-    <h2>Étape 3/6 : Importer vos contrats</h2>
+    <h2>Étape 3/6 : Importer vos contrats en cours</h2>
     <div class="gif-container">
         <img src="../../../ressources/gifs/contrat.gif" alt="Tutoriel Import Contrats"
              onclick="openGif('../../../ressources/gifs/contrat.gif')">
