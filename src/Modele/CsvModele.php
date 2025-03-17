@@ -243,44 +243,44 @@ class CsvModele
     public function importerContratClos($utilisateurId, $ligne)
     {
         try {
-            $reference = trim($ligne[0]);
-            $centre = trim($ligne[1]);
-            $typeBox = trim($ligne[2]);
-            $prixHT = floatval(str_replace(',', '.', preg_replace('/[^0-9,]/', '', $ligne[3])));
-            $dateEntree = !empty($ligne[5]) ? \DateTime::createFromFormat('d/m/Y', $ligne[5]) : null;
-            $finLocation = !empty($ligne[6]) ? \DateTime::createFromFormat('d/m/Y', $ligne[6]) : null;
-            $sortieEffective = !empty($ligne[7]) ? \DateTime::createFromFormat('d/m/Y', $ligne[7]) : null;
+            $reference = trim($ligne[1]);
+            $centre = trim($ligne[7]);
+            $typeBox = trim($ligne[9]);
+            $prixHtParts = explode(" ", trim($ligne[10]));
+            $prixHt = floatval(str_replace(',', '.', $prixHtParts[0]));
+            $dateEntree = !empty($ligne[11]) ? \DateTime::createFromFormat('d/m/Y', $ligne[11]) : null;
+            $finLocation = !empty($ligne[12]) ? \DateTime::createFromFormat('d/m/Y', $ligne[12]) : null;
+            $sortieEffective = !empty($ligne[13]) ? \DateTime::createFromFormat('d/m/Y', $ligne[13]) : null;
 
             $datesProbleme = [];
-            if (!empty($ligne[5]) && !$dateEntree) $datesProbleme[] = "date_entree={$ligne[5]}";
-            if (!empty($ligne[6]) && !$finLocation) $datesProbleme[] = "fin_location={$ligne[6]}";
-            if (!empty($ligne[7]) && !$sortieEffective) $datesProbleme[] = "sortie_effective={$ligne[7]}";
+            if (!empty($ligne[11]) && !$dateEntree) $datesProbleme[] = "date_entree={$ligne[11]}";
+            if (!empty($ligne[12]) && !$finLocation) $datesProbleme[] = "fin_location={$ligne[12]}";
+            if (!empty($ligne[13]) && !$sortieEffective) $datesProbleme[] = "sortie_effective={$ligne[13]}";
 
             if (!empty($datesProbleme)) {
                 throw new Exception("Erreur lors de la conversion des dates : " . implode(", ", $datesProbleme));
             }
-
 
             if ($this->contratClosExiste($utilisateurId, $reference, $dateEntree, $sortieEffective)) {
                 return;
             }
 
             $stmt = $this->pdo->prepare('
-                INSERT INTO contrats_clos 
-                (reference, centre, type_box, prix_ht, date_entree, fin_location, sortie_effective, utilisateur_id)
-                VALUES 
-                (:reference, :centre, :type_box, :prix_ht, :date_entree, :fin_location, :sortie_effective, :utilisateur_id)
-            ');
+        INSERT INTO contrats_clos 
+        (reference, centre, type_box, prix_ht, date_entree, fin_location, sortie_effective, utilisateur_id)
+        VALUES 
+        (:reference, :centre, :type_box, :prix_ht, :date_entree, :fin_location, :sortie_effective, :utilisateur_id)
+    ');
 
             $stmt->execute([
-                ':reference' => $reference,
-                ':centre' => $centre,
-                ':type_box' => $typeBox,
-                ':prix_ht' => $prixHT,
+                'reference' => $reference,
+                'centre' => $centre,
+                'type_box' => $typeBox,
+                'prix_ht' => $prixHt,
                 'date_entree' => $dateEntree ? $dateEntree->format('Y-m-d') : null,
                 'fin_location' => $finLocation ? $finLocation->format('Y-m-d') : null,
                 'sortie_effective' => $sortieEffective ? $sortieEffective->format('Y-m-d') : null,
-                ':utilisateur_id' => $utilisateurId
+                'utilisateur_id' => $utilisateurId
             ]);
         } catch (Exception $e) {
             throw new Exception("Erreur lors de l'importation du contrat clos : " . $e->getMessage());
