@@ -75,20 +75,19 @@ foreach ($joursOccupesParBox as $typeBox => $totalJours) {
     $moyenneJoursParBox[$typeBox] = round($totalJours / $nombreContratsParBox[$typeBox], 2);
 }
 
-// Calcul du nombre de contrats clos par mois
+// Calcul du nombre de contrats clos par mois (sorties)
 $contratsClosParMois = [];
 foreach ($contratsClos as $contrat) {
     $moisSortie = date('Y-m', strtotime($contrat['sortie_effective']));
     $contratsClosParMois[$moisSortie] = ($contratsClosParMois[$moisSortie] ?? 0) + 1;
 }
 
-// Assurer l'initialisation de $nouveauxContratsParMois
+// Calcul du nombre de nouveaux contrats par mois (entrées)
 $nouveauxContratsParMois = [];
 foreach ($locations as $location) {
     $mois = date('Y-m', strtotime($location['date_debut']));
     $nouveauxContratsParMois[$mois] = ($nouveauxContratsParMois[$mois] ?? 0) + 1;
 }
-
 
 // Ajustement du graphique des entrées (Nombre d'entrées - Nombre de sorties)
 $netContratsParMois = [];
@@ -96,6 +95,15 @@ foreach ($nouveauxContratsParMois as $mois => $entrees) {
     $sorties = $contratsClosParMois[$mois] ?? 0;
     $netContratsParMois[$mois] = $entrees - $sorties;
 }
+
+$boxLabelsJours = [];
+$moyenneJoursData = [];
+
+foreach ($moyenneJoursParBox as $typeBox => $moyenne) {
+    $boxLabelsJours[] = $typeBox;
+    $moyenneJoursData[] = $moyenne;
+}
+
 
 // Calculer le nombre de box libres, occupées et maximales
 $boxLibres = [];
@@ -248,7 +256,6 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             <p><strong>Taux d'occupation :</strong> <?= $tauxOccupation ?> %</p>
         </div>
     </div>
-
 </div>
 
 
@@ -267,7 +274,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
     </div>
 
     <div class="chart-card">
-        <h3>Nombre d'entrées</h3>
+        <h3>Nombre d'entrées - sorties</h3>
         <div class="date-filters">
             <label for="startDateEntrées">Mois début :</label>
             <input type="month" id="startDateEntrées">
@@ -276,15 +283,6 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             <input type="month" id="endDateEntrées">
         </div>
         <canvas id="nouveauxContratsChart"></canvas>
-    </div>
-
-    <div class="stat-card">
-        <h3>Nombre moyen de jours occupés par type de box</h3>
-        <div class="stat-content">
-            <?php foreach ($moyenneJoursParBox as $typeBox => $moyenne): ?>
-                <p><strong><?= htmlspecialchars($typeBox) ?> :</strong> <?= $moyenne ?> jours</p>
-            <?php endforeach; ?>
-        </div>
     </div>
 
     <div class="chart-card">
@@ -302,9 +300,72 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         </div>
         <canvas id="boxLibreOccupeMaxChart"></canvas>
     </div>
+
+    <div class="chart-card">
+        <h3>Nombre moyen de jours occupés par type de box</h3>
+        <div class="dropdown">
+            <button id="toggleFilterJours">🔽 Sélectionner les box</button>
+            <div id="boxFilterJours" class="dropdown-content">
+                <?php foreach ($boxLabelsJours as $index => $boxLabel): ?>
+                    <label>
+                        <input type="checkbox" class="box-checkbox-jours" value="<?= $index ?>" checked>
+                        <?= htmlspecialchars($boxLabel) ?>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+        </div>
+        <canvas id="moyenneJoursBoxChart"></canvas>
+    </div>
+
 </div>
 
 <script>
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const boxLabelsJours = <?= json_encode($boxLabelsJours) ?>;
+        const moyenneJoursData = <?= json_encode($moyenneJoursData) ?>;
+
+        // 📊 Création du graphique
+        const joursCtx = document.getElementById("moyenneJoursBoxChart").getContext("2d");
+        const joursChartData = {
+            labels: boxLabelsJours,
+            datasets: [{
+                label: "Moyenne des jours occupés",
+                data: moyenneJoursData,
+                backgroundColor: "#007bff"
+            }]
+        };
+        const joursChart = new Chart(joursCtx, { type: "bar", data: joursChartData });
+
+        // 🎯 Gestion du filtre des box pour le graphique
+        const toggleButtonJours = document.getElementById("toggleFilterJours");
+        const dropdownContentJours = document.getElementById("boxFilterJours");
+
+        toggleButtonJours.addEventListener("click", function (event) {
+            event.stopPropagation();
+            dropdownContentJours.classList.toggle("active");
+        });
+
+        document.querySelectorAll(".box-checkbox-jours").forEach((checkbox, index) => {
+            checkbox.addEventListener("change", function () {
+                const selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox-jours:checked"))
+                    .map(cb => parseInt(cb.value));
+
+                joursChartData.labels = selectedIndexes.map(i => boxLabelsJours[i]);
+                joursChartData.datasets[0].data = selectedIndexes.map(i => moyenneJoursData[i]);
+
+                joursChart.update();
+            });
+        });
+
+        // Fermer le menu si clic en dehors
+        document.addEventListener("click", function (event) {
+            if (!toggleButtonJours.contains(event.target) && !dropdownContentJours.contains(event.target)) {
+                dropdownContentJours.classList.remove("active");
+            }
+        });
+    });
+
     document.addEventListener("DOMContentLoaded", function () {
         const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
         const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
@@ -333,21 +394,20 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             }
         });
 
-        // 📊 Création du graphique des contrats
         const contratsCtx = document.getElementById('nouveauxContratsChart').getContext('2d');
         const contratsChart = new Chart(contratsCtx, {
             type: 'bar',
             data: {
-                labels: netContratsLabels,
+                labels: <?= json_encode(array_keys($nouveauxContratsParMois)) ?>.reverse(),
                 datasets: [
                     {
-                        label: 'Net des contrats (Entrées - Sorties)',
-                        data: netContratsData,
-                        backgroundColor: '#ff6600'
+                        label: 'Nouveaux contrats (entrées)',
+                        data: <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse(),
+                        backgroundColor: '#007bff'
                     },
                     {
-                        label: 'Contrats clos',
-                        data: contratsClosData,
+                        label: 'Contrats clos (sorties)',
+                        data: <?= json_encode(array_values($contratsClosParMois)) ?>.reverse(),
                         backgroundColor: '#dc3545'
                     }
                 ]
