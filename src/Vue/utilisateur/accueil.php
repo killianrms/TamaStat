@@ -1,5 +1,6 @@
 <?php
-USE App\Configuration\ConnexionBD;
+
+use App\Configuration\ConnexionBD;
 
 $connexion = new ConnexionBD();
 $pdo = $connexion->getPdo();
@@ -27,7 +28,11 @@ $stmt = $pdo->prepare('SELECT COUNT(*) FROM recap_ventes WHERE utilisateur_id = 
 $stmt->execute([$utilisateurId]);
 $hasRecapVentes = $stmt->fetchColumn() > 0;
 
-if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVentes) {
+$stmt = $pdo->prepare('SELECT COUNT(*) FROM contrats_clos WHERE utilisateur_id = ?');
+$stmt->execute([$utilisateurId]);
+$hasContratsClos = $stmt->fetchColumn() > 0;
+
+if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVentes && $hasContratsClos) {
     header("Location: routeur.php?route=stats");
     exit;
 }
@@ -45,11 +50,13 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
             text-align: center;
             margin-bottom: 10px;
         }
+
         .gif-container img {
             width: 350px;
             cursor: pointer;
             border-radius: 8px;
         }
+
         .gif-modal {
             display: none;
             position: fixed;
@@ -62,6 +69,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
             align-items: center;
             z-index: 1000;
         }
+
         .gif-modal img {
             width: 80%;
             max-width: 600px;
@@ -75,9 +83,10 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
 <!-- Étape 1 -->
 <?php if (!$hasBoxes): ?>
     <div class="step">
-        <h2>Étape 1/5 : Importer vos box</h2>
+        <h2>Étape 1/6 : Importer vos box</h2>
         <div class="gif-container">
-            <img src="../../../ressources/gifs/listebox.gif" alt="Tutoriel Import Box" onclick="openGif('../../../ressources/gifs/listebox.gif')">
+            <img src="../../../ressources/gifs/listebox.gif" alt="Tutoriel Import Box"
+                 onclick="openGif('../../../ressources/gifs/listebox.gif')">
         </div>
         <form id="importBoxForm" action="routeur.php?route=importer-box" method="POST" enctype="multipart/form-data">
             <label for="csv_box">Importer un fichier CSV des box :</label>
@@ -90,7 +99,7 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
     <!-- Étape 2 -->
 <?php elseif (!$hasBoxesConfig): ?>
     <div class="step">
-        <h2>Étape 2/5 : Configurer vos box</h2>
+        <h2>Étape 2/6 : Configurer vos box</h2>
         <form id="configBoxForm" action="routeur.php?route=configurer-box" method="POST">
             <?php
             $stmt = $pdo->prepare('SELECT * FROM box_types WHERE utilisateur_id = ?');
@@ -109,27 +118,42 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
 
     <!-- Étape 3 -->
 <?php elseif (!$hasContrats): ?>
+<div class="step">
+    <h2>Étape 3/6 : Importer vos contrats</h2>
+    <div class="gif-container">
+        <img src="../../../ressources/gifs/contrat.gif" alt="Tutoriel Import Contrats"
+             onclick="openGif('../../../ressources/gifs/contrat.gif')">
+    </div>
+    <form id="importContratsForm" action="routeur.php?route=importer-contrats" method="POST"
+          enctype="multipart/form-data">
+        <label for="csv_contrats">Importer un fichier CSV des contrats :</label>
+        <input type="file" id="csv_contrats" name="csv_contrats" accept=".csv" required>
+        <button type="submit" id="submitBtn">Importer</button>
+        <div class="loader" id="loader"></div>
+    </form>
+</div>
+
+<?php elseif (!$hasContratsClos): ?>
     <div class="step">
-        <h2>Étape 3/5 : Importer vos contrats</h2>
-        <div class="gif-container">
-            <img src="../../../ressources/gifs/contrat.gif" alt="Tutoriel Import Contrats" onclick="openGif('../../../ressources/gifs/contrat.gif')">
-        </div>
-        <form id="importContratsForm" action="routeur.php?route=importer-contrats" method="POST" enctype="multipart/form-data">
-            <label for="csv_contrats">Importer un fichier CSV des contrats :</label>
-            <input type="file" id="csv_contrats" name="csv_contrats" accept=".csv" required>
+        <h2>Étape 4/6 : Importer vos contrats clos</h2>
+        <form id="importContratsClosForm" action="routeur.php?route=importer-contrats-clos" method="POST"
+              enctype="multipart/form-data">
+            <label for="csv_contrats_clos">Importer un fichier CSV des contrats clos :</label>
+            <input type="file" id="csv_contrats_clos" name="csv_contrats_clos" accept=".csv" required>
             <button type="submit" id="submitBtn">Importer</button>
-            <div class="loader" id="loader"></div>
         </form>
     </div>
 
     <!-- Étape 4 -->
 <?php elseif (!$hasFactures): ?>
     <div class="step">
-        <h2>Étape 4/5 : Importer vos factures</h2>
+        <h2>Étape 5/6 : Importer vos factures</h2>
         <div class="gif-container">
-            <img src="../../../ressources/gifs/facture.gif" alt="Tutoriel Import Factures" onclick="openGif('../../../ressources/gifs/facture.gif')">
+            <img src="../../../ressources/gifs/facture.gif" alt="Tutoriel Import Factures"
+                 onclick="openGif('../../../ressources/gifs/facture.gif')">
         </div>
-        <form id="importFacturesForm" action="routeur.php?route=importer-factures" method="POST" enctype="multipart/form-data">
+        <form id="importFacturesForm" action="routeur.php?route=importer-factures" method="POST"
+              enctype="multipart/form-data">
             <label for="csv_factures">Importer un fichier CSV des factures :</label>
             <input type="file" id="csv_factures" name="csv_factures" accept=".csv" required>
             <button type="submit" id="submitBtn">Importer</button>
@@ -140,11 +164,13 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
     <!-- Étape 5 -->
 <?php elseif (!$hasRecapVentes): ?>
     <div class="step">
-        <h2>Étape 5/5 : Importer vos recap_ventes</h2>
+        <h2>Étape 6/6 : Importer vos recap_ventes</h2>
         <div class="gif-container">
-            <img src="../../../ressources/gifs/recap_vente.gif" alt="Tutoriel Import Recap Ventes" onclick="openGif('../../../ressources/gifs/recap_vente.gif')">
+            <img src="../../../ressources/gifs/recap_vente.gif" alt="Tutoriel Import Recap Ventes"
+                 onclick="openGif('../../../ressources/gifs/recap_vente.gif')">
         </div>
-        <form id="importRecapVentesForm" action="routeur.php?route=importer-recap-ventes" method="POST" enctype="multipart/form-data">
+        <form id="importRecapVentesForm" action="routeur.php?route=importer-recap-ventes" method="POST"
+              enctype="multipart/form-data">
             <label for="csv_recap_ventes">Importer un fichier CSV des recap_ventes :</label>
             <input type="file" id="csv_recap_ventes" name="csv_recap_ventes" accept=".csv" required>
             <button type="submit" id="submitBtn">Importer</button>
@@ -168,10 +194,10 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
         document.getElementById("gifModal").style.display = "none";
     }
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const forms = document.querySelectorAll('form');
         forms.forEach(form => {
-            form.addEventListener('submit', function(e) {
+            form.addEventListener('submit', function (e) {
                 const submitBtn = form.querySelector('#submitBtn');
                 const loader = form.querySelector('#loader');
 

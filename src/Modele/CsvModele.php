@@ -213,6 +213,65 @@ class CsvModele {
         }
     }
 
+    /**
+     * Vérifie si un contrat clos existe déjà avant l'insertion.
+     */
+    private function contratClosExiste($utilisateurId, $reference, $dateEntree, $sortieEffective) {
+        $stmt = $this->pdo->prepare('
+            SELECT COUNT(*) FROM contrats_clos
+            WHERE utilisateur_id = :utilisateur_id 
+            AND reference = :reference
+            AND date_entree = :date_entree
+            AND sortie_effective = :sortie_effective
+        ');
+        $stmt->execute([
+            ':utilisateur_id' => $utilisateurId,
+            ':reference' => $reference,
+            ':date_entree' => $dateEntree,
+            ':sortie_effective' => $sortieEffective
+        ]);
+        return $stmt->fetchColumn() > 0;
+    }
+
+    /**
+     * Importe un contrat clos si il n'existe pas déjà.
+     */
+    public function importerContratClos($utilisateurId, $ligne) {
+        try {
+            $reference = trim($ligne[0]);
+            $centre = trim($ligne[1]);
+            $typeBox = trim($ligne[2]);
+            $prixHT = floatval(str_replace(',', '.', preg_replace('/[^0-9,]/', '', $ligne[3])));
+            $dateEntree = \DateTime::createFromFormat('d/m/Y', trim($ligne[4]))->format('Y-m-d');
+            $finLocation = \DateTime::createFromFormat('d/m/Y', trim($ligne[5]))->format('Y-m-d');
+            $sortieEffective = \DateTime::createFromFormat('d/m/Y', trim($ligne[6]))->format('Y-m-d');
+
+            if ($this->contratClosExiste($utilisateurId, $reference, $dateEntree, $sortieEffective)) {
+                return;
+            }
+
+            $stmt = $this->pdo->prepare('
+                INSERT INTO contrats_clos 
+                (reference, centre, type_box, prix_ht, date_entree, fin_location, sortie_effective, utilisateur_id)
+                VALUES 
+                (:reference, :centre, :type_box, :prix_ht, :date_entree, :fin_location, :sortie_effective, :utilisateur_id)
+            ');
+
+            $stmt->execute([
+                ':reference' => $reference,
+                ':centre' => $centre,
+                ':type_box' => $typeBox,
+                ':prix_ht' => $prixHT,
+                ':date_entree' => $dateEntree,
+                ':fin_location' => $finLocation,
+                ':sortie_effective' => $sortieEffective,
+                ':utilisateur_id' => $utilisateurId
+            ]);
+        } catch (Exception $e) {
+            throw new Exception("Erreur lors de l'importation du contrat clos : " . $e->getMessage());
+        }
+    }
+
     public function importerRecapVente($utilisateurId, $ligne) {
         try {
             $dateVenteStr = trim($ligne[1]);

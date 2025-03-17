@@ -42,6 +42,61 @@ $occupationParBox = [];
 $capaciteTotale = 0;
 $capaciteUtilisee = 0;
 
+// Récupération des contrats clos
+$contratsClos = $pdo->prepare('SELECT * FROM contrats_clos WHERE utilisateur_id = ?');
+$contratsClos->execute([$utilisateurId]);
+$contratsClos = $contratsClos->fetchAll(PDO::FETCH_ASSOC);
+
+// Calcul du nombre moyen de jours occupés par type de box
+$joursOccupesParBox = [];
+$nombreContratsParBox = [];
+
+foreach ($contratsClos as $contrat) {
+    $typeBox = $contrat['type_box'];
+    $dateEntree = strtotime($contrat['date_entree']);
+    $sortieEffective = strtotime($contrat['sortie_effective']);
+
+    if ($dateEntree && $sortieEffective) {
+        $dureeOccupation = ($sortieEffective - $dateEntree) / (60 * 60 * 24); // Conversion en jours
+
+        if (!isset($joursOccupesParBox[$typeBox])) {
+            $joursOccupesParBox[$typeBox] = 0;
+            $nombreContratsParBox[$typeBox] = 0;
+        }
+
+        $joursOccupesParBox[$typeBox] += $dureeOccupation;
+        $nombreContratsParBox[$typeBox]++;
+    }
+}
+
+// Calcul du nombre moyen de jours occupés par type de box
+$moyenneJoursParBox = [];
+foreach ($joursOccupesParBox as $typeBox => $totalJours) {
+    $moyenneJoursParBox[$typeBox] = round($totalJours / $nombreContratsParBox[$typeBox], 2);
+}
+
+// Calcul du nombre de contrats clos par mois
+$contratsClosParMois = [];
+foreach ($contratsClos as $contrat) {
+    $moisSortie = date('Y-m', strtotime($contrat['sortie_effective']));
+    $contratsClosParMois[$moisSortie] = ($contratsClosParMois[$moisSortie] ?? 0) + 1;
+}
+
+// Assurer l'initialisation de $nouveauxContratsParMois
+$nouveauxContratsParMois = [];
+foreach ($locations as $location) {
+    $mois = date('Y-m', strtotime($location['date_debut']));
+    $nouveauxContratsParMois[$mois] = ($nouveauxContratsParMois[$mois] ?? 0) + 1;
+}
+
+
+// Ajustement du graphique des entrées (Nombre d'entrées - Nombre de sorties)
+$netContratsParMois = [];
+foreach ($nouveauxContratsParMois as $mois => $entrees) {
+    $sorties = $contratsClosParMois[$mois] ?? 0;
+    $netContratsParMois[$mois] = $entrees - $sorties;
+}
+
 // Calculer le nombre de box libres, occupées et maximales
 $boxLibres = [];
 $boxMax = [];
@@ -223,6 +278,15 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         <canvas id="nouveauxContratsChart"></canvas>
     </div>
 
+    <div class="stat-card">
+        <h3>Nombre moyen de jours occupés par type de box</h3>
+        <div class="stat-content">
+            <?php foreach ($moyenneJoursParBox as $typeBox => $moyenne): ?>
+                <p><strong><?= htmlspecialchars($typeBox) ?> :</strong> <?= $moyenne ?> jours</p>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
     <div class="chart-card">
         <h3>Quantité de Box</h3>
         <div class="dropdown">
@@ -250,6 +314,9 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
         const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
         const boxLabels = <?= json_encode($boxLabels) ?>;
+        const netContratsLabels = <?= json_encode(array_keys($netContratsParMois)) ?>.reverse();
+        const netContratsData = <?= json_encode(array_values($netContratsParMois)) ?>.reverse();
+        const contratsClosData = <?= json_encode(array_values($contratsClosParMois)) ?>.reverse();
 
         // 📊 Création du graphique CA
         const revenueCtx = document.getElementById('revenuMensuelChart').getContext('2d');
@@ -271,12 +338,19 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         const contratsChart = new Chart(contratsCtx, {
             type: 'bar',
             data: {
-                labels: moisContratsLabels,
-                datasets: [{
-                    label: 'Nombre d\'entrées mensuel',
-                    data: nouveauxContratsData,
-                    backgroundColor: '#ff6600'
-                }]
+                labels: netContratsLabels,
+                datasets: [
+                    {
+                        label: 'Net des contrats (Entrées - Sorties)',
+                        data: netContratsData,
+                        backgroundColor: '#ff6600'
+                    },
+                    {
+                        label: 'Contrats clos',
+                        data: contratsClosData,
+                        backgroundColor: '#dc3545'
+                    }
+                ]
             }
         });
 

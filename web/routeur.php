@@ -289,6 +289,19 @@ try {
             }
             break;
 
+        case 'importer-contrats-clos':
+            verifierConnexion();
+            if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['csv_contrats_clos'])) {
+                $controleurCsv = new ControleurCsv();
+                try {
+                    $controleurCsv->importerContratsClos($_FILES['csv_contrats_clos'], $_SESSION['user']['id']);
+                    header('Location: routeur.php?route=profil');
+                    exit;
+                } catch (Exception $e) {
+                    echo "<div class='error-message'>Erreur : " . $e->getMessage() . "</div>";
+                }
+            }
+            break;
 
         case 'importer-contrats':
             verifierConnexion();

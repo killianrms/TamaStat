@@ -167,5 +167,31 @@ class ControleurCsv {
         $stmt->execute([$utilisateurId, 'locations']);
     }
 
+
+    public function importerContratsClos($csvFile, $utilisateurId) {
+        $fileExt = strtolower(pathinfo($csvFile['name'], PATHINFO_EXTENSION));
+        if ($fileExt !== 'csv') {
+            throw new Exception("Le fichier doit être au format CSV.");
+        }
+
+        $fileTmpName = $csvFile['tmp_name'];
+
+        if (($handle = fopen($fileTmpName, 'r')) === false) {
+            throw new Exception("Erreur lors de l'ouverture du fichier.");
+        }
+
+        fgetcsv($handle); // Ignorer l'en-tête
+
+        while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+            if (count($data) >= 7) {
+                $this->csvModele->importerContratClos($utilisateurId, $data);
+            }
+        }
+        fclose($handle);
+
+        // Enregistrer l'import dans `import_tracking`
+        $stmt = $this->pdo->prepare('INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE date_dernier_import = NOW()');
+        $stmt->execute([$utilisateurId, 'contrats_clos']);
+    }
 }
 ?>
