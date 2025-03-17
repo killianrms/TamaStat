@@ -247,16 +247,23 @@ class CsvModele
         try {
             $reference = trim($ligne[1]);
             $centre = trim($ligne[7]);
+
             $typeBox = trim($ligne[9]);
+            $typeBox = mb_convert_encoding($typeBox, 'UTF-8', 'ISO-8859-1');
+
+            // Extraction du prix HT
             $prixHtParts = explode(" ", trim($ligne[10]));
             $prixHt = floatval(str_replace(',', '.', $prixHtParts[0]));
+
+            // Gestion des dates avec validation et valeurs NULL si absentes
             $dateEntree = !empty($ligne[11]) ? \DateTime::createFromFormat('d/m/Y', $ligne[11]) : null;
             $finLocation = !empty($ligne[12]) ? \DateTime::createFromFormat('d/m/Y', $ligne[12]) : null;
             $sortieEffective = !empty($ligne[13]) ? \DateTime::createFromFormat('d/m/Y', $ligne[13]) : null;
 
+            // Vérifier si une conversion de date a échoué
             $datesProbleme = [];
             if (!empty($ligne[11]) && !$dateEntree) $datesProbleme[] = "date_entree={$ligne[11]}";
-            if (!empty($ligne[12]) && !$finLocation) $datesProbleme[] = "fin_location={$ligne[12]}";
+            if (!empty($ligne[12]) && !$finLocation) $datesProbleme[] = "fin_location={$ligne[12]} (peut être vide)";
             if (!empty($ligne[13]) && !$sortieEffective) $datesProbleme[] = "sortie_effective={$ligne[13]}";
 
             if (!empty($datesProbleme)) {
@@ -267,12 +274,13 @@ class CsvModele
                 return;
             }
 
+            // 🔹 Insérer les données dans la base
             $stmt = $this->pdo->prepare('
         INSERT INTO contrats_clos 
         (reference, centre, type_box, prix_ht, date_entree, fin_location, sortie_effective, utilisateur_id)
         VALUES 
         (:reference, :centre, :type_box, :prix_ht, :date_entree, :fin_location, :sortie_effective, :utilisateur_id)
-    ');
+        ');
 
             $stmt->execute([
                 'reference' => $reference,
@@ -284,10 +292,12 @@ class CsvModele
                 'sortie_effective' => $sortieEffective ? $sortieEffective->format('Y-m-d') : null,
                 'utilisateur_id' => $utilisateurId
             ]);
+
         } catch (Exception $e) {
             throw new Exception("Erreur lors de l'importation du contrat clos : " . $e->getMessage());
         }
     }
+
 
     public function importerRecapVente($utilisateurId, $ligne)
     {
