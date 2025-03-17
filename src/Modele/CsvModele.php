@@ -1,14 +1,17 @@
 <?php
+
 namespace App\Modele;
 
 use App\Configuration\ConnexionBD;
-use PDO;
 use Exception;
+use PDO;
 
-class CsvModele {
+class CsvModele
+{
     private $pdo;
 
-    public function __construct() {
+    public function __construct()
+    {
         $connexion = new ConnexionBD();
         $this->pdo = $connexion->getPdo();
     }
@@ -16,7 +19,8 @@ class CsvModele {
     /**
      * Vérifie si une facture existe déjà avant l'insertion.
      */
-    private function factureExiste($utilisateurId, $referenceContrat, $titre, $dateFacture) {
+    private function factureExiste($utilisateurId, $referenceContrat, $titre, $dateFacture)
+    {
         $stmt = $this->pdo->prepare('
             SELECT COUNT(*) FROM factures 
             WHERE utilisateur_id = :utilisateur_id 
@@ -37,7 +41,8 @@ class CsvModele {
     /**
      * Importe une facture si elle n'existe pas déjà.
      */
-    public function importerFacture($utilisateurId, $ligne) {
+    public function importerFacture($utilisateurId, $ligne)
+    {
         try {
             $titre = trim($ligne[1]);
 
@@ -101,11 +106,11 @@ class CsvModele {
     }
 
 
-
     /**
      * Vérifie si un type de box existe déjà avant l'insertion.
      */
-    private function boxTypeExiste($denomination, $utilisateurId) {
+    private function boxTypeExiste($denomination, $utilisateurId)
+    {
         $stmt = $this->pdo->prepare('
             SELECT COUNT(*) FROM box_types 
             WHERE denomination = :denomination AND utilisateur_id = :utilisateur_id
@@ -120,7 +125,8 @@ class CsvModele {
     /**
      * Importe un type de box si il n'existe pas déjà.
      */
-    public function importerBoxType($ligne, $utilisateurId) {
+    public function importerBoxType($ligne, $utilisateurId)
+    {
         try {
             $denomination = $this->normalizeString($ligne[1]);
             $prixTtc = floatval(str_replace(',', '.', $ligne[3]));
@@ -149,7 +155,8 @@ class CsvModele {
     /**
      * Vérifie si une location existe déjà avant l'insertion.
      */
-    private function locationExiste($utilisateurId, $referenceContrat, $boxTypeId, $dateDebut, $dateFin) {
+    private function locationExiste($utilisateurId, $referenceContrat, $boxTypeId, $dateDebut, $dateFin)
+    {
         $stmt = $this->pdo->prepare('
             SELECT COUNT(*) FROM locations 
             WHERE utilisateur_id = :utilisateur_id
@@ -171,7 +178,8 @@ class CsvModele {
     /**
      * Importe une location si elle n'existe pas déjà.
      */
-    public function importerLocation($utilisateurId, $ligne) {
+    public function importerLocation($utilisateurId, $ligne)
+    {
         try {
             $dateDebut = \DateTime::createFromFormat('d/m/Y', $ligne[11]) ?: null;
             $dateFin = \DateTime::createFromFormat('d/m/Y', $ligne[12]) ?: null;
@@ -211,7 +219,8 @@ class CsvModele {
     /**
      * Vérifie si un contrat clos existe déjà avant l'insertion.
      */
-    private function contratClosExiste($utilisateurId, $reference, $dateEntree, $sortieEffective) {
+    private function contratClosExiste($utilisateurId, $reference, $dateEntree, $sortieEffective)
+    {
         $stmt = $this->pdo->prepare('
             SELECT COUNT(*) FROM contrats_clos
             WHERE utilisateur_id = :utilisateur_id 
@@ -231,15 +240,26 @@ class CsvModele {
     /**
      * Importe un contrat clos si il n'existe pas déjà.
      */
-    public function importerContratClos($utilisateurId, $ligne) {
+    public function importerContratClos($utilisateurId, $ligne)
+    {
         try {
             $reference = trim($ligne[0]);
             $centre = trim($ligne[1]);
             $typeBox = trim($ligne[2]);
             $prixHT = floatval(str_replace(',', '.', preg_replace('/[^0-9,]/', '', $ligne[3])));
-            $dateEntree = \DateTime::createFromFormat('d/m/Y', trim($ligne[4]))->format('Y-m-d');
-            $finLocation = \DateTime::createFromFormat('d/m/Y', trim($ligne[5]))->format('Y-m-d');
-            $sortieEffective = \DateTime::createFromFormat('d/m/Y', trim($ligne[6]))->format('Y-m-d');
+            $dateEntree = !empty($ligne[5]) ? \DateTime::createFromFormat('d/m/Y', $ligne[5]) : null;
+            $finLocation = !empty($ligne[6]) ? \DateTime::createFromFormat('d/m/Y', $ligne[6]) : null;
+            $sortieEffective = !empty($ligne[7]) ? \DateTime::createFromFormat('d/m/Y', $ligne[7]) : null;
+
+            $datesProbleme = [];
+            if (!empty($ligne[5]) && !$dateEntree) $datesProbleme[] = "date_entree={$ligne[5]}";
+            if (!empty($ligne[6]) && !$finLocation) $datesProbleme[] = "fin_location={$ligne[6]}";
+            if (!empty($ligne[7]) && !$sortieEffective) $datesProbleme[] = "sortie_effective={$ligne[7]}";
+
+            if (!empty($datesProbleme)) {
+                throw new Exception("Erreur lors de la conversion des dates : " . implode(", ", $datesProbleme));
+            }
+
 
             if ($this->contratClosExiste($utilisateurId, $reference, $dateEntree, $sortieEffective)) {
                 return;
@@ -257,9 +277,9 @@ class CsvModele {
                 ':centre' => $centre,
                 ':type_box' => $typeBox,
                 ':prix_ht' => $prixHT,
-                ':date_entree' => $dateEntree,
-                ':fin_location' => $finLocation,
-                ':sortie_effective' => $sortieEffective,
+                'date_entree' => $dateEntree ? $dateEntree->format('Y-m-d') : null,
+                'fin_location' => $finLocation ? $finLocation->format('Y-m-d') : null,
+                'sortie_effective' => $sortieEffective ? $sortieEffective->format('Y-m-d') : null,
                 ':utilisateur_id' => $utilisateurId
             ]);
         } catch (Exception $e) {
@@ -267,7 +287,8 @@ class CsvModele {
         }
     }
 
-    public function importerRecapVente($utilisateurId, $ligne) {
+    public function importerRecapVente($utilisateurId, $ligne)
+    {
         try {
             $dateVenteStr = trim($ligne[1]);
 
@@ -325,7 +346,8 @@ class CsvModele {
         }
     }
 
-    private function recapVenteExiste($utilisateurId, $dateVente, $totalHt, $tva, $totalTtc) {
+    private function recapVenteExiste($utilisateurId, $dateVente, $totalHt, $tva, $totalTtc)
+    {
         $stmt = $this->pdo->prepare('
         SELECT COUNT(*) FROM recap_ventes 
         WHERE utilisateur_id = :utilisateur_id 
@@ -345,8 +367,8 @@ class CsvModele {
     }
 
 
-
-    public function getBoxTypeIdByReference($denomination, $utilisateurId) {
+    public function getBoxTypeIdByReference($denomination, $utilisateurId)
+    {
         $denomination = $this->normalizeString($denomination);
 
         $stmt = $this->pdo->prepare('SELECT id FROM box_types WHERE TRIM(denomination) = TRIM(:denomination) AND utilisateur_id = :utilisateur_id');
@@ -355,7 +377,8 @@ class CsvModele {
         return $result ? $result['id'] : null;
     }
 
-    public function contratExiste($referenceContrat, $utilisateurId) {
+    public function contratExiste($referenceContrat, $utilisateurId)
+    {
         if (!$referenceContrat) {
             return false;
         }
@@ -375,7 +398,8 @@ class CsvModele {
         return $stmt->fetchColumn() > 0;
     }
 
-    private function normalizeString($string) {
+    private function normalizeString($string)
+    {
         $string = trim($string);
         if (!mb_detect_encoding($string, 'UTF-8', true)) {
             $string = iconv('ISO-8859-1', 'UTF-8//TRANSLIT', $string);
