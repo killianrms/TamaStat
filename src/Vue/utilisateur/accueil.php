@@ -77,8 +77,8 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
     <!-- Étape 2 -->
 <?php elseif (!$hasBoxesConfig): ?>
     <div class="step">
-        <div class="help-bubble" onclick="toggleTooltip('configHelp')">?</div>
-        <div id="configHelp" class="help-tooltip">
+        <div class="help-bubble" onclick="toggleTooltip('quantiteHelp')">?</div>
+        <div id="quantiteHelp" class="help-tooltip">
             <h3>Pourquoi configurer la quantité de mes boxes ?</h3>
             <p>Ces informations sont essentielles pour calculer le taux d'occupation.</p>
             <p>Générer des statistiques précises</p>
@@ -105,8 +105,8 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
     <!-- Étape 3 -->
 <?php elseif (!$hasContrats): ?>
     <div class="step">
-        <div class="help-bubble" onclick="toggleTooltip('configHelp')">?</div>
-        <div id="configHelp" class="help-tooltip">
+        <div class="help-bubble" onclick="toggleTooltip('contratsHelp')">?</div>
+        <div id="contratsHelp" class="help-tooltip">
             <h3>Comment importer vos contrats en cours ?</h3>
             <ol>
                 <li>Connectez-vous à votre compte Vialtic Mondial Box</li>
@@ -130,8 +130,8 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
     <!-- Étape 4 -->
 <?php elseif (!$hasContratsClos): ?>
     <div class="step">
-        <div class="help-bubble" onclick="toggleTooltip('configHelp')">?</div>
-        <div id="configHelp" class="help-tooltip">
+        <div class="help-bubble" onclick="toggleTooltip('contratsClosHelp')">?</div>
+        <div id="contratsClosHelp" class="help-tooltip">
             <h3>Comment importer vos contrats clos ?</h3>
             <ol>
                 <li>Connectez-vous à votre compte Vialtic Mondial Box</li>
@@ -156,8 +156,8 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
     <!-- Étape 5 -->
 <?php elseif (!$hasFactures): ?>
     <div class="step">
-        <div class="help-bubble" onclick="toggleTooltip('configHelp')">?</div>
-        <div id="configHelp" class="help-tooltip">
+        <div class="help-bubble" onclick="toggleTooltip('facturesHelp')">?</div>
+        <div id="facturesHelp" class="help-tooltip">
             <h3>Comment importer mes factures ?</h3>
             <ol>
                 <li>Connectez-vous à votre compte Vialtic Mondial Box</li>
@@ -181,8 +181,8 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
     <!-- Étape 6 -->
 <?php elseif (!$hasRecapVentes): ?>
     <div class="step">
-        <div class="help-bubble" onclick="toggleTooltip('configHelp')">?</div>
-        <div id="configHelp" class="help-tooltip">
+        <div class="help-bubble" onclick="toggleTooltip('recapVentesHelp')">?</div>
+        <div id="recapVentesHelp" class="help-tooltip">
             <h3>Configuration des box</h3>
             <ol>
                 <li>Connectez-vous à votre compte Vialtic Mondial Box</li>

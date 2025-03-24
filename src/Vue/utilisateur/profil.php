@@ -251,8 +251,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     <div class="etape-card">
-        <div class="help-bubble" onclick="toggleTooltip('configHelp')">?</div>
-        <div id="configHelp" class="help-tooltip">
+        <div class="help-bubble" onclick="toggleTooltip('facturesHelp')">?</div>
+        <div id="facturesHelp" class="help-tooltip">
             <h3>Comment importer mes factures ?</h3>
             <ol>
                 <li>Connectez-vous à votre compte Vialtic Mondial Box</li>
@@ -274,8 +274,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <div class="etape-card">
-        <div class="help-bubble" onclick="toggleTooltip('configHelp')">?</div>
-        <div id="configHelp" class="help-tooltip">
+        <div class="help-bubble" onclick="toggleTooltip('recapVentesHelp')">?</div>
+        <div id="recapVentesHelp" class="help-tooltip">
             <h3>Configuration des box</h3>
             <ol>
                 <li>Connectez-vous à votre compte Vialtic Mondial Box</li>
