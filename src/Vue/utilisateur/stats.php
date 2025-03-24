@@ -163,7 +163,7 @@ foreach ($boxTypes as $boxType) {
 foreach ($recapVentes as $vente) {
     $revenuTotal += $vente['total_ht'];
     $mois = date('Y-m', strtotime($vente['date_vente']));
-    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $vente['total_ht'];
+    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $vente['total_ht'] * 0.8;
 }
 
 // Calculer le taux d'occupation global
