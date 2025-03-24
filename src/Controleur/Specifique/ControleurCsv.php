@@ -49,7 +49,6 @@ class ControleurCsv {
             }
             fclose($handle);
 
-            // Enregistrer l'import dans `import_tracking`
             $stmt = $this->pdo->prepare('
             INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) 
             VALUES (?, ?, NOW()) 
@@ -131,8 +130,6 @@ class ControleurCsv {
             $stmt->execute([$utilisateurId, 'recap_ventes']);
         }
     }
-
-
 
 
     /**
