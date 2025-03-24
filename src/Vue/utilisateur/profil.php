@@ -160,13 +160,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <div class="etape-card">
+        <div class="help-bubble" onclick="toggleTooltip('boxHelp')">?</div>
         <div id="boxHelp" class="help-tooltip">
             <h3>Comment obtenir le fichier des types de boxe ?</h3>
             <ol>
                 <li>Connectez-vous à votre compte Vialtic Mondial Box</li>
                 <li>Allez dans la section "Paramètres"</li>
                 <li>Sélectionnez "Types de boxes"</li>
-                <li>Cliquez sur "Colonnes affichées" et vérifiez que toutes les cases soient cochées</li>
+                <li>Cliquez sur "Colonnes affichées" et vérifiez que toutes les cases soient coché</li>
                 <li>Cliquez sur "Réinitialiser l'ordre des données"</li>
                 <li>Téléchargez le fichier CSV généré</li>
                 <li>Importez-le ici en cliquant sur "Parcourir"</li>
