@@ -163,7 +163,7 @@ foreach ($boxTypes as $boxType) {
 foreach ($recapVentes as $vente) {
     $revenuTotal += $vente['total_ht'];
     $mois = date('Y-m', strtotime($vente['date_vente']));
-    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $vente['total_ht'] * 0.8;
+    $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $vente['total_ht'];
 }
 
 // Calculer le taux d'occupation global
@@ -179,7 +179,7 @@ foreach ($locations as $location) {
 $caMaxMensuel = 0;
 
 $stmt = $pdo->prepare('
-    SELECT bt.prix_ttc, ub.quantite 
+    SELECT bt.prix_ttc / 1.20 as prix_ht, ub.quantite  // Conversion directe dans la requête
     FROM utilisateur_boxes ub 
     INNER JOIN box_types bt ON ub.box_type_id = bt.id 
     WHERE ub.utilisateur_id = ? AND bt.utilisateur_id = ?
@@ -188,20 +188,18 @@ $stmt->execute([$utilisateurId, $utilisateurId]);
 $boxData = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 foreach ($boxData as $box) {
-    $caMaxMensuel += $box['prix_ttc'] * $box['quantite'];
+    $caMaxMensuel += $box['prix_ht'] * $box['quantite'];  // Utilisation du prix HT
 }
 
 $moisActuel = date('Y-m');
-
 $stmt = $pdo->prepare('
-    SELECT SUM(total_ht) 
+    SELECT SUM(total_ht)  // On garde total_ht tel quel
     FROM recap_ventes 
     WHERE utilisateur_id = ? 
     AND DATE_FORMAT(date_vente, "%Y-%m") = ?
 ');
 $stmt->execute([$utilisateurId, $moisActuel]);
 $caActuel = (float) $stmt->fetchColumn();
-
 
 $caRestant = max(0, $caMaxMensuel - $caActuel);
 
@@ -246,9 +244,9 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
     <div class="stat-card">
         <h3>Chiffre d'Affaires</h3>
         <div class="stat-content">
-            <p><strong>CA Max Mensuel :</strong> <?= number_format($caMaxMensuel, 2) ?> €</p>
-            <p><strong>CA Actuel :</strong> <?= number_format($caActuel, 2) ?> €</p>
-            <p><strong>CA Restant :</strong> <?= number_format($caRestant, 2) ?> €</p>
+            <p><strong>CA Max Mensuel (HT) :</strong> <?= number_format($caMaxMensuel, 2) ?> €</p>
+            <p><strong>CA Actuel (HT) :</strong> <?= number_format($caActuel, 2) ?> €</p>
+            <p><strong>CA Restant (HT) :</strong> <?= number_format($caRestant, 2) ?> €</p>
         </div>
     </div>
 
@@ -273,6 +271,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             <input type="text" class="month-picker" id="startDateRevenue" placeholder="Sélectionnez un mois">
             <label for="endDateRevenue">Mois fin :</label>
             <input type="text" class="month-picker" id="endDateRevenue" placeholder="Sélectionnez un mois">
+            <button class="reset-dates">Réinitialiser</button>
         </div>
         <canvas id="revenuMensuelChart"></canvas>
     </div>
@@ -282,9 +281,9 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         <div class="date-filters">
             <label for="startDateEntrées">Mois début :</label>
             <input type="text" class="month-picker" id="startDateEntrées" placeholder="Sélectionnez un mois">
-
             <label for="endDateEntrées">Mois fin :</label>
-            <input type="text" class="month-picker" id=endDateEntrées placeholder="Sélectionnez un mois">
+            <input type="text" class="month-picker" id="endDateEntrées" placeholder="Sélectionnez un mois">
+            <button class="reset-dates">Réinitialiser</button>
         </div>
         <canvas id="nouveauxContratsChart"></canvas>
     </div>
@@ -294,6 +293,10 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         <div class="dropdown">
             <button id="toggleFilter">🔽 Sélectionner les box</button>
             <div id="boxFilter" class="dropdown-content">
+                <div class="filter-actions">
+                    <button class="select-all">Tout sélectionner</button>
+                    <button class="deselect-all">Tout supprimer</button>
+                </div>
                 <?php foreach ($boxLabels as $index => $boxLabel): ?>
                     <label>
                         <input type="checkbox" class="box-checkbox" value="<?= $index ?>" checked>
@@ -310,6 +313,10 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         <div class="dropdown">
             <button id="toggleFilterJours">🔽 Sélectionner les box</button>
             <div id="boxFilterJours" class="dropdown-content">
+                <div class="filter-actions">
+                    <button class="select-all-jours">Tout sélectionner</button>
+                    <button class="deselect-all-jours">Tout supprimer</button>
+                </div>
                 <?php foreach ($boxLabelsJours as $index => $boxLabel): ?>
                     <label>
                         <input type="checkbox" class="box-checkbox-jours" value="<?= $index ?>" checked>
@@ -326,6 +333,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
         // 1. Initialisation des datepickers avec Flatpickr
+        // Initialisation des datepickers avec options compactes
         flatpickr(".month-picker", {
             locale: "fr",
             plugins: [
@@ -333,12 +341,24 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                     shorthand: true,
                     dateFormat: "Y-m",
                     altFormat: "F Y",
-                    theme: "light"
+                    theme: "light",
+                    // Options supplémentaires pour compacter l'affichage
+                    monthSelectorType: "static",
+                    yearPosition: "above"
                 })
             ],
             onReady: function(selectedDates, dateStr, instance) {
+                // Ajustements spécifiques Firefox
                 if (navigator.userAgent.includes("Firefox")) {
                     instance.calendarContainer.style.zIndex = "9999";
+                    instance.calendarContainer.style.width = "auto";
+                }
+
+                // Ajustement de la largeur
+                const monthSelectContainer = instance.calendarContainer.querySelector('.flatpickr-monthSelect-months');
+                if (monthSelectContainer) {
+                    monthSelectContainer.style.gridTemplateColumns = "repeat(3, 1fr)";
+                    monthSelectContainer.style.gap = "5px";
                 }
             }
         });
@@ -511,6 +531,61 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                 joursChart.data.labels = selectedIndexes.map(i => boxLabelsJours[i]);
                 joursChart.data.datasets[0].data = selectedIndexes.map(i => moyenneJoursData[i]);
                 joursChart.update();
+            });
+        });
+
+        document.querySelector('.select-all').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('#boxFilter .box-checkbox').forEach(cb => {
+                cb.checked = true;
+                cb.dispatchEvent(new Event('change'));
+            });
+        });
+
+        document.querySelector('.deselect-all').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('#boxFilter .box-checkbox').forEach(cb => {
+                cb.checked = false;
+                cb.dispatchEvent(new Event('change'));
+            });
+        });
+
+        document.querySelector('.select-all-jours').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('#boxFilterJours .box-checkbox-jours').forEach(cb => {
+                cb.checked = true;
+                cb.dispatchEvent(new Event('change'));
+            });
+        });
+
+        document.querySelector('.deselect-all-jours').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.querySelectorAll('#boxFilterJours .box-checkbox-jours').forEach(cb => {
+                cb.checked = false;
+                cb.dispatchEvent(new Event('change'));
+            });
+        });
+
+        // Gestion des boutons Réinitialiser dates
+        document.querySelectorAll('.reset-dates').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const card = this.closest('.chart-card');
+                const dateInputs = card.querySelectorAll('.month-picker');
+
+                dateInputs.forEach(input => {
+                    input._flatpickr.clear();
+
+                    // Déclencher la mise à jour des graphiques
+                    if (input.id.includes('Revenue')) {
+                        updateChartWithDates(revenueChart, moisLabels, revenuMensuelData,
+                            document.getElementById('startDateRevenue'),
+                            document.getElementById('endDateRevenue'));
+                    } else {
+                        updateChartWithDates(contratsChart, moisContratsLabels, nouveauxContratsData,
+                            document.getElementById('startDateEntrées'),
+                            document.getElementById('endDateEntrées'));
+                    }
+                });
             });
         });
 

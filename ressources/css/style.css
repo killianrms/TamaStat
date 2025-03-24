@@ -694,6 +694,34 @@ label {
     color: #333;
 }
 
+.filter-actions {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.filter-actions button {
+    padding: 3px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.reset-dates {
+    padding: 5px 10px;
+    margin-left: 10px;
+    background: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.reset-dates:hover, .filter-actions button:hover {
+    background: #e0e0e0;
+}
+
 input, select, button {
     width: 100%;
     padding: 10px;
