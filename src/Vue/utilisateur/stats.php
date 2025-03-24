@@ -179,7 +179,7 @@ foreach ($locations as $location) {
 $caMaxMensuel = 0;
 
 $stmt = $pdo->prepare('
-    SELECT bt.prix_ttc / 1.20 as prix_ht, ub.quantite  // Conversion directe dans la requête
+    SELECT bt.prix_ttc / 1.20 as prix_ht, ub.quantite
     FROM utilisateur_boxes ub 
     INNER JOIN box_types bt ON ub.box_type_id = bt.id 
     WHERE ub.utilisateur_id = ? AND bt.utilisateur_id = ?
@@ -193,7 +193,7 @@ foreach ($boxData as $box) {
 
 $moisActuel = date('Y-m');
 $stmt = $pdo->prepare('
-    SELECT SUM(total_ht)  // On garde total_ht tel quel
+    SELECT SUM(total_ht)
     FROM recap_ventes 
     WHERE utilisateur_id = ? 
     AND DATE_FORMAT(date_vente, "%Y-%m") = ?
