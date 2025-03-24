@@ -325,7 +325,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
 
 <script>
     document.addEventListener("DOMContentLoaded", function() {
-        // Configuration française avec sélection de mois
+        // 1. Initialisation des datepickers avec Flatpickr
         flatpickr(".month-picker", {
             locale: "fr",
             plugins: [
@@ -333,63 +333,19 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                     shorthand: true,
                     dateFormat: "Y-m",
                     altFormat: "F Y",
-                    theme: "light" // ou "dark" selon votre thème
+                    theme: "light"
                 })
             ],
             onReady: function(selectedDates, dateStr, instance) {
-                // Petit ajustement pour Firefox
                 if (navigator.userAgent.includes("Firefox")) {
                     instance.calendarContainer.style.zIndex = "9999";
                 }
             }
         });
 
-    document.addEventListener("DOMContentLoaded", function () {
+        // 2. Données des graphiques
         const boxLabelsJours = <?= json_encode($boxLabelsJours) ?>;
         const moyenneJoursData = <?= json_encode($moyenneJoursData) ?>;
-
-        // 📊 Création du graphique
-        const joursCtx = document.getElementById("moyenneJoursBoxChart").getContext("2d");
-        const joursChartData = {
-            labels: boxLabelsJours,
-            datasets: [{
-                label: "Moyenne des jours occupés",
-                data: moyenneJoursData,
-                backgroundColor: "#007bff"
-            }]
-        };
-        const joursChart = new Chart(joursCtx, { type: "bar", data: joursChartData });
-
-        // 🎯 Gestion du filtre des box pour le graphique
-        const toggleButtonJours = document.getElementById("toggleFilterJours");
-        const dropdownContentJours = document.getElementById("boxFilterJours");
-
-        toggleButtonJours.addEventListener("click", function (event) {
-            event.stopPropagation();
-            dropdownContentJours.classList.toggle("active");
-        });
-
-        document.querySelectorAll(".box-checkbox-jours").forEach((checkbox, index) => {
-            checkbox.addEventListener("change", function () {
-                const selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox-jours:checked"))
-                    .map(cb => parseInt(cb.value));
-
-                joursChartData.labels = selectedIndexes.map(i => boxLabelsJours[i]);
-                joursChartData.datasets[0].data = selectedIndexes.map(i => moyenneJoursData[i]);
-
-                joursChart.update();
-            });
-        });
-
-        // Fermer le menu si clic en dehors
-        document.addEventListener("click", function (event) {
-            if (!toggleButtonJours.contains(event.target) && !dropdownContentJours.contains(event.target)) {
-                dropdownContentJours.classList.remove("active");
-            }
-        });
-    });
-
-    document.addEventListener("DOMContentLoaded", function () {
         const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
         const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
         const moisContratsLabels = <?= json_encode(array_keys($nouveauxContratsParMois)) ?>.reverse();
@@ -398,11 +354,24 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
         const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
         const boxLabels = <?= json_encode($boxLabels) ?>;
-        const netContratsLabels = <?= json_encode(array_keys($netContratsParMois)) ?>.reverse();
-        const netContratsData = <?= json_encode(array_values($netContratsParMois)) ?>.reverse();
         const contratsClosData = <?= json_encode(array_values($contratsClosParMois)) ?>.reverse();
 
-        // 📊 Création du graphique CA
+        // 3. Création des graphiques
+        // Graphique Moyenne des jours
+        const joursCtx = document.getElementById("moyenneJoursBoxChart").getContext("2d");
+        const joursChart = new Chart(joursCtx, {
+            type: "bar",
+            data: {
+                labels: boxLabelsJours,
+                datasets: [{
+                    label: "Moyenne des jours occupés",
+                    data: moyenneJoursData,
+                    backgroundColor: "#007bff"
+                }]
+            }
+        });
+
+        // Graphique CA
         const revenueCtx = document.getElementById('revenuMensuelChart').getContext('2d');
         const revenueChart = new Chart(revenueCtx, {
             type: 'line',
@@ -417,39 +386,42 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             }
         });
 
+        // Graphique Contrats
         const contratsCtx = document.getElementById('nouveauxContratsChart').getContext('2d');
         const contratsChart = new Chart(contratsCtx, {
             type: 'bar',
             data: {
-                labels: <?= json_encode(array_keys($nouveauxContratsParMois)) ?>.reverse(),
+                labels: moisContratsLabels,
                 datasets: [
                     {
                         label: 'Nouveaux contrats (entrées)',
-                        data: <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse(),
+                        data: nouveauxContratsData,
                         backgroundColor: '#007bff'
                     },
                     {
                         label: 'Contrats clos (sorties)',
-                        data: <?= json_encode(array_values($contratsClosParMois)) ?>.reverse(),
+                        data: contratsClosData,
                         backgroundColor: '#dc3545'
                     }
                 ]
             }
         });
 
-        // 📊 Création du graphique de la quantité de box
+        // Graphique Box
         const boxCtx = document.getElementById("boxLibreOccupeMaxChart").getContext("2d");
-        const boxChartData = {
-            labels: boxLabels,
-            datasets: [
-                { label: "Libres", data: boxLibresData, backgroundColor: "#28a745" },
-                { label: "Occupées", data: boxOccupeesData, backgroundColor: "#dc3545" },
-                { label: "Maximales", data: boxMaxData, backgroundColor: "#007bff" }
-            ]
-        };
-        const boxChart = new Chart(boxCtx, { type: "bar", data: boxChartData });
+        const boxChart = new Chart(boxCtx, {
+            type: "bar",
+            data: {
+                labels: boxLabels,
+                datasets: [
+                    { label: "Libres", data: boxLibresData, backgroundColor: "#28a745" },
+                    { label: "Occupées", data: boxOccupeesData, backgroundColor: "#dc3545" },
+                    { label: "Maximales", data: boxMaxData, backgroundColor: "#007bff" }
+                ]
+            }
+        });
 
-        // 🎯 Gestion des filtres DATE pour les graphiques temporels
+        // 4. Fonctions utilitaires
         function updateChartWithDates(chart, labels, data, startInput, endInput) {
             const startDate = startInput.value || null;
             const endDate = endInput.value || null;
@@ -466,7 +438,6 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             });
 
             if (filteredLabels.length === 0) {
-                alert("Aucune donnée à afficher pour cette période !");
                 filteredLabels = labels;
                 filteredData = data;
             }
@@ -476,7 +447,8 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             chart.update();
         }
 
-        // 🎯 Filtres pour Chiffre d'affaires
+        // 5. Gestion des événements
+        // Filtres dates
         document.getElementById('startDateRevenue').addEventListener('change', () => {
             updateChartWithDates(revenueChart, moisLabels, revenuMensuelData,
                 document.getElementById('startDateRevenue'),
@@ -489,7 +461,6 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                 document.getElementById('endDateRevenue'));
         });
 
-        // 🎯 Filtres pour Nombre d'entrées
         document.getElementById('startDateEntrées').addEventListener('change', () => {
             updateChartWithDates(contratsChart, moisContratsLabels, nouveauxContratsData,
                 document.getElementById('startDateEntrées'),
@@ -502,36 +473,57 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                 document.getElementById('endDateEntrées'));
         });
 
-        // 🎯 Gestion du sélecteur de box pour le graphique des box
+        // Filtres box
         const toggleButton = document.getElementById("toggleFilter");
         const dropdownContent = document.getElementById("boxFilter");
+        const toggleButtonJours = document.getElementById("toggleFilterJours");
+        const dropdownContentJours = document.getElementById("boxFilterJours");
 
-        toggleButton.addEventListener("click", function (event) {
+        toggleButton.addEventListener("click", function(event) {
             event.stopPropagation();
             dropdownContent.classList.toggle("active");
         });
 
-        document.querySelectorAll(".box-checkbox").forEach((checkbox, index) => {
-            checkbox.addEventListener("change", function () {
-                const selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox:checked")).map(cb => parseInt(cb.value));
+        toggleButtonJours.addEventListener("click", function(event) {
+            event.stopPropagation();
+            dropdownContentJours.classList.toggle("active");
+        });
 
-                boxChartData.labels = selectedIndexes.map(i => boxLabels[i]);
-                boxChartData.datasets[0].data = selectedIndexes.map(i => boxLibresData[i]);
-                boxChartData.datasets[1].data = selectedIndexes.map(i => boxOccupeesData[i]);
-                boxChartData.datasets[2].data = selectedIndexes.map(i => boxMaxData[i]);
+        document.querySelectorAll(".box-checkbox").forEach((checkbox, index) => {
+            checkbox.addEventListener("change", function() {
+                const selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox:checked"))
+                    .map(cb => parseInt(cb.value));
+
+                boxChart.data.labels = selectedIndexes.map(i => boxLabels[i]);
+                boxChart.data.datasets[0].data = selectedIndexes.map(i => boxLibresData[i]);
+                boxChart.data.datasets[1].data = selectedIndexes.map(i => boxOccupeesData[i]);
+                boxChart.data.datasets[2].data = selectedIndexes.map(i => boxMaxData[i]);
 
                 boxChart.update();
             });
         });
 
-        // Fermer le menu si clic en dehors
-        document.addEventListener("click", function (event) {
+        document.querySelectorAll(".box-checkbox-jours").forEach((checkbox, index) => {
+            checkbox.addEventListener("change", function() {
+                const selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox-jours:checked"))
+                    .map(cb => parseInt(cb.value));
+
+                joursChart.data.labels = selectedIndexes.map(i => boxLabelsJours[i]);
+                joursChart.data.datasets[0].data = selectedIndexes.map(i => moyenneJoursData[i]);
+                joursChart.update();
+            });
+        });
+
+        // Fermeture des menus dropdown
+        document.addEventListener("click", function(event) {
             if (!toggleButton.contains(event.target) && !dropdownContent.contains(event.target)) {
                 dropdownContent.classList.remove("active");
             }
+            if (!toggleButtonJours.contains(event.target) && !dropdownContentJours.contains(event.target)) {
+                dropdownContentJours.classList.remove("active");
+            }
         });
     });
-
 </script>
 </body>
 </html>
