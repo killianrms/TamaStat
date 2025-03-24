@@ -468,6 +468,23 @@ canvas {
     color: red;
 }
 
+.flatpickr-monthSelect-month {
+    min-width: 80px;
+}
+
+.flatpickr-calendar {
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    border-radius: 8px;
+}
+
+.month-picker {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 150px;
+}
+
 /* 🎯 Boutons et liens */
 .btn {
     display: inline-block;

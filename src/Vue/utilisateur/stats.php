@@ -231,7 +231,12 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Statistiques</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/plugins/monthSelect/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/fr.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.9/dist/plugins/monthSelect/index.js"></script>
 </head>
 <body class="stats-page">
 <h1>Statistiques de vos locations</h1>
@@ -265,10 +270,9 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         <h3>Chiffre d'affaires</h3>
         <div class="date-filters">
             <label for="startDateRevenue">Mois début :</label>
-            <input type="month" id="startDateRevenue">
-
+            <input type="text" class="month-picker" id="startDateRevenue" placeholder="Sélectionnez un mois">
             <label for="endDateRevenue">Mois fin :</label>
-            <input type="month" id="endDateRevenue">
+            <input type="text" class="month-picker" id="endDateRevenue" placeholder="Sélectionnez un mois">
         </div>
         <canvas id="revenuMensuelChart"></canvas>
     </div>
@@ -277,10 +281,10 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         <h3>Nombre d'entrées - sorties</h3>
         <div class="date-filters">
             <label for="startDateEntrées">Mois début :</label>
-            <input type="month" id="startDateEntrées">
+            <input type="text" class="month-picker" id="startDateEntrées" placeholder="Sélectionnez un mois">
 
             <label for="endDateEntrées">Mois fin :</label>
-            <input type="month" id="endDateEntrées">
+            <input type="text" class="month-picker" id=endDateEntrées placeholder="Sélectionnez un mois">
         </div>
         <canvas id="nouveauxContratsChart"></canvas>
     </div>
@@ -320,6 +324,25 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
 </div>
 
 <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Configuration française avec sélection de mois
+        flatpickr(".month-picker", {
+            locale: "fr",
+            plugins: [
+                new monthSelectPlugin({
+                    shorthand: true,
+                    dateFormat: "Y-m",
+                    altFormat: "F Y",
+                    theme: "light" // ou "dark" selon votre thème
+                })
+            ],
+            onReady: function(selectedDates, dateStr, instance) {
+                // Petit ajustement pour Firefox
+                if (navigator.userAgent.includes("Firefox")) {
+                    instance.calendarContainer.style.zIndex = "9999";
+                }
+            }
+        });
 
     document.addEventListener("DOMContentLoaded", function () {
         const boxLabelsJours = <?= json_encode($boxLabelsJours) ?>;
