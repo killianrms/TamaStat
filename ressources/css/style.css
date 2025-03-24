@@ -131,8 +131,12 @@ button:disabled {
 
 /* Animation du loader */
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 /* Champs input */
@@ -469,23 +473,34 @@ canvas {
 }
 
 .flatpickr-monthSelect-month {
-    min-width: 80px;
+    width: 5.5em;
+    height: 2.5em;
+    margin: 0.1em;
+    padding: 0.3em 0.5em;
 }
 
 .flatpickr-calendar {
-    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
     border-radius: 8px;
 }
 
 .month-picker {
+    width: 120px;
     padding: 8px 12px;
     border: 1px solid #ddd;
     border-radius: 4px;
     font-size: 14px;
-    width: 150px;
+    text-align: center;
+}
+
+@-moz-document url-prefix() {
+    .month-picker {
+        padding: 7px 10px;
+    }
 }
 
 /* 🎯 Boutons et liens */
+
 .btn {
     display: inline-block;
     background: #ff9900;
@@ -646,6 +661,7 @@ header {
 }
 
 /* 🍔 MENU BURGER (Responsive) */
+
 .burger {
     display: none;
     flex-direction: column;
@@ -835,6 +851,7 @@ button:hover:enabled {
 }
 
 /* 📌 Styles généraux pour CGU et Mentions Légales */
+
 .cgu-content,
 .mentions-legales-content {
     max-width: 900px;
@@ -870,6 +887,7 @@ button:hover:enabled {
 }
 
 /* 📌 Liens */
+
 .cgu-content a,
 .mentions-legales-content a {
     color: #007bff;
@@ -943,6 +961,15 @@ button:hover:enabled {
         width: 100%;
     }
 
+    .month-picker {
+        width: 100px;
+        font-size: 13px;
+    }
+
+    .flatpickr-monthSelect-theme-light {
+        min-width: 220px;
+    }
+
     .stats-globales {
         flex-direction: column;
         align-items: center;
@@ -992,7 +1019,7 @@ button:hover:enabled {
         text-align: center;
     }
 
-    .footer-info{
+    .footer-info {
         display: flex;
         flex-direction: column;
         align-items: center;
