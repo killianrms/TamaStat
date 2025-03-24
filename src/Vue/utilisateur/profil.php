@@ -94,6 +94,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <h1>Profil</h1>
 <div class="profil-container">
     <div class="etape-card">
+        <div class="help-bubble" onclick="toggleTooltip('mdpHelp')">?</div>
+        <div id="mdpHelp" class="help-tooltip">
+            <h3>Changer votre mot de passe</h3>
+            <p>Pour modifier votre mot de passe :</p>
+            <ol>
+                <li>Saisissez votre mot de passe actuel</li>
+                <li>Créez un nouveau mot de passe sécurisé</li>
+                <li>Confirmez le nouveau mot de passe</li>
+                <li>Cliquez sur "Changer le mot de passe"</li>
+            </ol>
+            <p>Le mot de passe doit contenir :</p>
+            <ul>
+                <li>Minimum 8 caractères</li>
+                <li>1 majuscule</li>
+                <li>1 chiffre</li>
+                <li>1 caractère spécial</li>
+            </ul>
+        </div>
         <h3 class="etape-title">Changer de mot de passe</h3>
         <p>Dernière modification
             : <?= $dateDernierMdp ? date('d/m/Y H:i', strtotime($dateDernierMdp)) : 'Jamais' ?></p>
@@ -117,7 +135,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                  style="display: none;">
         </span>
             </div>
-
+            <p>Le mot de passe doit contenir :</p>
             <ul class="password-requirements">
                 <li id="min8" class="invalid">❌ Au moins 8 caractères</li>
                 <li id="majuscule" class="invalid">❌ Une majuscule</li>
@@ -142,6 +160,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <div class="etape-card">
+        <div id="boxHelp" class="help-tooltip">
+            <h3>Comment obtenir le fichier des types de boxe ?</h3>
+            <ol>
+                <li>Connectez-vous à votre compte Vialtic Mondial Box</li>
+                <li>Allez dans la section "Paramètres"</li>
+                <li>Sélectionnez "Types de boxes"</li>
+                <li>Cliquez sur "Colonnes affichées" et vérifiez que toutes les cases soient cochées</li>
+                <li>Cliquez sur "Réinitialiser l'ordre des données"</li>
+                <li>Téléchargez le fichier CSV généré</li>
+                <li>Importez-le ici en cliquant sur "Parcourir"</li>
+            </ol>
+        </div>
         <h3>Import des différents types de boxes</h3>
         <p>Dernière modification
             : <?= isset($dateDerniersImports['box_types']) ? date('d/m/Y H:i', strtotime($dateDerniersImports['box_types'])) : 'Jamais' ?></p>
@@ -152,7 +182,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         </form>
     </div>
 
-    <div class="etape-card"><h3>Modifier la quantité vos types de boxes</h3>
+    <div class="etape-card">
+        <div class="help-bubble" onclick="toggleTooltip('quantiteHelp')">?</div>
+        <div id="quantiteHelp" class="help-tooltip">
+            <h3>Pourquoi configurer la quantité de mes boxes ?</h3>
+            <p>Indiquez le nombre de box disponibles pour chaque type.</p>
+            <p>Ces informations sont essentielles pour :</p>
+            <ul>
+                <li>Calculer le taux d'occupation</li>
+                <li>Générer des statistiques précises</li>
+                <li>Optimiser la gestion de votre espace</li>
+            </ul>
+        </div>
+        <h3>Modifier la quantité vos types de boxes</h3>
 
         <p>Dernière modification
             : <?= isset($dateDerniersImports['utilisateur_boxes']) ? date('d/m/Y H:i', strtotime($dateDerniersImports['utilisateur_boxes'])) : 'Jamais' ?></p>
@@ -160,6 +202,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <div class="etape-card">
+        <div class="help-bubble" onclick="toggleTooltip('contratsHelp')">?</div>
+        <div id="contratsHelp" class="help-tooltip">
+            <h3>Comment importer vos contrats en cours ?</h3>
+            <ol>
+                <li>Connectez-vous à votre compte Vialtic Mondial Box</li>
+                <li>Allez dans la section "Contrats"</li>
+                <li>Cliquez sur "Colonnes affichées" et vérifiez que toutes les cases soient cochées</li>
+                <li>Cliquez sur "Réinitialiser l'ordre des données"</li>
+                <li>Téléchargez le fichier CSV généré</li>
+                <li>Importez-le ici en cliquant sur "Parcourir"</li>
+            </ol>
+        </div>
+
         <h3>Import des contrats en cours</h3>
         <p>Dernière modification
             : <?= isset($dateDerniersImports['locations']) ? date('d/m/Y H:i', strtotime($dateDerniersImports['locations'])) : 'Jamais' ?></p>
@@ -171,6 +226,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <div class="etape-card">
+        <div class="help-bubble" onclick="toggleTooltip('configHelp')">?</div>
+        <div id="configHelp" class="help-tooltip">
+            <h3>Comment importer vos contrats clos ?</h3>
+            <ol>
+                <li>Connectez-vous à votre compte Vialtic Mondial Box</li>
+                <li>Allez dans la section "Contrats"</li>
+                <li>Cochez "Contrats clôturés"</li>
+                <li>Cliquez sur "Colonnes affichées" et vérifiez que toutes les cases soient coché</li>
+                <li>Cliquez sur "Réinitialiser l'ordre des données"</li>
+                <li>Téléchargez le fichier CSV généré</li>
+                <li>Importez-le ici en cliquant sur "Parcourir"</li>
+            </ol>
+        </div>
         <h3>Import des contrats clos</h3>
         <p>Dernière modification
             : <?= isset($dateDerniersImports['contrats_clos']) ? date('d/m/Y H:i', strtotime($dateDerniersImports['contrats_clos'])) : 'Jamais' ?></p>
@@ -184,6 +252,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 
     <div class="etape-card">
+        <div class="help-bubble" onclick="toggleTooltip('configHelp')">?</div>
+        <div id="configHelp" class="help-tooltip">
+            <h3>Comment importer mes factures ?</h3>
+            <ol>
+                <li>Connectez-vous à votre compte Vialtic Mondial Box</li>
+                <li>Allez dans la section "factures"</li>
+                <li>Cliquez sur "Colonnes affichées" et vérifiez que toutes les cases soient coché</li>
+                <li>Cliquez sur "Réinitialiser l'ordre des données"</li>
+                <li>Téléchargez le fichier CSV généré</li>
+                <li>Importez-le ici en cliquant sur "Parcourir"</li>
+            </ol>
+        </div>
         <h3>Import des factures</h3>
         <p>Dernière modification
             : <?= isset($dateDerniersImports['factures']) ? date('d/m/Y H:i', strtotime($dateDerniersImports['factures'])) : 'Jamais' ?></p>
@@ -195,6 +275,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <div class="etape-card">
+        <div class="help-bubble" onclick="toggleTooltip('configHelp')">?</div>
+        <div id="configHelp" class="help-tooltip">
+            <h3>Configuration des box</h3>
+            <ol>
+                <li>Connectez-vous à votre compte Vialtic Mondial Box</li>
+                <li>Allez dans la section "Gestion"</li>
+                <li>Sélectionnez "Recap vente"</li>
+                <li>Téléchargez le fichier CSV généré</li>
+                <li>Importez-le ici en cliquant sur "Parcourir"</li>
+            </ol>
+        </div>
         <h3>Import des recap ventes</h3>
         <p>Dernière modification
             : <?= isset($dateDerniersImports['recap_ventes']) ? date('d/m/Y H:i', strtotime($dateDerniersImports['recap_ventes'])) : 'Jamais' ?></p>
@@ -308,6 +399,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             eyeIconClosed.style.display = "inline";
         }
     }
+
+    function toggleTooltip(id) {
+        const tooltip = document.getElementById(id);
+        tooltip.style.display = tooltip.style.display === 'block' ? 'none' : 'block';
+    }
+
+    document.addEventListener('click', function(e) {
+        if (!e.target.classList.contains('help-bubble')) {
+            document.querySelectorAll('.help-tooltip').forEach(tooltip => {
+                tooltip.style.display = 'none';
+            });
+        }
+    });
 </script>
 </body>
 </html>
