@@ -97,7 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="help-bubble" onclick="toggleTooltip('mdpHelp')">?</div>
         <div id="mdpHelp" class="help-tooltip">
             <h3>Changer votre mot de passe</h3>
-            <p>Pour modifier votre mot de passe :</p>
             <ol>
                 <li>Saisissez votre mot de passe actuel</li>
                 <li>Créez un nouveau mot de passe sécurisé</li>
@@ -187,7 +186,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="help-bubble" onclick="toggleTooltip('quantiteHelp')">?</div>
         <div id="quantiteHelp" class="help-tooltip">
             <h3>Pourquoi configurer la quantité de mes boxes ?</h3>
-            <p>Indiquez le nombre de box disponibles pour chaque type.</p>
             <p>Ces informations sont essentielles pour :</p>
             <ul>
                 <li>Calculer le taux d'occupation</li>

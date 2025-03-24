@@ -80,7 +80,6 @@ if ($hasBoxes && $hasBoxesConfig && $hasContrats && $hasFactures && $hasRecapVen
         <div class="help-bubble" onclick="toggleTooltip('configHelp')">?</div>
         <div id="configHelp" class="help-tooltip">
             <h3>Pourquoi configurer la quantité de mes boxes ?</h3>
-            <p>Indiquez le nombre de box disponibles pour chaque type.</p>
             <p>Ces informations sont essentielles pour calculer le taux d'occupation.</p>
             <p>Générer des statistiques précises</p>
             <p>Optimiser la gestion de votre espace</p>
