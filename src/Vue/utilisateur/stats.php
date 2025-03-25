@@ -424,11 +424,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                     },
                     {
                         label: 'Différenciel (Entrées - Sorties)',
-                        data: <?= json_encode(array_map(function($mois) use ($nouveauxContratsParMois, $contratsClosParMois) {
-                            $entrées = $nouveauxContratsParMois[$mois] ?? 0;
-                            $sorties = $contratsClosParMois[$mois] ?? 0;
-                            return $entrées - $sorties;
-                        }, array_keys($nouveauxContratsParMois))) ?>,
+                        data: <?= json_encode($differentielContrats) ?>,
                         type: 'line',
                         borderColor: '#007bff',
                         backgroundColor: 'transparent',
@@ -501,7 +497,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                         pointBackgroundColor: "#28a745",
                         pointRadius: 8,
                         pointHoverRadius: 10
-                        borderDash: [5, 5] // Ligne en pointillés pour mieux distinguer
+                        borderDash: [5, 5]
                     }
                 ]
             },
