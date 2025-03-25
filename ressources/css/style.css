@@ -290,12 +290,36 @@ input:hover {
     color: #333;
 }
 
+/* Style pour l'annotation "Maintenant" */
+.chartjs-render-monitor [data-mois="now"] {
+    font-weight: bold;
+    color: #FFA726;
+}
+
+/* Amélioration de la légende */
+.chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 15px;
+}
+
+/* Style des tooltips */
 .chartjs-tooltip {
-    background: rgba(0, 0, 0, 0.8) !important;
+    opacity: 1 !important;
+    background: rgba(50, 50, 50, 0.9) !important;
     border-radius: 4px !important;
-    padding: 10px !important;
+    padding: 8px 12px !important;
     color: white !important;
-    font-size: 14px !important;
+    font-size: 13px !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+}
+
+.chartjs-tooltip-footer {
+    font-style: italic;
+    margin-top: 5px;
+    display: block;
+    color: #FFA726;
 }
 
 canvas {
