@@ -96,6 +96,8 @@ foreach ($nouveauxContratsParMois as $mois => $entrees) {
     $netContratsParMois[$mois] = $entrees - $sorties;
 }
 
+$differencielContrats = array_diff_key($nouveauxContratsParMois, $contratsClosParMois);
+
 $boxLabelsJours = [];
 $moyenneJoursData = [];
 
@@ -406,7 +408,6 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             }
         });
 
-        // Graphique Contrats
         const contratsCtx = document.getElementById('nouveauxContratsChart').getContext('2d');
         const contratsChart = new Chart(contratsCtx, {
             type: 'bar',
@@ -416,14 +417,66 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                     {
                         label: 'Nouveaux contrats (entrées)',
                         data: nouveauxContratsData,
-                        backgroundColor: '#007bff'
+                        backgroundColor: '#28a745' // Vert pour les entrées
                     },
                     {
                         label: 'Contrats clos (sorties)',
                         data: contratsClosData,
-                        backgroundColor: '#dc3545'
+                        backgroundColor: '#dc3545' // Rouge pour les sorties
+                    },
+                    {
+                        label: 'Différenciel (Entrées - Sorties)',
+                        data: nouveauxContratsData.map((entrees, index) => {
+                            return entrees - (contratsClosData[index] || 0);
+                        }),
+                        type: 'line', // Ligne pour le différenciel
+                        borderColor: '#007bff',
+                        backgroundColor: 'transparent',
+                        borderWidth: 2,
+                        pointBackgroundColor: function(context) {
+                            const value = context.dataset.data[context.dataIndex];
+                            return value >= 0 ? '#28a745' : '#dc3545'; // Vert si positif, rouge si négatif
+                        },
+                        pointRadius: 5
                     }
                 ]
+            },
+            options: {
+                plugins: {
+                    legend: {
+                        labels: {
+                            font: {
+                                weight: 'bold'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.datasetIndex === 2) { // Pour le différenciel
+                                    const value = context.raw;
+                                    label += (value >= 0 ? '+' : '') + value;
+                                } else {
+                                    label += context.raw;
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Nombre de contrats'
+                        }
+                    }
+                }
             }
         });
 
