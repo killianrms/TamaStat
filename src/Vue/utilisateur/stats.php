@@ -221,26 +221,6 @@ $nbBoxRestantes = max(0, $nbBoxTotal - $nbBoxLouees);
 
 // Calcul du taux d'occupation (si 0 box dispo, on met à 0 pour éviter division par 0)
 $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 2) : 0;
-
-$allMonths = array_unique(array_merge(
-    array_keys($nouveauxContratsParMois),
-    array_keys($contratsClosParMois)
-));
-sort($allMonths);
-
-$entreesData = [];
-$sortiesData = [];
-$differencielData = [];
-
-foreach ($allMonths as $mois) {
-    $entrees = $nouveauxContratsParMois[$mois] ?? 0;
-    $sorties = $contratsClosParMois[$mois] ?? 0;
-
-    $entreesData[] = $entrees;
-    $sortiesData[] = $sorties;
-    $differencielData[] = $entrees - $sorties;
-}
-
 ?>
 
 
@@ -432,67 +412,56 @@ foreach ($allMonths as $mois) {
         const contratsChart = new Chart(contratsCtx, {
             type: 'bar',
             data: {
-                labels: <?= json_encode($allMonths) ?>,
+                labels: moisContratsLabels,
                 datasets: [
                     {
                         label: 'Nouveaux contrats (entrées)',
-                        data: <?= json_encode($entreesData) ?>,
-                        backgroundColor: '#28a745',
-                        order: 2 // Met en arrière-plan
+                        data: nouveauxContratsData,
+                        backgroundColor: '#007bff' // Bleu pour les entrées
                     },
                     {
                         label: 'Contrats clos (sorties)',
-                        data: <?= json_encode($sortiesData) ?>,
-                        backgroundColor: '#dc3545',
-                        order: 1 // Entre les deux
+                        data: contratsClosData,
+                        backgroundColor: '#FFA726' // orange pour les sorties
                     },
                     {
                         label: 'Différenciel (Entrées - Sorties)',
-                        data: <?= json_encode($differencielData) ?>,
-                        type: 'line',
-                        borderColor: '#6c757d',
+                        data: nouveauxContratsData.map((entrees, index) => {
+                            return entrees - (contratsClosData[index] || 0);
+                        }),
+                        type: 'line', // Ligne pour le différenciel
+                        borderColor: '#007bff',
                         backgroundColor: 'transparent',
-                        borderWidth: 3,
+                        borderWidth: 2,
                         pointBackgroundColor: function(context) {
                             const value = context.dataset.data[context.dataIndex];
-                            return value >= 0 ? '#28a745' : '#dc3545';
+                            return value >= 0 ? '#28a745' : '#dc3545'; // Vert si positif, rouge si négatif
                         },
-                        pointBorderColor: '#fff',
-                        pointRadius: 6,
-                        pointHoverRadius: 8,
-                        pointHitRadius: 20,
-                        order: 0, // Premier plan
-                        tension: 0.1 // Légère courbure pour meilleure lisibilité
+                        pointRadius: 5
                     }
                 ]
             },
             options: {
-                responsive: true,
                 plugins: {
                     legend: {
-                        position: 'top',
                         labels: {
                             font: {
-                                size: 12,
                                 weight: 'bold'
-                            },
-                            usePointStyle: true,
-                            padding: 20
+                            }
                         }
                     },
                     tooltip: {
-                        mode: 'index',
-                        intersect: false,
                         callbacks: {
                             label: function(context) {
                                 let label = context.dataset.label || '';
-                                if (label) label += ': ';
-
-                                const value = context.raw;
-                                if (context.datasetIndex === 2) { // Différenciel
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.datasetIndex === 2) { // Pour le différenciel
+                                    const value = context.raw;
                                     label += (value >= 0 ? '+' : '') + value;
                                 } else {
-                                    label += value;
+                                    label += context.raw;
                                 }
                                 return label;
                             }
@@ -500,45 +469,59 @@ foreach ($allMonths as $mois) {
                     }
                 },
                 scales: {
-                    x: {
-                        grid: {
-                            display: false
-                        },
-                        ticks: {
-                            maxRotation: 45,
-                            minRotation: 45
-                        }
-                    },
                     y: {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Nombre de contrats',
-                            font: {
-                                weight: 'bold'
-                            }
+                            text: 'Nombre de contrats'
                         }
                     }
-                },
-                interaction: {
-                    mode: 'nearest',
-                    axis: 'x',
-                    intersect: false
                 }
             }
         });
 
-        // Graphique Box
+        // Graphique Box avec différentiel
+        // Graphique Box simplifié avec différentiel = maximales - occupées (libres)
         const boxCtx = document.getElementById("boxLibreOccupeMaxChart").getContext("2d");
         const boxChart = new Chart(boxCtx, {
             type: "bar",
             data: {
                 labels: boxLabels,
                 datasets: [
-                    {label: "Libres", data: boxLibresData, backgroundColor: "#28a745"},
-                    {label: "Occupées", data: boxOccupeesData, backgroundColor: "#dc3545"},
-                    {label: "Maximales", data: boxMaxData, backgroundColor: "#007bff"}
+                    {label: "Occupées", data: boxOccupeesData, backgroundColor: "#FFA726"}, // Orange
+                    {label: "Maximales", data: boxMaxData, backgroundColor: "#007bff"},    // Bleu
+                    {
+                        label: "Libres (Max - Occupées)",
+                        data: boxMaxData.map((max, index) => max - boxOccupeesData[index]),
+                        type: "line",
+                        borderColor: "#28a745", // Vert pour les libres
+                        backgroundColor: "transparent",
+                        borderWidth: 3,
+                        pointBackgroundColor: "#28a745",
+                        pointRadius: 5,
+                        borderDash: [5, 5] // Ligne en pointillés pour mieux distinguer
+                    }
                 ]
+            },
+            options: {
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) label += ': ';
+                                label += context.raw;
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Nombre de box' }
+                    }
+                }
             }
         });
 
@@ -611,14 +594,14 @@ foreach ($allMonths as $mois) {
         });
 
         document.querySelectorAll(".box-checkbox").forEach((checkbox, index) => {
-            checkbox.addEventListener("change", function () {
+            checkbox.addEventListener("change", function() {
                 const selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox:checked"))
                     .map(cb => parseInt(cb.value));
 
                 boxChart.data.labels = selectedIndexes.map(i => boxLabels[i]);
-                boxChart.data.datasets[0].data = selectedIndexes.map(i => boxLibresData[i]);
-                boxChart.data.datasets[1].data = selectedIndexes.map(i => boxOccupeesData[i]);
-                boxChart.data.datasets[2].data = selectedIndexes.map(i => boxMaxData[i]);
+                boxChart.data.datasets[0].data = selectedIndexes.map(i => boxOccupeesData[i]);
+                boxChart.data.datasets[1].data = selectedIndexes.map(i => boxMaxData[i]);
+                boxChart.data.datasets[2].data = selectedIndexes.map(i => boxMaxData[i] - boxOccupeesData[i]);
 
                 boxChart.update();
             });
