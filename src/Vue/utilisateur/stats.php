@@ -97,13 +97,6 @@ foreach ($moyenneJoursParBox as $typeBox => $moyenne) {
     $moyenneJoursData[] = $moyenne;
 }
 
-// Calcul du différentiel (Entrées - Sorties)
-$differentielContrats = [];
-foreach ($nouveauxContratsParMois as $mois => $entrées) {
-    $sorties = $contratsClosParMois[$mois] ?? 0;
-    $differentielContrats[$mois] = $entrées - $sorties;  // Différence
-}
-
 
 // Calculer le nombre de box libres, occupées et maximales
 $boxLibres = [];
@@ -424,18 +417,19 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                     },
                     {
                         label: 'Différenciel (Entrées - Sorties)',
-                        data: <?= json_encode($differentielContrats) ?>,
+                        data: <?= json_encode(array_map(function($entrées, $sorties) { return $entrées - $sorties; }, array_values($nouveauxContratsParMois), array_values($contratsClosParMois))) ?>,
                         type: 'line',
                         borderColor: '#007bff',
                         backgroundColor: 'transparent',
                         borderWidth: 2,
                         pointBackgroundColor: function(context) {
                             const value = context.dataset.data[context.dataIndex];
-                            return value >= 0 ? '#28a745' : '#dc3545';
+                            return value >= 0 ? '#28a745' : '#dc3545';  // Couleur verte ou rouge
                         },
-                        pointRadius: 8,
-                        pointHoverRadius: 10
+                        pointRadius: 8,  // Augmenter la taille des points
+                        pointHoverRadius: 10,  // Taille au survol
                     }
+
                 ]
             },
             options: {
@@ -495,9 +489,9 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                         backgroundColor: "transparent",
                         borderWidth: 3,
                         pointBackgroundColor: "#28a745",
-                        pointRadius: 8,
-                        pointHoverRadius: 10
-                        borderDash: [5, 5]
+                        pointRadius: 8,  // Augmenter la taille des points
+                        pointHoverRadius: 10,  // Taille au survol
+                        borderDash: [5, 5] // Ligne en pointillés pour mieux distinguer
                     }
                 ]
             },
