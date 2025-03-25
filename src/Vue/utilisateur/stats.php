@@ -241,40 +241,6 @@ foreach ($allMonths as $mois) {
     $differencielData[] = $entrees - $sorties;
 }
 
-$dateActuelle = new DateTime();
-$moisActuel = $dateActuelle->format('Y-m');
-
-// Préparer les données jusqu'au mois actuel + 12 mois (pour prévision)
-$moisDebut = new DateTime('first day of this month -11 months'); // 12 mois glissants
-$moisFin = new DateTime('first day of this month +12 months'); // +1 an pour prévision
-
-$period = new DatePeriod(
-    $moisDebut,
-    new DateInterval('P1M'),
-    $moisFin
-);
-
-$allMonths = [];
-foreach ($period as $date) {
-    $allMonths[] = $date->format('Y-m');
-}
-
-$entreesData = [];
-$sortiesData = [];
-$differencielData = [];
-
-foreach ($allMonths as $mois) {
-    $entrees = $nouveauxContratsParMois[$mois] ?? 0;
-    $sorties = $contratsClosParMois[$mois] ?? 0;
-
-    $entreesData[] = $entrees;
-    $sortiesData[] = $sorties;
-    $differencielData[] = $entrees - $sorties;
-
-    if ($mois === $moisActuel) {
-        $allMonths[array_search($mois, $allMonths)] = "Maintenant\n" . $mois;
-    }
-}
 ?>
 
 
@@ -471,18 +437,14 @@ foreach ($allMonths as $mois) {
                     {
                         label: 'Nouveaux contrats (entrées)',
                         data: <?= json_encode($entreesData) ?>,
-                        backgroundColor: '#28a74580', // Vert avec transparence
-                        borderColor: '#28a745',
-                        borderWidth: 1,
-                        order: 2
+                        backgroundColor: '#28a745',
+                        order: 2 // Met en arrière-plan
                     },
                     {
                         label: 'Contrats clos (sorties)',
                         data: <?= json_encode($sortiesData) ?>,
-                        backgroundColor: '#dc354580', // Rouge avec transparence
-                        borderColor: '#dc3545',
-                        borderWidth: 1,
-                        order: 1
+                        backgroundColor: '#dc3545',
+                        order: 1 // Entre les deux
                     },
                     {
                         label: 'Différenciel (Entrées - Sorties)',
@@ -496,14 +458,11 @@ foreach ($allMonths as $mois) {
                             return value >= 0 ? '#28a745' : '#dc3545';
                         },
                         pointBorderColor: '#fff',
-                        pointRadius: function(context) {
-                            // Points plus gros pour les valeurs non-nulles
-                            return context.dataset.data[context.dataIndex] !== 0 ? 6 : 0;
-                        },
+                        pointRadius: 6,
                         pointHoverRadius: 8,
-                        pointHitRadius: 30,
-                        order: 0,
-                        tension: 0.1
+                        pointHitRadius: 20,
+                        order: 0, // Premier plan
+                        tension: 0.1 // Légère courbure pour meilleure lisibilité
                     }
                 ]
             },
@@ -530,38 +489,12 @@ foreach ($allMonths as $mois) {
                                 if (label) label += ': ';
 
                                 const value = context.raw;
-                                if (context.datasetIndex === 2) {
-                                    return label + (value >= 0 ? '+' + value : value);
+                                if (context.datasetIndex === 2) { // Différenciel
+                                    label += (value >= 0 ? '+' : '') + value;
+                                } else {
+                                    label += value;
                                 }
-                                return label + value;
-                            },
-                            footer: function(tooltipItems) {
-                                const mois = tooltipItems[0].label.replace("Maintenant\n", "");
-                                const now = new Date().toISOString().slice(0, 7);
-
-                                if (mois > now) {
-                                    return '(Prévision)';
-                                }
-                                if (mois === now) {
-                                    return '(Mois en cours)';
-                                }
-                                return null;
-                            }
-                        }
-                    },
-                    annotation: {
-                        annotations: {
-                            lineNow: {
-                                type: 'line',
-                                xMin: 'Maintenant',
-                                xMax: 'Maintenant',
-                                borderColor: 'rgb(255, 159, 64)',
-                                borderWidth: 2,
-                                label: {
-                                    content: 'Aujourd\'hui',
-                                    enabled: true,
-                                    position: 'top'
-                                }
+                                return label;
                             }
                         }
                     }
@@ -573,19 +506,7 @@ foreach ($allMonths as $mois) {
                         },
                         ticks: {
                             maxRotation: 45,
-                            minRotation: 45,
-                            callback: function(value) {
-                                // Afficher seulement l'année pour janvier
-                                if (value.includes('-01')) {
-                                    return value.split('-')[0];
-                                }
-                                // Pour "Maintenant", afficher seulement ce label
-                                if (value.includes('Maintenant')) {
-                                    return 'Maintenant';
-                                }
-                                // Sinon afficher seulement le mois (MM)
-                                return value.split('-')[1];
-                            }
+                            minRotation: 45
                         }
                     },
                     y: {
