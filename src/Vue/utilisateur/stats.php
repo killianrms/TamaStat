@@ -370,13 +370,13 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         const moyenneJoursData = <?= json_encode($moyenneJoursData) ?>;
         const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
         const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
-        const moisContratsLabels = <?= json_encode(array_keys($nouveauxContratsParMois)) ?>.reverse();
-        const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
+        const moisContratsLabels = <?= json_encode(array_keys($nouveauxContratsParMois)) ?>;
+        const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>;
         const boxLibresData = <?= json_encode(array_values($boxLibres)) ?>;
         const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
         const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
         const boxLabels = <?= json_encode($boxLabels) ?>;
-        const contratsClosData = <?= json_encode(array_values($contratsClosParMois)) ?>.reverse();
+        const contratsClosData = <?= json_encode(array_values($contratsClosParMois)) ?>;
 
         // 3. Création des graphiques
         // Graphique Moyenne des jours
@@ -418,27 +418,30 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                     {
                         label: 'Nouveaux contrats (entrées)',
                         data: nouveauxContratsData,
-                        backgroundColor: '#28a745' // Vert pour les entrées
+                        backgroundColor: '#28a745'
                     },
                     {
                         label: 'Contrats clos (sorties)',
                         data: contratsClosData,
-                        backgroundColor: '#dc3545' // Rouge pour les sorties
+                        backgroundColor: '#dc3545'
                     },
                     {
                         label: 'Différenciel (Entrées - Sorties)',
-                        data: nouveauxContratsData.map((entrees, index) => {
-                            return entrees - (contratsClosData[index] || 0);
+                        data: moisContratsLabels.map((mois, index) => {
+                            const entrees = nouveauxContratsData[index] || 0;
+                            const sorties = contratsClosData[index] || 0;
+                            return entrees - sorties;
                         }),
-                        type: 'line', // Ligne pour le différenciel
+                        type: 'line',
                         borderColor: '#007bff',
                         backgroundColor: 'transparent',
                         borderWidth: 2,
                         pointBackgroundColor: function(context) {
                             const value = context.dataset.data[context.dataIndex];
-                            return value >= 0 ? '#28a745' : '#dc3545'; // Vert si positif, rouge si négatif
+                            return value >= 0 ? '#28a745' : '#dc3545';
                         },
-                        pointRadius: 5
+                        pointRadius: 5,
+                        order: 0 // Ceci place la ligne au premier plan
                     }
                 ]
             },
@@ -458,7 +461,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                                 if (label) {
                                     label += ': ';
                                 }
-                                if (context.datasetIndex === 2) { // Pour le différenciel
+                                if (context.datasetIndex === 2) {
                                     const value = context.raw;
                                     label += (value >= 0 ? '+' : '') + value;
                                 } else {
