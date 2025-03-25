@@ -222,6 +222,24 @@ $nbBoxRestantes = max(0, $nbBoxTotal - $nbBoxLouees);
 // Calcul du taux d'occupation (si 0 box dispo, on met à 0 pour éviter division par 0)
 $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 2) : 0;
 
+$allMonths = array_unique(array_merge(
+    array_keys($nouveauxContratsParMois),
+    array_keys($contratsClosParMois)
+));
+sort($allMonths);
+
+$entreesData = [];
+$sortiesData = [];
+$differencielData = [];
+
+foreach ($allMonths as $mois) {
+    $entrees = $nouveauxContratsParMois[$mois] ?? 0;
+    $sorties = $contratsClosParMois[$mois] ?? 0;
+
+    $entreesData[] = $entrees;
+    $sortiesData[] = $sorties;
+    $differencielData[] = $entrees - $sorties;
+}
 ?>
 
 
@@ -369,8 +387,8 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         const boxLabelsJours = <?= json_encode($boxLabelsJours) ?>;
         const moyenneJoursData = <?= json_encode($moyenneJoursData) ?>;
         const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
-        const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
-        const moisContratsLabels = <?= json_encode(array_keys($nouveauxContratsParMois)) ?>;
+        const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>;
+        const moisContratsLabels = <?= json_encode(array_keys($nouveauxContratsParMois)) ?>.reverse();
         const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>;
         const boxLibresData = <?= json_encode(array_values($boxLibres)) ?>;
         const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
@@ -413,59 +431,67 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         const contratsChart = new Chart(contratsCtx, {
             type: 'bar',
             data: {
-                labels: moisContratsLabels,
+                labels: <?= json_encode($allMonths) ?>,
                 datasets: [
                     {
                         label: 'Nouveaux contrats (entrées)',
-                        data: nouveauxContratsData,
-                        backgroundColor: '#28a745'
+                        data: <?= json_encode($entreesData) ?>,
+                        backgroundColor: '#28a745',
+                        order: 2 // Met en arrière-plan
                     },
                     {
                         label: 'Contrats clos (sorties)',
-                        data: contratsClosData,
-                        backgroundColor: '#dc3545'
+                        data: <?= json_encode($sortiesData) ?>,
+                        backgroundColor: '#dc3545',
+                        order: 1 // Entre les deux
                     },
                     {
                         label: 'Différenciel (Entrées - Sorties)',
-                        data: moisContratsLabels.map((mois, index) => {
-                            const entrees = nouveauxContratsData[index] || 0;
-                            const sorties = contratsClosData[index] || 0;
-                            return entrees - sorties;
-                        }),
+                        data: <?= json_encode($differencielData) ?>,
                         type: 'line',
-                        borderColor: '#007bff',
+                        borderColor: '#6c757d',
                         backgroundColor: 'transparent',
-                        borderWidth: 2,
+                        borderWidth: 3,
                         pointBackgroundColor: function(context) {
                             const value = context.dataset.data[context.dataIndex];
                             return value >= 0 ? '#28a745' : '#dc3545';
                         },
-                        pointRadius: 5,
-                        order: 0 // Ceci place la ligne au premier plan
+                        pointBorderColor: '#fff',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        pointHitRadius: 20,
+                        order: 0, // Premier plan
+                        tension: 0.1 // Légère courbure pour meilleure lisibilité
                     }
                 ]
             },
             options: {
+                responsive: true,
                 plugins: {
                     legend: {
+                        position: 'top',
                         labels: {
                             font: {
+                                size: 12,
                                 weight: 'bold'
-                            }
+                            },
+                            usePointStyle: true,
+                            padding: 20
                         }
                     },
                     tooltip: {
+                        mode: 'index',
+                        intersect: false,
                         callbacks: {
                             label: function(context) {
                                 let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.datasetIndex === 2) {
-                                    const value = context.raw;
+                                if (label) label += ': ';
+
+                                const value = context.raw;
+                                if (context.datasetIndex === 2) { // Différenciel
                                     label += (value >= 0 ? '+' : '') + value;
                                 } else {
-                                    label += context.raw;
+                                    label += value;
                                 }
                                 return label;
                             }
@@ -473,13 +499,30 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                     }
                 },
                 scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    },
                     y: {
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Nombre de contrats'
+                            text: 'Nombre de contrats',
+                            font: {
+                                weight: 'bold'
+                            }
                         }
                     }
+                },
+                interaction: {
+                    mode: 'nearest',
+                    axis: 'x',
+                    intersect: false
                 }
             }
         });
