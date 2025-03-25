@@ -201,7 +201,7 @@ $stmt = $pdo->prepare('
     AND DATE_FORMAT(date_vente, "%Y-%m") = ?
 ');
 $stmt->execute([$utilisateurId, $moisActuel]);
-$caActuel = (float) $stmt->fetchColumn();
+$caActuel = (float)$stmt->fetchColumn();
 
 $caRestant = max(0, $caMaxMensuel - $caActuel);
 
@@ -209,12 +209,12 @@ $caRestant = max(0, $caMaxMensuel - $caActuel);
 // Récupérer le nombre total de box disponibles par type
 $stmt = $pdo->prepare('SELECT SUM(quantite) FROM utilisateur_boxes WHERE utilisateur_id = ?');
 $stmt->execute([$utilisateurId]);
-$nbBoxTotal = (int) $stmt->fetchColumn();
+$nbBoxTotal = (int)$stmt->fetchColumn();
 
 // Récupérer le nombre de box actuellement louées
 $stmt = $pdo->prepare('SELECT COUNT(*) FROM locations WHERE utilisateur_id = ?');
 $stmt->execute([$utilisateurId]);
-$nbBoxLouees = (int) $stmt->fetchColumn();
+$nbBoxLouees = (int)$stmt->fetchColumn();
 
 // Calcul du nombre de box restantes
 $nbBoxRestantes = max(0, $nbBoxTotal - $nbBoxLouees);
@@ -279,7 +279,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
     </div>
 
     <div class="chart-card">
-        <h3>Nombre d'entrées - sorties</h3>
+        <h3>Nombre d'entrées — sorties</h3>
         <div class="date-filters">
             <label for="startDateEntrées">Mois début :</label>
             <input type="text" class="month-picker" id="startDateEntrées" placeholder="Sélectionnez un mois">
@@ -333,7 +333,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
         // 1. Initialisation des datepickers avec Flatpickr
         // Initialisation des datepickers avec options compactes
         flatpickr(".month-picker", {
@@ -349,7 +349,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                     yearPosition: "above"
                 })
             ],
-            onReady: function(selectedDates, dateStr, instance) {
+            onReady: function (selectedDates, dateStr, instance) {
                 // Ajustements spécifiques Firefox
                 if (navigator.userAgent.includes("Firefox")) {
                     instance.calendarContainer.style.zIndex = "9999";
@@ -408,6 +408,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             }
         });
 
+        // Graphique Contrats
         const contratsChart = new Chart(contratsCtx, {
             type: 'bar',
             data: {
@@ -490,9 +491,9 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             data: {
                 labels: boxLabels,
                 datasets: [
-                    { label: "Libres", data: boxLibresData, backgroundColor: "#28a745" },
-                    { label: "Occupées", data: boxOccupeesData, backgroundColor: "#dc3545" },
-                    { label: "Maximales", data: boxMaxData, backgroundColor: "#007bff" }
+                    {label: "Libres", data: boxLibresData, backgroundColor: "#28a745"},
+                    {label: "Occupées", data: boxOccupeesData, backgroundColor: "#dc3545"},
+                    {label: "Maximales", data: boxMaxData, backgroundColor: "#007bff"}
                 ]
             }
         });
@@ -555,18 +556,18 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         const toggleButtonJours = document.getElementById("toggleFilterJours");
         const dropdownContentJours = document.getElementById("boxFilterJours");
 
-        toggleButton.addEventListener("click", function(event) {
+        toggleButton.addEventListener("click", function (event) {
             event.stopPropagation();
             dropdownContent.classList.toggle("active");
         });
 
-        toggleButtonJours.addEventListener("click", function(event) {
+        toggleButtonJours.addEventListener("click", function (event) {
             event.stopPropagation();
             dropdownContentJours.classList.toggle("active");
         });
 
         document.querySelectorAll(".box-checkbox").forEach((checkbox, index) => {
-            checkbox.addEventListener("change", function() {
+            checkbox.addEventListener("change", function () {
                 const selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox:checked"))
                     .map(cb => parseInt(cb.value));
 
@@ -580,7 +581,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         });
 
         document.querySelectorAll(".box-checkbox-jours").forEach((checkbox, index) => {
-            checkbox.addEventListener("change", function() {
+            checkbox.addEventListener("change", function () {
                 const selectedIndexes = Array.from(document.querySelectorAll(".box-checkbox-jours:checked"))
                     .map(cb => parseInt(cb.value));
 
@@ -590,28 +591,28 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             });
         });
 
-        document.querySelector('.select-all-boxes').addEventListener('click', function() {
+        document.querySelector('.select-all-boxes').addEventListener('click', function () {
             document.querySelectorAll('#boxFilter .box-checkbox').forEach(checkbox => {
                 checkbox.checked = true;
                 checkbox.dispatchEvent(new Event('change'));
             });
         });
 
-        document.querySelector('.deselect-all-boxes').addEventListener('click', function() {
+        document.querySelector('.deselect-all-boxes').addEventListener('click', function () {
             document.querySelectorAll('#boxFilter .box-checkbox').forEach(checkbox => {
                 checkbox.checked = false;
                 checkbox.dispatchEvent(new Event('change'));
             });
         });
 
-        document.querySelector('.select-all-jours').addEventListener('click', function() {
+        document.querySelector('.select-all-jours').addEventListener('click', function () {
             document.querySelectorAll('#boxFilterJours .box-checkbox-jours').forEach(checkbox => {
                 checkbox.checked = true;
                 checkbox.dispatchEvent(new Event('change'));
             });
         });
 
-        document.querySelector('.deselect-all-jours').addEventListener('click', function() {
+        document.querySelector('.deselect-all-jours').addEventListener('click', function () {
             document.querySelectorAll('#boxFilterJours .box-checkbox-jours').forEach(checkbox => {
                 checkbox.checked = false;
                 checkbox.dispatchEvent(new Event('change'));
@@ -620,7 +621,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
 
         // Gestion des boutons Réinitialiser dates
         document.querySelectorAll('.reset-dates').forEach(btn => {
-            btn.addEventListener('click', function() {
+            btn.addEventListener('click', function () {
                 const card = this.closest('.chart-card');
                 const dateInputs = card.querySelectorAll('.month-picker');
 
@@ -642,7 +643,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         });
 
         // Fermeture des menus dropdown
-        document.addEventListener("click", function(event) {
+        document.addEventListener("click", function (event) {
             if (!toggleButton.contains(event.target) && !dropdownContent.contains(event.target)) {
                 dropdownContent.classList.remove("active");
             }
