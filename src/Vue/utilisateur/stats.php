@@ -289,14 +289,14 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
     </div>
 
     <div class="chart-card">
-        <h3>Quantité de Box</h3>
+        <h3>Occupation des boxes</h3>
+        <div class="filter-actions">
+            <button class="select-all-boxes">Tout sélectionner</button>
+            <button class="deselect-all-boxes">Tout supprimer</button>
+        </div>
         <div class="dropdown">
             <button id="toggleFilter">🔽 Sélectionner les box</button>
             <div id="boxFilter" class="dropdown-content">
-                <div class="filter-actions">
-                    <button class="select-all">Tout sélectionner</button>
-                    <button class="deselect-all">Tout supprimer</button>
-                </div>
                 <?php foreach ($boxLabels as $index => $boxLabel): ?>
                     <label>
                         <input type="checkbox" class="box-checkbox" value="<?= $index ?>" checked>
@@ -310,13 +310,13 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
 
     <div class="chart-card">
         <h3>Nombre moyen de jours occupés par type de box</h3>
+        <div class="filter-actions">
+            <button class="select-all-jours">Tout sélectionner</button>
+            <button class="deselect-all-jours">Tout supprimer</button>
+        </div>
         <div class="dropdown">
             <button id="toggleFilterJours">🔽 Sélectionner les box</button>
             <div id="boxFilterJours" class="dropdown-content">
-                <div class="filter-actions">
-                    <button class="select-all-jours">Tout sélectionner</button>
-                    <button class="deselect-all-jours">Tout supprimer</button>
-                </div>
                 <?php foreach ($boxLabelsJours as $index => $boxLabel): ?>
                     <label>
                         <input type="checkbox" class="box-checkbox-jours" value="<?= $index ?>" checked>
@@ -534,35 +534,31 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             });
         });
 
-        document.querySelector('.select-all').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.querySelectorAll('#boxFilter .box-checkbox').forEach(cb => {
-                cb.checked = true;
-                cb.dispatchEvent(new Event('change'));
+        document.querySelector('.select-all-boxes').addEventListener('click', function() {
+            document.querySelectorAll('#boxFilter .box-checkbox').forEach(checkbox => {
+                checkbox.checked = true;
+                checkbox.dispatchEvent(new Event('change'));
             });
         });
 
-        document.querySelector('.deselect-all').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.querySelectorAll('#boxFilter .box-checkbox').forEach(cb => {
-                cb.checked = false;
-                cb.dispatchEvent(new Event('change'));
+        document.querySelector('.deselect-all-boxes').addEventListener('click', function() {
+            document.querySelectorAll('#boxFilter .box-checkbox').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.dispatchEvent(new Event('change'));
             });
         });
 
-        document.querySelector('.select-all-jours').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.querySelectorAll('#boxFilterJours .box-checkbox-jours').forEach(cb => {
-                cb.checked = true;
-                cb.dispatchEvent(new Event('change'));
+        document.querySelector('.select-all-jours').addEventListener('click', function() {
+            document.querySelectorAll('#boxFilterJours .box-checkbox-jours').forEach(checkbox => {
+                checkbox.checked = true;
+                checkbox.dispatchEvent(new Event('change'));
             });
         });
 
-        document.querySelector('.deselect-all-jours').addEventListener('click', function(e) {
-            e.preventDefault();
-            document.querySelectorAll('#boxFilterJours .box-checkbox-jours').forEach(cb => {
-                cb.checked = false;
-                cb.dispatchEvent(new Event('change'));
+        document.querySelector('.deselect-all-jours').addEventListener('click', function() {
+            document.querySelectorAll('#boxFilterJours .box-checkbox-jours').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.dispatchEvent(new Event('change'));
             });
         });
 
