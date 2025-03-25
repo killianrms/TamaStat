@@ -89,21 +89,19 @@ foreach ($locations as $location) {
     $nouveauxContratsParMois[$mois] = ($nouveauxContratsParMois[$mois] ?? 0) + 1;
 }
 
-// Ajustement du graphique des entrées (Nombre d'entrées - Nombre de sorties)
-$netContratsParMois = [];
-foreach ($nouveauxContratsParMois as $mois => $entrees) {
-    $sorties = $contratsClosParMois[$mois] ?? 0;
-    $netContratsParMois[$mois] = $entrees - $sorties;
-}
-
-$differencielContrats = array_diff_key($nouveauxContratsParMois, $contratsClosParMois);
-
 $boxLabelsJours = [];
 $moyenneJoursData = [];
 
 foreach ($moyenneJoursParBox as $typeBox => $moyenne) {
     $boxLabelsJours[] = $typeBox;
     $moyenneJoursData[] = $moyenne;
+}
+
+// Calcul du différentiel (Entrées - Sorties)
+$differentielContrats = [];
+foreach ($nouveauxContratsParMois as $mois => $entrées) {
+    $sorties = $contratsClosParMois[$mois] ?? 0;
+    $differentielContrats[$mois] = $entrées - $sorties;  // Différence
 }
 
 
@@ -426,18 +424,17 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                     },
                     {
                         label: 'Différenciel (Entrées - Sorties)',
-                        data: nouveauxContratsData.map((entrees, index) => {
-                            return entrees - (contratsClosData[index] || 0);
-                        }),
-                        type: 'line', // Ligne pour le différenciel
+                        data: <?= json_encode($differentielContrats) ?>,
+                        type: 'line',
                         borderColor: '#007bff',
                         backgroundColor: 'transparent',
                         borderWidth: 2,
                         pointBackgroundColor: function(context) {
                             const value = context.dataset.data[context.dataIndex];
-                            return value >= 0 ? '#28a745' : '#dc3545'; // Vert si positif, rouge si négatif
+                            return value >= 0 ? '#28a745' : '#dc3545';
                         },
-                        pointRadius: 5
+                        pointRadius: 8,
+                        pointHoverRadius: 10
                     }
                 ]
             },
