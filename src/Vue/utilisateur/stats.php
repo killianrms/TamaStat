@@ -409,11 +409,13 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                         label: 'Nouveaux contrats (entrées)',
                         data: nouveauxContratsData,
                         backgroundColor: '#007bff' // Bleu pour les entrées
+                        order: 1;
                     },
                     {
                         label: 'Contrats clos (sorties)',
                         data: contratsClosData,
                         backgroundColor: '#FFA726' // orange pour les sorties
+                        order: 2;
                     },
                     {
                         label: 'Différenciel (Entrées - Sorties)',
@@ -428,6 +430,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                         },
                         pointRadius: 8,  // Augmenter la taille des points
                         pointHoverRadius: 10,  // Taille au survol
+                        order: 0;
                     }
 
                 ]
@@ -479,8 +482,8 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             data: {
                 labels: boxLabels,
                 datasets: [
-                    {label: "Occupées", data: boxOccupeesData, backgroundColor: "#FFA726"}, // Orange
-                    {label: "Maximales", data: boxMaxData, backgroundColor: "#007bff"},    // Bleu
+                    {label: "Occupées", data: boxOccupeesData, backgroundColor: "#FFA726", order: 1;}, // Orange
+                    {label: "Maximales", data: boxMaxData, backgroundColor: "#007bff", order: 2;},    // Bleu
                     {
                         label: "Libres (Max - Occupées)",
                         data: boxMaxData.map((max, index) => max - boxOccupeesData[index]),
@@ -492,6 +495,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                         pointRadius: 8,  // Augmenter la taille des points
                         pointHoverRadius: 10,  // Taille au survol
                         borderDash: [5, 5] // Ligne en pointillés pour mieux distinguer
+                        order: 0;
                     }
                 ]
             },
