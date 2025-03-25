@@ -408,60 +408,60 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             }
         });
 
-        const contratsCtx = document.getElementById('nouveauxContratsChart').getContext('2d');
         const contratsChart = new Chart(contratsCtx, {
             type: 'bar',
             data: {
                 labels: moisContratsLabels,
                 datasets: [
+                    // 1. Ligne de différenciel (premier plan)
+                    {
+                        label: 'Différenciel (Entrées - Sorties)',
+                        data: nouveauxContratsData.map((entrees, index) => entrees - (contratsClosData[index] || 0)),
+                        type: 'line',
+                        borderColor: '#007bff',
+                        borderWidth: 3,
+                        backgroundColor: 'transparent',
+                        pointBackgroundColor: (ctx) => ctx.raw >= 0 ? '#28a745' : '#dc3545',
+                        pointRadius: 6,
+                        pointHoverRadius: 8,
+                        order: 0
+                    },
+                    // 2. Barres (arrière-plan avec transparence)
                     {
                         label: 'Nouveaux contrats (entrées)',
                         data: nouveauxContratsData,
-                        backgroundColor: '#28a745' // Vert pour les entrées
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        order: 1
                     },
                     {
                         label: 'Contrats clos (sorties)',
                         data: contratsClosData,
-                        backgroundColor: '#dc3545' // Rouge pour les sorties
-                    },
-                    {
-                        label: 'Différenciel (Entrées - Sorties)',
-                        data: nouveauxContratsData.map((entrees, index) => {
-                            return entrees - (contratsClosData[index] || 0);
-                        }),
-                        type: 'line', // Ligne pour le différenciel
-                        borderColor: '#007bff',
-                        backgroundColor: 'transparent',
-                        borderWidth: 2,
-                        pointBackgroundColor: function(context) {
-                            const value = context.dataset.data[context.dataIndex];
-                            return value >= 0 ? '#28a745' : '#dc3545'; // Vert si positif, rouge si négatif
-                        },
-                        pointRadius: 5
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                        order: 1
                     }
                 ]
             },
             options: {
+                responsive: true,
                 plugins: {
                     legend: {
+                        position: 'top',
                         labels: {
                             font: {
                                 weight: 'bold'
-                            }
+                            },
+                            usePointStyle: true
                         }
                     },
                     tooltip: {
                         callbacks: {
-                            label: function(context) {
-                                let label = context.dataset.label || '';
-                                if (label) {
-                                    label += ': ';
-                                }
-                                if (context.datasetIndex === 2) { // Pour le différenciel
-                                    const value = context.raw;
-                                    label += (value >= 0 ? '+' : '') + value;
+                            label: (ctx) => {
+                                let label = ctx.dataset.label || '';
+                                if (label) label += ': ';
+                                if (ctx.datasetIndex === 0) {
+                                    label += (ctx.raw >= 0 ? '+' : '') + ctx.raw;
                                 } else {
-                                    label += context.raw;
+                                    label += ctx.raw;
                                 }
                                 return label;
                             }
@@ -473,7 +473,10 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                         beginAtZero: true,
                         title: {
                             display: true,
-                            text: 'Nombre de contrats'
+                            text: 'Nombre de contrats',
+                            font: {
+                                weight: 'bold'
+                            }
                         }
                     }
                 }
