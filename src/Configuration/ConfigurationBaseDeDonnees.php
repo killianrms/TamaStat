@@ -5,7 +5,7 @@ class ConfigurationBaseDeDonnees
 {
 
     // Les détails de configuration sont chargés paresseusement lors du premier accès
-    static private ?array $configurationBaseDeDonnees;
+    static private ?array $configurationBaseDeDonnees = null;
 
     // Initialise le tableau de configuration s'il n'a pas encore été chargé
     private static function initConfig(): void
