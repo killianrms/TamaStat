@@ -92,7 +92,7 @@ foreach ($locations as $location) {
 
 // Calcul du différentiel entrées/sorties par mois
 $allMois = array_unique(array_merge(array_keys($nouveauxContratsParMois), array_keys($contratsClosParMois)));
-sort($allMois); // Trier les mois chronologiquement
+rsort($allMois); // Trier les mois chronologiquement (inversé: plus récent au plus ancien)
 
 $netContratsParMois = [];
 $nouveauxContratsDataOrdered = [];
@@ -142,8 +142,25 @@ foreach ($boxTypes as $boxType) {
     ];
 }
 
-// Trier les données par dénomination (clé) alphabétiquement
-ksort($boxOccupationData);
+// Trier les données avec la logique personnalisée
+uksort($boxOccupationData, function ($a, $b) {
+    $aIsBoxNum = preg_match('/^Box n° (\d+)$/i', $a, $aMatches); // Case-insensitive match
+    $bIsBoxNum = preg_match('/^Box n° (\d+)$/i', $b, $bMatches); // Case-insensitive match
+
+    if ($aIsBoxNum && $bIsBoxNum) {
+        // Both start with "Box n°", sort numerically
+        return (int)$aMatches[1] <=> (int)$bMatches[1];
+    } elseif ($aIsBoxNum) {
+        // "Box n°" comes before others
+        return -1;
+    } elseif ($bIsBoxNum) {
+        // "Box n°" comes before others
+        return 1;
+    } else {
+        // Neither starts with "Box n°", sort alphabetically (case-insensitive)
+        return strcasecmp($a, $b);
+    }
+});
 
 // Extraire les données triées pour JavaScript
 $boxLabels = array_keys($boxOccupationData);
@@ -182,6 +199,7 @@ foreach ($recapVentes as $vente) {
     $mois = date('Y-m', strtotime($vente['date_vente']));
     $revenuMensuel[$mois] = ($revenuMensuel[$mois] ?? 0) + $vente['total_ht'];
 }
+ksort($revenuMensuel); // Assurer l'ordre chronologique initial par mois
 
 // Calculer le taux d'occupation global
 $tauxOccupationGlobal = ($capaciteTotale > 0) ? min(100, round(($capaciteUtilisee / $capaciteTotale) * 100, 2)) : 0;
@@ -383,8 +401,16 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         // 2. Données des graphiques
         const boxLabelsJours = <?= json_encode($boxLabelsJours) ?>;
         const moyenneJoursData = <?= json_encode($moyenneJoursData) ?>;
-        const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>; // Garder l'ordre chronologique
-        const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>; // Garder l'ordre chronologique
+        <?php
+            // Préparer les données de revenus triées et inversées
+            $moisLabelsRevenu = array_keys($revenuMensuel);
+            $revenuMensuelDataPHP = array_values($revenuMensuel);
+            // Inverser pour afficher du plus récent au plus ancien
+            $moisLabelsRevenu = array_reverse($moisLabelsRevenu);
+            $revenuMensuelDataPHP = array_reverse($revenuMensuelDataPHP);
+        ?>
+        const moisLabels = <?= json_encode($moisLabelsRevenu) ?>; // Ordre inversé (plus récent en premier)
+        const revenuMensuelData = <?= json_encode($revenuMensuelDataPHP) ?>; // Ordre inversé
         const moisContratsLabels = <?= json_encode($moisContratsLabels) ?>; // Utiliser les labels triés
         const nouveauxContratsData = <?= json_encode($nouveauxContratsDataOrdered) ?>; // Utiliser les données ordonnées
         const boxLibresData = <?= json_encode($boxLibresData) ?>; // Utiliser les données triées
