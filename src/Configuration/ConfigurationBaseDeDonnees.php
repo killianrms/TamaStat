@@ -11,6 +11,11 @@ class ConfigurationBaseDeDonnees
     private static function initConfig(): void
     {
         if (self::$configurationBaseDeDonnees === null) {
+            error_log("DEBUG: DB_HOST from getenv(): " . (getenv('DB_HOST') ?: 'NOT SET'));
+            error_log("DEBUG: DB_NAME from getenv(): " . (getenv('DB_NAME') ?: 'NOT SET'));
+            error_log("DEBUG: DB_PORT from getenv(): " . (getenv('DB_PORT') ?: 'NOT SET'));
+            error_log("DEBUG: DB_USER from getenv(): " . (getenv('DB_USER') ?: 'NOT SET'));
+            error_log("DEBUG: DB_PASS from getenv(): " . (getenv('DB_PASS') ? 'SET (hidden)' : 'NOT SET')); // Avoid logging password
             self::$configurationBaseDeDonnees = [
                 // Le nom d'hote est webinfo a l'IUT
                 // ou localhost sur votre machine
