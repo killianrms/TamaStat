@@ -409,7 +409,7 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
             $moisLabelsRevenu = array_reverse($moisLabelsRevenu);
             $revenuMensuelDataPHP = array_reverse($revenuMensuelDataPHP);
         ?>
-        const moisLabels = <?= json_encode($moisLabelsRevenu) ?>; // Ordre inversé (plus récent en premier)
+        const moisLabels = <?= json_encode($moisLabelsRevenu) ?>.reverse(); // Ordre inversé (plus récent en premier)
         const revenuMensuelData = <?= json_encode($revenuMensuelDataPHP) ?>; // Ordre inversé
         const moisContratsLabels = <?= json_encode($moisContratsLabels) ?>; // Utiliser les labels triés
         const nouveauxContratsData = <?= json_encode($nouveauxContratsDataOrdered) ?>; // Utiliser les données ordonnées
