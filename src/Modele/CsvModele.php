@@ -18,6 +18,12 @@ class CsvModele
 
     /**
      * Vérifie si une facture existe déjà avant l'insertion.
+     *
+     * @param int $utilisateurId ID de l'utilisateur.
+     * @param string|null $referenceContrat Référence du contrat.
+     * @param string $titre Titre de la facture.
+     * @param string $dateFacture Date de la facture (format Y-m-d).
+     * @return bool Vrai si la facture existe, faux sinon.
      */
     private function factureExiste($utilisateurId, $referenceContrat, $titre, $dateFacture)
     {
@@ -40,6 +46,11 @@ class CsvModele
 
     /**
      * Importe une facture si elle n'existe pas déjà.
+     *
+     * @param int $utilisateurId ID de l'utilisateur.
+     * @param array $ligne Données de la ligne CSV.
+     * @return void
+     * @throws Exception Si une erreur survient lors de l'importation.
      */
     public function importerFacture($utilisateurId, $ligne)
     {
@@ -90,6 +101,10 @@ class CsvModele
 
     /**
      * Vérifie si un type de box existe déjà avant l'insertion.
+     *
+     * @param string $denomination Dénomination du type de box.
+     * @param int $utilisateurId ID de l'utilisateur.
+     * @return bool Vrai si le type de box existe, faux sinon.
      */
     private function boxTypeExiste($denomination, $utilisateurId)
     {
@@ -105,7 +120,12 @@ class CsvModele
     }
 
     /**
-     * Importe un type de box si il n'existe pas déjà.
+     * Importe un type de box s'il n'existe pas déjà.
+     *
+     * @param array $ligne Données de la ligne CSV.
+     * @param int $utilisateurId ID de l'utilisateur.
+     * @return void
+     * @throws Exception Si une erreur PDO survient.
      */
     public function importerBoxType($ligne, $utilisateurId)
     {
@@ -136,6 +156,13 @@ class CsvModele
 
     /**
      * Vérifie si une location existe déjà avant l'insertion.
+     *
+     * @param int $utilisateurId ID de l'utilisateur.
+     * @param string $referenceContrat Référence du contrat.
+     * @param int $boxTypeId ID du type de box.
+     * @param string $dateDebut Date de début (format Y-m-d).
+     * @param string|null $dateFin Date de fin (format Y-m-d) ou null.
+     * @return bool Vrai si la location existe, faux sinon.
      */
     private function locationExiste($utilisateurId, $referenceContrat, $boxTypeId, $dateDebut, $dateFin)
     {
@@ -158,7 +185,12 @@ class CsvModele
     }
 
     /**
-     * Importe une location si elle n'existe pas déjà.
+     * Importe une location (contrat) si elle n'existe pas déjà.
+     *
+     * @param int $utilisateurId ID de l'utilisateur.
+     * @param array $ligne Données de la ligne CSV.
+     * @return void
+     * @throws Exception Si une erreur survient lors de l'importation.
      */
     public function importerLocation($utilisateurId, $ligne)
     {
@@ -200,6 +232,12 @@ class CsvModele
 
     /**
      * Vérifie si un contrat clos existe déjà avant l'insertion.
+     *
+     * @param int $utilisateurId ID de l'utilisateur.
+     * @param string $reference Référence du contrat.
+     * @param \DateTime|null $dateEntree Date d'entrée.
+     * @param \DateTime|null $sortieEffective Date de sortie effective.
+     * @return bool Vrai si le contrat clos existe, faux sinon.
      */
     public function contratClosExiste($utilisateurId, $reference, $dateEntree, $sortieEffective) {
         $stmt = $this->pdo->prepare('
@@ -222,7 +260,12 @@ class CsvModele
 
 
     /**
-     * Importe un contrat clos si il n'existe pas déjà.
+     * Importe un contrat clos s'il n'existe pas déjà.
+     *
+     * @param int $utilisateurId ID de l'utilisateur.
+     * @param array $ligne Données de la ligne CSV.
+     * @return void
+     * @throws Exception Si une erreur survient lors de l'importation.
      */
     public function importerContratClos($utilisateurId, $ligne)
     {
@@ -337,6 +380,16 @@ class CsvModele
         }
     }
 
+    /**
+     * Vérifie si un récapitulatif de vente existe déjà.
+     *
+     * @param int $utilisateurId ID de l'utilisateur.
+     * @param string $dateVente Date de la vente (format Y-m-d).
+     * @param float $totalHt Total hors taxes.
+     * @param float $tva Montant de la TVA.
+     * @param float $totalTtc Total toutes taxes comprises.
+     * @return bool Vrai si le récapitulatif existe, faux sinon.
+     */
     private function recapVenteExiste($utilisateurId, $dateVente, $totalHt, $tva, $totalTtc)
     {
         $stmt = $this->pdo->prepare('
@@ -358,6 +411,13 @@ class CsvModele
     }
 
 
+    /**
+     * Récupère l'ID d'un type de box par sa dénomination.
+     *
+     * @param string $denomination Dénomination du type de box.
+     * @param int $utilisateurId ID de l'utilisateur.
+     * @return int|null L'ID du type de box ou null s'il n'est pas trouvé.
+     */
     public function getBoxTypeIdByReference($denomination, $utilisateurId)
     {
         $denomination = $this->normalizeString($denomination);
@@ -368,6 +428,13 @@ class CsvModele
         return $result ? $result['id'] : null;
     }
 
+    /**
+     * Vérifie si un contrat (location) existe pour une référence donnée.
+     *
+     * @param string|null $referenceContrat Référence du contrat.
+     * @param int $utilisateurId ID de l'utilisateur.
+     * @return bool Vrai si le contrat existe, faux sinon.
+     */
     public function contratExiste($referenceContrat, $utilisateurId)
     {
         if (!$referenceContrat) {
@@ -389,6 +456,12 @@ class CsvModele
         return $stmt->fetchColumn() > 0;
     }
 
+    /**
+     * Normalise une chaîne de caractères (encodage, espaces, caractères spéciaux).
+     *
+     * @param string $string La chaîne à normaliser.
+     * @return string La chaîne normalisée.
+     */
     private function normalizeString($string)
     {
         $string = trim($string);

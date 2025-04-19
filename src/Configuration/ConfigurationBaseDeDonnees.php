@@ -4,55 +4,66 @@ namespace App\Configuration;
 class ConfigurationBaseDeDonnees
 {
 
-    static private array $configurationBaseDeDonnees = array(
-        // Le nom d'hote est webinfo a l'IUT
-        // ou localhost sur votre machine
-        //
-        // ou webinfo.iutmontp.univ-montp2.fr
-        // pour accéder à webinfo depuis l'extérieur
-        'nomHote' => getenv('DB_HOST') ?: 'localhost', // Fallback to 'localhost' if DB_HOST is not set
-        // A l'IUT, vous avez une base de données nommee comme votre login
-        // Sur votre machine, vous devrez creer une base de données
-        'nomBaseDeDonnees' => getenv('DB_NAME') ?: 'default_db', // Fallback if DB_NAME is not set
-        // À l'IUT, le port de MySQL est particulier : 3316
-        // Ailleurs, on utilise le port par défaut : 3306
-        'port' => getenv('DB_PORT') ?: '3306', // Fallback to default MySQL port 3306 if DB_PORT is not set
-        // A l'IUT, c'est votre login
-        // Sur votre machine, vous avez surement un compte 'root'
-        'login' => getenv('DB_USER') ?: 'root', // Fallback to 'root' if DB_USER is not set
-        // A l'IUT, c'est le même mdp que PhpMyAdmin
-        // Sur votre machine personelle, vous avez creez ce mdp a l'installation
-        'motDePasse' => getenv('DB_PASS') ?: '' // Fallback to empty string if DB_PASS is not set
-    );
+    // Les détails de configuration sont chargés paresseusement lors du premier accès
+    static private ?array $configurationBaseDeDonnees;
+
+    // Initialise le tableau de configuration s'il n'a pas encore été chargé
+    private static function initConfig(): void
+    {
+        if (self::$configurationBaseDeDonnees === null) {
+            self::$configurationBaseDeDonnees = [
+                // Le nom d'hote est webinfo a l'IUT
+                // ou localhost sur votre machine
+                // ou webinfo.iutmontp.univ-montp2.fr pour accéder à webinfo depuis l'extérieur
+                'nomHote' => getenv('DB_HOST') ?: 'localhost', // Repli sur 'localhost' si DB_HOST n'est pas défini
+
+                // A l'IUT, vous avez une base de données nommee comme votre login
+                // Sur votre machine, vous devrez creer une base de données
+                'nomBaseDeDonnees' => getenv('DB_NAME') ?: 'default_db', // Repli si DB_NAME n'est pas défini
+
+                // À l'IUT, le port de MySQL est particulier : 3316
+                // Ailleurs, on utilise le port par défaut : 3306
+                'port' => getenv('DB_PORT') ?: '3306', // Repli sur le port MySQL par défaut 3306 si DB_PORT n'est pas défini
+
+                // A l'IUT, c'est votre login
+                // Sur votre machine, vous avez surement un compte 'root'
+                'login' => getenv('DB_USER') ?: 'root', // Repli sur 'root' si DB_USER n'est pas défini
+
+                // A l'IUT, c'est le même mdp que PhpMyAdmin
+                // Sur votre machine personelle, vous avez creez ce mdp a l'installation
+                'motDePasse' => getenv('DB_PASS') ?: '' // Repli sur une chaîne vide si DB_PASS n'est pas défini
+            ];
+        }
+    }
 
     static public function getLogin(): string
     {
-        // L'attribut statique $configurationBaseDeDonnees
-        // s'obtient avec la syntaxe ConfigurationBaseDeDonnees::$configurationBaseDeDonnees
-        // au lieu de $this->configurationBaseDeDonnees pour un attribut non statique
-        return ConfigurationBaseDeDonnees::$configurationBaseDeDonnees['login'];
+        self::initConfig();
+        return self::$configurationBaseDeDonnees['login'];
     }
 
     static public function getNomHote(): string
     {
-        return ConfigurationBaseDeDonnees::$configurationBaseDeDonnees['nomHote'];
+        self::initConfig();
+        return self::$configurationBaseDeDonnees['nomHote'];
     }
 
     static public function getPort(): string
     {
-        return ConfigurationBaseDeDonnees::$configurationBaseDeDonnees['port'];
+        self::initConfig();
+        return self::$configurationBaseDeDonnees['port'];
     }
 
     static public function getNomBaseDeDonnees(): string
     {
-        return ConfigurationBaseDeDonnees::$configurationBaseDeDonnees['nomBaseDeDonnees'];
+        self::initConfig();
+        return self::$configurationBaseDeDonnees['nomBaseDeDonnees'];
     }
 
     static public function getPassword(): string
     {
-        return ConfigurationBaseDeDonnees::$configurationBaseDeDonnees['motDePasse'];
+        self::initConfig();
+        return self::$configurationBaseDeDonnees['motDePasse'];
     }
 }
-
-?>
 
