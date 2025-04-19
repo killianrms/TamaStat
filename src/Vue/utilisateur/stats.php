@@ -89,12 +89,24 @@ foreach ($locations as $location) {
     $nouveauxContratsParMois[$mois] = ($nouveauxContratsParMois[$mois] ?? 0) + 1;
 }
 
-// Ajustement du graphique des entrées (Nombre d'entrées - Nombre de sorties)
+// Calcul du différentiel entrées/sorties par mois
+$allMois = array_unique(array_merge(array_keys($nouveauxContratsParMois), array_keys($contratsClosParMois)));
+sort($allMois); // Trier les mois chronologiquement
+
 $netContratsParMois = [];
-foreach ($nouveauxContratsParMois as $mois => $entrees) {
+$nouveauxContratsDataOrdered = [];
+$contratsClosDataOrdered = [];
+
+foreach ($allMois as $mois) {
+    $entrees = $nouveauxContratsParMois[$mois] ?? 0;
     $sorties = $contratsClosParMois[$mois] ?? 0;
     $netContratsParMois[$mois] = $entrees - $sorties;
+    $nouveauxContratsDataOrdered[] = $entrees; // Stocker dans l'ordre des mois triés
+    $contratsClosDataOrdered[] = $sorties; // Stocker dans l'ordre des mois triés
 }
+
+$netContratsData = array_values($netContratsParMois); // Les valeurs sont déjà dans le bon ordre grâce à l'itération sur $allMois
+$moisContratsLabels = $allMois; // Utiliser les mois triés comme labels
 
 $boxLabelsJours = [];
 $moyenneJoursData = [];
@@ -366,15 +378,16 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         // 2. Données des graphiques
         const boxLabelsJours = <?= json_encode($boxLabelsJours) ?>;
         const moyenneJoursData = <?= json_encode($moyenneJoursData) ?>;
-        const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>.reverse();
-        const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>.reverse();
-        const moisContratsLabels = <?= json_encode(array_keys($nouveauxContratsParMois)) ?>.reverse();
-        const nouveauxContratsData = <?= json_encode(array_values($nouveauxContratsParMois)) ?>.reverse();
+        const moisLabels = <?= json_encode(array_keys($revenuMensuel)) ?>; // Garder l'ordre chronologique
+        const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>; // Garder l'ordre chronologique
+        const moisContratsLabels = <?= json_encode($moisContratsLabels) ?>; // Utiliser les labels triés
+        const nouveauxContratsData = <?= json_encode($nouveauxContratsDataOrdered) ?>; // Utiliser les données ordonnées
         const boxLibresData = <?= json_encode(array_values($boxLibres)) ?>;
         const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
         const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
         const boxLabels = <?= json_encode($boxLabels) ?>;
-        const contratsClosData = <?= json_encode(array_values($contratsClosParMois)) ?>.reverse();
+        const contratsClosData = <?= json_encode($contratsClosDataOrdered) ?>; // Utiliser les données ordonnées
+        const netContratsData = <?= json_encode($netContratsData) ?>; // Ajouter les données du différentiel
 
         // 3. Création des graphiques
         // Graphique Moyenne des jours
@@ -416,14 +429,32 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
                     {
                         label: 'Nouveaux contrats (entrées)',
                         data: nouveauxContratsData,
-                        backgroundColor: '#007bff'
+                        backgroundColor: '#007bff',
+                        type: 'bar' // Spécifier le type pour mixage
                     },
                     {
                         label: 'Contrats clos (sorties)',
                         data: contratsClosData,
-                        backgroundColor: '#dc3545'
+                        backgroundColor: '#dc3545',
+                        type: 'bar' // Spécifier le type pour mixage
+                    },
+                    {
+                        label: 'Différentiel (Entrées - Sorties)',
+                        data: netContratsData,
+                        borderColor: '#28a745', // Couleur de la ligne
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)', // Couleur de fond légère pour la ligne
+                        type: 'line', // Afficher comme une ligne
+                        tension: 0.1,
+                        fill: true // Remplir sous la ligne
                     }
                 ]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true // Assurer que l'axe Y commence à 0
+                    }
+                }
             }
         });
 
