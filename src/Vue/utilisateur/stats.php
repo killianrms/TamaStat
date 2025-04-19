@@ -74,6 +74,7 @@ $moyenneJoursParBox = [];
 foreach ($joursOccupesParBox as $typeBox => $totalJours) {
     $moyenneJoursParBox[$typeBox] = round($totalJours / $nombreContratsParBox[$typeBox], 2);
 }
+ksort($moyenneJoursParBox); // Trier par type de box (dénomination) alphabétiquement
 
 // Calcul du nombre de contrats clos par mois (sorties)
 $contratsClosParMois = [];
@@ -117,35 +118,39 @@ foreach ($moyenneJoursParBox as $typeBox => $moyenne) {
 }
 
 
-// Calculer le nombre de box libres, occupées et maximales
-$boxLibres = [];
-$boxMax = [];
-$boxOccupees = [];
-$boxLabels = [];
+// Calculer le nombre de box libres, occupées et maximales et trier par dénomination
+$boxOccupationData = [];
 foreach ($boxTypes as $boxType) {
     $boxTypeId = $boxType['id'];
+    $denomination = $boxType['denomination'];
 
     // Nombre de box disponibles par type
     $totalBoxDispo = $boxDisponibles[$boxTypeId] ?? 0;
 
     if ($totalBoxDispo == 0) {
-        continue;
+        continue; // Ne pas inclure les types de box sans quantité définie
     }
 
-    // Nombre de box occupées
+    // Nombre de box occupées pour ce type
     $nbBoxLoues = count(array_filter($locations, fn($loc) => $loc['box_type_id'] == $boxTypeId));
 
-    // Nombre de box libres
-    $boxLibres[$boxTypeId] = $totalBoxDispo - $nbBoxLoues;
-
-    // Stocker la quantité maximale
-    $boxMax[$boxTypeId] = $totalBoxDispo;
-
-    // Nombre de box occupées
-    $boxOccupees[$boxTypeId] = $nbBoxLoues;
-
-    $boxLabels[] = $boxType['denomination'];
+    // Stocker les données par dénomination
+    $boxOccupationData[$denomination] = [
+        'libres' => max(0, $totalBoxDispo - $nbBoxLoues), // Assurer que libre n'est pas négatif
+        'occupees' => $nbBoxLoues,
+        'max' => $totalBoxDispo
+    ];
 }
+
+// Trier les données par dénomination (clé) alphabétiquement
+ksort($boxOccupationData);
+
+// Extraire les données triées pour JavaScript
+$boxLabels = array_keys($boxOccupationData);
+$boxLibresData = array_column($boxOccupationData, 'libres');
+$boxOccupeesData = array_column($boxOccupationData, 'occupees');
+$boxMaxData = array_column($boxOccupationData, 'max');
+
 
 // Lier les box à leurs prix
 $boxTypesById = [];
@@ -383,9 +388,9 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         const moisContratsLabels = <?= json_encode($moisContratsLabels) ?>; // Utiliser les labels triés
         const nouveauxContratsData = <?= json_encode($nouveauxContratsDataOrdered) ?>; // Utiliser les données ordonnées
         const boxLibresData = <?= json_encode($boxLibresData) ?>; // Utiliser les données triées
-        const boxMaxData = <?= json_encode($boxMaxData) ?>; // Utiliser les données triées
+        const boxMaxData = <?= json_encode($boxMaxData) ?>;       // Utiliser les données triées
         const boxOccupeesData = <?= json_encode($boxOccupeesData) ?>; // Utiliser les données triées
-        const boxLabels = <?= json_encode($boxLabels) ?>; // Utiliser les labels triés
+        const boxLabels = <?= json_encode($boxLabels) ?>;         // Utiliser les labels triés
         const contratsClosData = <?= json_encode($contratsClosDataOrdered) ?>; // Utiliser les données ordonnées
         const netContratsData = <?= json_encode($netContratsData) ?>; // Ajouter les données du différentiel
 
