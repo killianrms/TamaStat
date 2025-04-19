@@ -15,6 +15,20 @@ use App\Controleur\Specifique\ControleurUtilisateur;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+// Load environment variables from .env file
+// Note: Ensure vlucas/phpdotenv is installed (e.g., via composer require vlucas/phpdotenv)
+// If composer command failed, this part might cause an error until the library is available.
+try {
+    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../'); // Points to the project root where .env should be
+    $dotenv->load();
+} catch (\Dotenv\Exception\InvalidPathException $e) {
+    // Handle the error appropriately - e.g., log it, display a message
+    // For now, we'll just signal that the .env file wasn't found or is inaccessible
+    error_log("Error loading .env file: " . $e->getMessage());
+    // Depending on the application's needs, you might want to exit or use default values
+}
+
+
 $route = $_GET['route'] ?? 'connexion';
 
 $controleurUtilisateur = new ControleurUtilisateur();
