@@ -15,14 +15,6 @@ use App\Controleur\Specifique\ControleurUtilisateur;
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
-try {
-    $dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../'); 
-    $dotenv->load();
-} catch (\Dotenv\Exception\InvalidPathException $e) {
-    error_log("Error loading .env file: " . $e->getMessage());
-}
-
-
 $route = $_GET['route'] ?? 'connexion';
 
 $controleurUtilisateur = new ControleurUtilisateur();

@@ -26,3 +26,4 @@ class ConnexionBD
         return $this->pdo;
     }
 }
+?>

@@ -1,26 +1,26 @@
-
 # TamaStat
 
 ## Description
 
-Application web PHP développée pour la gestion et la visualisation de statistiques. Elle semble utiliser une architecture de type MVC et inclut des fonctionnalités de gestion des utilisateurs et d'interaction avec une base de données, ainsi qu'un potentiel traitement de fichiers CSV.
+TamaStat est une application web PHP conçue pour la gestion et la visualisation de statistiques utilisateurs. Elle suit une architecture de type Modèle-Vue-Contrôleur (MVC) et interagit avec une base de données pour la persistance des données. Le projet inclut également des fonctionnalités de traitement de fichiers CSV.
 
-## Fonctionnalités
+## Fonctionnalités Confirmées (basées sur `web/routeur.php`)
 
-*   **Authentification des utilisateurs :** Connexion et inscription.
-*   **Gestion des utilisateurs :** Consultation et modification du profil, changement de mot de passe, gestion des utilisateurs (potentiellement pour les administrateurs).
-*   **Interaction avec la base de données :** Configuration et connexion à une base de données pour la persistance des données.
-*   **Traitement de fichiers CSV :** Capacités potentielles pour importer ou traiter des données depuis des fichiers CSV.
-*   **Affichage de statistiques :** Visualisation de données statistiques.
-*   **Pages légales :** Inclut des pages pour les Conditions Générales d'Utilisation (CGU) et les Mentions Légales.
-*   **Ressources Front-end :** Gestion des feuilles de style CSS, des scripts JavaScript et des images/GIFs.
+*   **Accueil :** Page principale de l'application.
+*   **Authentification :** Connexion (`/connexion`), déconnexion (`/deconnexion`), inscription (`/inscription`).
+*   **Gestion du Profil Utilisateur :** Affichage (`/monProfil`), mise à jour (`/modifierProfil`, `/modifierMotDePasse`).
+*   **Statistiques Utilisateur :** Affichage des statistiques (`/stats`).
+*   **Gestion des Utilisateurs (Admin) :** Liste des utilisateurs (`/utilisateurs`), mise à jour des rôles (`/modifierRole`), suppression (`/supprimerUtilisateur`).
+*   **Traitement CSV :** Téléchargement de template (`/templateCsv`), import de données (`/importCsv`).
+*   **Pages Légales :** Conditions Générales d'Utilisation (`/cgu`), Mentions Légales (`/mentionsLegales`).
 
 ## Prérequis
 
-*   PHP (version 8.0 ou supérieure recommandée)
-*   Serveur Web (par exemple Apache, Nginx)
-*   Composer (pour la gestion des dépendances PHP)
-*   Un système de gestion de base de données (par exemple MySQL, PostgreSQL, MariaDB)
+*   **PHP :** Version 8.1 ou supérieure (basé sur `composer.json`).
+*   **Extensions PHP :** PDO (pour la connexion à la base de données, type spécifique selon votre SGBD), mbstring.
+*   **Serveur Web :** Apache ou Nginx (avec support de la réécriture d'URL).
+*   **Composer :** Pour la gestion des dépendances PHP.
+*   **Système de Gestion de Base de Données (SGBD) :** MySQL, PostgreSQL, MariaDB, etc. (compatible PDO).
 
 ## Installation
 
@@ -35,27 +35,49 @@ Application web PHP développée pour la gestion et la visualisation de statisti
     composer install
     ```
 
-3.  **Configurer la base de données :**
-    *   La configuration de la base de données est maintenant gérée via un fichier `.env` à la racine du projet.
-    *   Créez un fichier nommé `.env` à la racine du projet s'il n'existe pas.
-    *   Ajoutez les variables d'environnement suivantes dans le fichier `.env` et remplacez les valeurs par vos informations de connexion réelles :
-        ```dotenv
-        DB_HOST=votre_hote_bd
-        DB_NAME=votre_nom_bd
-        DB_USER=votre_utilisateur_bd
-        DB_PASS=votre_mot_de_passe_bd
-        ```
-    *   **Important :** Le fichier `.env` est listé dans `.gitignore` et ne doit pas être versionné (commit) pour des raisons de sécurité.
-    *   Le projet utilise `vlucas/phpdotenv` (installé via Composer) pour charger automatiquement ces variables d'environnement.
-    *   Assurez-vous que la base de données (`votre_nom_bd`) et les tables nécessaires existent. (Des migrations ou un script SQL pourraient être nécessaires - à vérifier dans le projet).
+3.  **Configurer l'environnement :**
+    *   Copiez ou renommez `.env.example` en `.env` (si un fichier d'exemple existe, sinon créez `.env`).
+    *   Configurez les variables d'environnement dans `.env`, notamment les accès à la base de données.
+    *   *Alternative (si `.env` n'est pas utilisé)*: Modifiez directement `src/Configuration/ConfigurationBaseDeDonnees.php` avec vos identifiants de base de données. **Note:** L'utilisation de variables d'environnement (`.env`) est recommandée pour la sécurité et la flexibilité.
 
-4.  **Configurer le serveur web :**
-    *   Configurez la racine du document (DocumentRoot pour Apache, root pour Nginx) de votre serveur web pour qu'elle pointe vers le répertoire `web/` du projet.
-    *   Assurez-vous que la réécriture d'URL est activée (par exemple, `mod_rewrite` pour Apache).
+4.  **Configurer la Base de Données :**
+    *   Créez une base de données pour l'application sur votre SGBD.
+    *   Importez le schéma de la base de données. **Vérifiez si un fichier `.sql` est fourni dans le projet.** Si ce n'est pas le cas, la structure des tables devra être créée manuellement ou via un système de migration (non apparent actuellement).
+
+5.  **Configurer le Serveur Web :**
+    *   Configurez la racine de votre serveur web (DocumentRoot / root) pour pointer vers le répertoire `web/` du projet.
+    *   Activez la réécriture d'URL (`mod_rewrite` pour Apache, configuration `try_files` pour Nginx). Exemple de configuration Apache (`.htaccess` dans `web/` ou configuration du VirtualHost) :
+        ```apache
+        RewriteEngine On
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteRule ^ index.php [QSA,L]
+        ```
 
 ## Utilisation
 
 Une fois l'installation et la configuration terminées :
 
 1.  Ouvrez votre navigateur web.
-2.  Accédez à l'URL que vous avez configurée pour votre serveur web (par exemple, `http://localhost/` ou `http://tamastat.local/` selon votre configuration). L'application devrait se charger via `web/index.php`.
+2.  Accédez à l'URL configurée pour votre serveur web (ex: `http://localhost/`, `http://tamastat.local/`). L'application est servie par `web/index.php`.
+
+## Structure du Projet (Simplifiée)
+
+```
+.
+├── Legal/              # Fichiers des pages légales (CGU, Mentions Légales)
+├── ressources/         # Assets (CSS, JS, images, GIFs)
+├── src/                # Code source PHP de l'application
+│   ├── Configuration/  # Configuration (ex: BDD)
+│   ├── Controleur/     # Contrôleurs (logique métier)
+│   ├── Lib/            # Librairies et classes utilitaires
+│   ├── Modele/         # Modèles (interaction BDD, objets métier)
+│   └── Vue/            # Vues (templates HTML/PHP)
+├── vendor/             # Dépendances Composer
+├── web/                # Racine web publique
+│   ├── index.php       # Point d'entrée (Front Controller)
+│   └── routeur.php     # Gestionnaire des routes
+├── .env.example        # Fichier d'exemple pour les variables d'environnement (si applicable)
+├── .gitignore          # Fichiers ignorés par Git
+├── composer.json       # Dépendances et configuration du projet
+└── README.md           # Ce fichier

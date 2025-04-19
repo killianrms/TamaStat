@@ -20,7 +20,7 @@ class ControleurCsv {
     /**
      * Importe les factures à partir d'un fichier CSV.
      *
-     * @param array $csvFile Fichier CSV téléversé.
+     * @param array $csvFile Fichier CSV uploadé.
      * @param int $utilisateurId ID de l'utilisateur.
      * @return void
      */
@@ -34,7 +34,7 @@ class ControleurCsv {
 
         if (($handle = fopen($fileTmpName, 'r')) !== false) {
             stream_filter_append($handle, 'convert.iconv.ISO-8859-1/UTF-8');
-            fgetcsv($handle); // Ignorer l'en-tête
+            fgetcsv($handle); // Sauter l'en-tête
 
             while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                 if (count($data) >= 10) {
@@ -63,7 +63,7 @@ class ControleurCsv {
     /**
      * Importe les types de box à partir d'un fichier CSV.
      *
-     * @param array $csvFile Fichier CSV téléversé.
+     * @param array $csvFile Fichier CSV uploadé.
      * @return void
      */
     public function importerBoxTypes($csvFile) {
@@ -107,7 +107,7 @@ class ControleurCsv {
 
         if (($handle = fopen($fileTmpName, 'r')) !== false) {
             stream_filter_append($handle, 'convert.iconv.ISO-8859-1/UTF-8');
-            fgetcsv($handle); // Ignorer l'en-tête
+            fgetcsv($handle); // Sauter l'en-tête
 
             while (($data = fgetcsv($handle, 1000, ';')) !== false) {
                 if (count($data) >= 8) {
@@ -133,9 +133,9 @@ class ControleurCsv {
 
 
     /**
-     * Importe les contrats (locations) à partir d'un fichier CSV.
+     * Importe les contrats à partir d'un fichier CSV.
      *
-     * @param array $csvFile Fichier CSV téléversé.
+     * @param array $csvFile Fichier CSV uploadé.
      * @param int $utilisateurId ID de l'utilisateur.
      * @return void
      */
@@ -186,8 +186,9 @@ class ControleurCsv {
         }
         fclose($handle);
 
-        // Enregistrer l'import dans la table `import_tracking`
+        // Enregistrer l'import dans `import_tracking`
         $stmt = $this->pdo->prepare('INSERT INTO import_tracking (utilisateur_id, table_name, date_dernier_import) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE date_dernier_import = NOW()');
         $stmt->execute([$utilisateurId, 'contrats_clos']);
     }
 }
+?>
