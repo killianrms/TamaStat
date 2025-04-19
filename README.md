@@ -36,8 +36,18 @@ Application web PHP développée pour la gestion et la visualisation de statisti
     ```
 
 3.  **Configurer la base de données :**
-    *   Modifiez le fichier `src/Configuration/ConfigurationBaseDeDonnees.php` avec les informations de connexion à votre base de données (hôte, nom de la base, utilisateur, mot de passe).
-    *   Assurez-vous que la base de données et les tables nécessaires existent. (Des migrations ou un script SQL pourraient être nécessaires - à vérifier dans le projet).
+    *   La configuration de la base de données est maintenant gérée via un fichier `.env` à la racine du projet.
+    *   Créez un fichier nommé `.env` à la racine du projet s'il n'existe pas.
+    *   Ajoutez les variables d'environnement suivantes dans le fichier `.env` et remplacez les valeurs par vos informations de connexion réelles :
+        ```dotenv
+        DB_HOST=votre_hote_bd
+        DB_NAME=votre_nom_bd
+        DB_USER=votre_utilisateur_bd
+        DB_PASS=votre_mot_de_passe_bd
+        ```
+    *   **Important :** Le fichier `.env` est listé dans `.gitignore` et ne doit pas être versionné (commit) pour des raisons de sécurité.
+    *   Le projet utilise `vlucas/phpdotenv` (installé via Composer) pour charger automatiquement ces variables d'environnement.
+    *   Assurez-vous que la base de données (`votre_nom_bd`) et les tables nécessaires existent. (Des migrations ou un script SQL pourraient être nécessaires - à vérifier dans le projet).
 
 4.  **Configurer le serveur web :**
     *   Configurez la racine du document (DocumentRoot pour Apache, root pour Nginx) de votre serveur web pour qu'elle pointe vers le répertoire `web/` du projet.

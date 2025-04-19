@@ -382,10 +382,10 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
         const revenuMensuelData = <?= json_encode(array_values($revenuMensuel)) ?>; // Garder l'ordre chronologique
         const moisContratsLabels = <?= json_encode($moisContratsLabels) ?>; // Utiliser les labels triés
         const nouveauxContratsData = <?= json_encode($nouveauxContratsDataOrdered) ?>; // Utiliser les données ordonnées
-        const boxLibresData = <?= json_encode(array_values($boxLibres)) ?>;
-        const boxMaxData = <?= json_encode(array_values($boxMax)) ?>;
-        const boxOccupeesData = <?= json_encode(array_values($boxOccupees)) ?>;
-        const boxLabels = <?= json_encode($boxLabels) ?>;
+        const boxLibresData = <?= json_encode($boxLibresData) ?>; // Utiliser les données triées
+        const boxMaxData = <?= json_encode($boxMaxData) ?>; // Utiliser les données triées
+        const boxOccupeesData = <?= json_encode($boxOccupeesData) ?>; // Utiliser les données triées
+        const boxLabels = <?= json_encode($boxLabels) ?>; // Utiliser les labels triés
         const contratsClosData = <?= json_encode($contratsClosDataOrdered) ?>; // Utiliser les données ordonnées
         const netContratsData = <?= json_encode($netContratsData) ?>; // Ajouter les données du différentiel
 
