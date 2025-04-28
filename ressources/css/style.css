@@ -1269,3 +1269,216 @@ canvas {
     max-width: 100%;
   }
 }
+
+/* ==========================================================================
+   📊 Styles Spécifiques - Page Statistiques (.stats-page)
+   ========================================================================== */
+
+/* --- Titre Principal --- */
+.stats-page > h1 { /* Ciblage plus spécifique */
+  text-align: center;
+  color: var(--couleur-principale); /* #007bff */
+  margin-top: 20px; /* Ajouter un peu d'espace au-dessus */
+  margin-bottom: 30px; /* Espacement avant les boîtes */
+}
+
+/* --- Boîtes Résumé (Nouvelles) --- */
+.stats-summary-boxes {
+  display: flex;
+  flex-wrap: wrap; /* Permet le passage à la ligne sur petits écrans */
+  gap: 20px; /* Espacement entre les boîtes */
+  justify-content: center; /* Centre les boîtes si l'espace le permet */
+  margin-bottom: 40px; /* Espace avant les graphiques */
+}
+
+.stat-box {
+  background-color: var(--couleur-fond-carte); /* #ffffff */
+  padding: 20px;
+  border-radius: var(--rayon-bordure-moyen); /* 8px */
+  box-shadow: var(--ombre-carte); /* 0px 4px 8px rgba(0, 0, 0, 0.1) */
+  text-align: center;
+  flex: 1 1 250px; /* Flex-grow, flex-shrink, flex-basis (base de 250px, s'adapte) */
+  min-width: 200px; /* Largeur minimale */
+  transition: transform var(--transition-rapide), box-shadow var(--transition-rapide);
+}
+
+.stat-box:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.12);
+}
+
+.stat-box h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.1em;
+  color: var(--couleur-texte-secondaire); /* #555 */
+}
+
+.stat-box .stat-value {
+  font-size: 1.8em;
+  font-weight: bold;
+  color: var(--couleur-principale); /* #007bff */
+  margin: 0;
+}
+
+/* --- Styles existants pour .stats-globales (Ajustés pour cohérence) --- */
+.stats-globales {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 30px; /* Espace avant les nouvelles boîtes */
+}
+
+.stats-globales .stat-card {
+    background-color: var(--couleur-fond-carte);
+    padding: 15px 20px;
+    border-radius: var(--rayon-bordure-moyen);
+    box-shadow: var(--ombre-carte);
+    text-align: left; /* Aligner le texte à gauche dans ces cartes */
+    flex: 1 1 300px; /* S'adapte, base de 300px */
+    min-width: 250px;
+}
+
+.stats-globales .stat-card h3 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    color: var(--couleur-accent);
+    border-bottom: 1px solid var(--couleur-bordure);
+    padding-bottom: 5px;
+}
+
+.stats-globales .stat-card .stat-content p {
+    margin-bottom: 8px;
+    font-size: 0.95em;
+    color: var(--couleur-texte-secondaire);
+}
+
+.stats-globales .stat-card .stat-content p strong {
+    color: var(--couleur-texte-base);
+}
+
+
+/* --- Conteneur des Graphiques --- */
+.stats-page .chart-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 25px; /* Espacement entre les cartes graphiques */
+  justify-content: center; /* Centre les cartes si elles ne remplissent pas la ligne */
+}
+
+/* --- Cartes Graphiques --- */
+.stats-page .chart-card {
+  background-color: var(--couleur-fond-carte);
+  padding: 20px;
+  border-radius: var(--rayon-bordure-grand);
+  box-shadow: var(--ombre-carte);
+  flex: 1 1 100%; /* Par défaut: une colonne sur mobile */
+  min-width: 280px; /* Empêche d'être trop petit */
+  /* Transition ajoutée pour la fluidité si la taille change */
+  transition: flex-basis var(--transition-standard);
+}
+
+.stats-page .chart-card h3 {
+  text-align: center;
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: var(--couleur-accent); /* #0072bc */
+}
+
+/* --- Layout 2 Colonnes pour les Graphiques (Écrans Larges) --- */
+@media (min-width: 992px) {
+  .stats-page .chart-card {
+    /* Calcul précis pour 2 colonnes avec l'espacement (gap) */
+    flex-basis: calc(50% - (25px / 2)); /* 50% moins la moitié du gap */
+    /* Assurer que ça ne grandit pas au-delà de 50% */
+    flex-grow: 0;
+  }
+}
+
+/* --- Filtres et Dropdowns dans les cartes graphiques --- */
+.stats-page .chart-card .date-filters,
+.stats-page .chart-card .filter-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 15px;
+    font-size: 0.9em;
+}
+
+.stats-page .chart-card .date-filters label {
+    margin: 0; /* Reset margin */
+    font-weight: normal;
+}
+
+.stats-page .chart-card .date-filters input.month-picker {
+    flex: 1 1 120px; /* Permet aux inputs de prendre de la place */
+    padding: 5px 8px;
+    margin: 0; /* Reset margin */
+    font-size: 0.9em;
+    min-width: 120px;
+}
+
+.stats-page .chart-card .date-filters button,
+.stats-page .chart-card .filter-actions button {
+    padding: 5px 10px;
+    font-size: 0.85em;
+    font-weight: normal;
+}
+
+.stats-page .chart-card .dropdown {
+    position: relative;
+    display: inline-block; /* Ou block selon le besoin */
+    margin-bottom: 15px;
+}
+
+.stats-page .chart-card .dropdown button#toggleFilter,
+.stats-page .chart-card .dropdown button#toggleFilterJours {
+    padding: 6px 12px;
+    font-size: 0.9em;
+    background-color: var(--couleur-secondaire);
+    color: var(--couleur-texte-sombre);
+}
+.stats-page .chart-card .dropdown button#toggleFilter:hover,
+.stats-page .chart-card .dropdown button#toggleFilterJours:hover {
+    background-color: var(--couleur-secondaire-hover);
+}
+
+
+.stats-page .chart-card .dropdown-content {
+    display: none; /* Caché par défaut */
+    position: absolute;
+    background-color: var(--couleur-fond-carte);
+    min-width: 200px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    max-height: 200px; /* Hauteur max avec scroll */
+    overflow-y: auto;
+    border: 1px solid var(--couleur-bordure);
+    border-radius: var(--rayon-bordure-petit);
+    padding: 10px;
+}
+
+.stats-page .chart-card .dropdown-content.show {
+    display: block;
+}
+
+.stats-page .chart-card .dropdown-content label {
+    display: block; /* Chaque label sur sa ligne */
+    padding: 5px 0;
+    font-weight: normal;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.stats-page .chart-card .dropdown-content label:hover {
+    background-color: var(--couleur-fond-input-hover);
+}
+
+.stats-page .chart-card .dropdown-content input[type="checkbox"] {
+    margin-right: 8px;
+    width: auto; /* Reset width */
+    vertical-align: middle;
+}
