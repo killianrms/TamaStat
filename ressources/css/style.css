@@ -743,8 +743,13 @@ form button, form .btn {
 }
 
 .chart-card { /* Alias for .card */
-  padding: var(--espacement-md); /* Slightly less padding for charts */
+  padding: var(--espacement-lg); /* Consistent padding */
   margin: 0; /* Grid gap handles spacing */
+  border: 1px solid var(--couleur-bordure); /* Add subtle border */
+  box-shadow: var(--ombre-carte); /* Add standard card shadow */
+  border-radius: var(--rayon-bordure-grand); /* Add rounded corners */
+  display: flex; /* Use flex for internal alignment */
+  flex-direction: column; /* Stack title and canvas vertically */
 }
 
 .chart-card h3 {
@@ -757,6 +762,7 @@ form button, form .btn {
 canvas {
   max-width: 100%;
   height: auto !important; /* Override potential inline styles from Chart.js */
+  margin-top: var(--espacement-md); /* Add space between title and chart */
 }
 
 /* --- Filtres (Date, Dropdown) --- */
@@ -777,7 +783,7 @@ canvas {
 .date-filters {
   display: flex;
   align-items: center;
-  gap: var(--espacement-sm);
+  gap: var(--espacement-md); /* Increased gap */
 }
 
 .date-filters label, .dropdown label {
@@ -801,7 +807,7 @@ canvas {
 
 .filter-actions {
   display: flex;
-  gap: var(--espacement-sm);
+  gap: var(--espacement-md); /* Increased gap */
 }
 
 .filter-actions button, .reset-dates {
@@ -1323,14 +1329,9 @@ canvas {
   */
 
   /* --- Graphiques (stats.php) --- */
-  /* Cible les enfants directs pour les empiler */
-  .chart-container > * {
-      display: block; /* Assure que chaque enfant prend toute la largeur */
-      width: 100%; /* Force la pleine largeur */
-      margin-bottom: var(--espacement-lg); /* Ajoute de l'espace entre les graphiques empilés */
-  }
-  .chart-container > *:last-child {
-      margin-bottom: 0; /* Pas de marge pour le dernier graphique */
+  .chart-container {
+      grid-template-columns: 1fr; /* Stack charts vertically */
+      gap: var(--espacement-md); /* Adjust gap for mobile */
   }
 
   /* --- Autres ajustements spécifiques --- */
