@@ -7,7 +7,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
 use App\Configuration\ConnexionBD;
 
 $pdo = (new ConnexionBD())->getPdo();
-$stmt = $pdo->query('SELECT * FROM utilisateurs');
+$stmt = $pdo->query('SELECT id, nom_utilisateur, email, is_admin, is_locked FROM utilisateurs');
 $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -28,6 +28,7 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <th>Nom d'utilisateur</th>
         <th>Email</th>
         <th>Admin</th>
+        <th>Statut</th>
         <th>Actions</th>
     </tr>
     </thead>
@@ -37,12 +38,24 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <td><?= htmlspecialchars($utilisateur['nom_utilisateur']) ?></td>
             <td><?= htmlspecialchars($utilisateur['email']) ?></td>
             <td><?= $utilisateur['is_admin'] ? 'Oui' : 'Non' ?></td>
+            <td><?= $utilisateur['is_locked'] ? 'Verrouillé' : 'Actif' ?></td>
             <td class="actions">
-                <?php if ($utilisateur['is_admin']): ?>
-                    <p>Impossible de modifier ou supprimer un administrateur</p>
+                <?php // Prevent actions on the logged-in user ?>
+                <?php if ($utilisateur['id'] === $_SESSION['user']['id']): ?>
+                    <p>Action impossible sur soi-même</p>
+                <?php // Prevent modification/deletion of other admins, but allow locking/unlocking ?>
+                <?php elseif ($utilisateur['is_admin']): ?>
+                    <a href="routeur.php?route=toggleLockStatus&id=<?= $utilisateur['id'] ?>">
+                        <?= $utilisateur['is_locked'] ? 'Déverrouiller' : 'Verrouiller' ?>
+                    </a>
+                    <p>Modification/Suppression impossible (Admin)</p>
+                <?php // Allow all actions for non-admin users ?>
                 <?php else: ?>
                     <a href="routeur.php?route=modifierUtilisateur&id=<?= $utilisateur['id'] ?>">Modifier</a>
                     <a href="routeur.php?route=supprimerUtilisateur&id=<?= $utilisateur['id'] ?>" class="delete-link" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">Supprimer</a>
+                    <a href="routeur.php?route=toggleLockStatus&id=<?= $utilisateur['id'] ?>">
+                        <?= $utilisateur['is_locked'] ? 'Déverrouiller' : 'Verrouiller' ?>
+                    </a>
                 <?php endif; ?>
             </td>
         </tr>

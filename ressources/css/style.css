@@ -340,6 +340,33 @@ label {
     border-color: #badbcc;
 }
 
+#message-confirmation { /* Style for password confirmation message */
+    padding: var(--espacement-sm);
+    margin-top: var(--espacement-md);
+    margin-bottom: var(--espacement-md);
+    border: 1px solid transparent;
+    border-radius: var(--rayon-bordure-petit);
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.875rem;
+    display: none; /* Hidden by default, shown via JS */
+}
+
+#message-confirmation.success {
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border-color: #badbcc;
+    display: block;
+}
+
+#message-confirmation.error {
+    background-color: var(--couleur-erreur-fond);
+    color: var(--couleur-erreur-texte);
+    border-color: #f5c6cb; /* Matching border color */
+    display: block;
+}
+
+
 /* ==========================================================================
    📌 3. Header (Navbar)
    ========================================================================== */
@@ -700,18 +727,20 @@ form button, form .btn {
 
 /* --- Statistiques Globales (Utilise .card) --- */
 .stats-globales {
-  display: flex;
-  justify-content: center;
-  gap: var(--espacement-lg);
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--espacement-lg); /* Use grid gap */
+  /* Removed flex properties */
 }
 
-.stat-card { /* Alias for .card */
-  width: 100%; /* Take full width within flex item */
-  max-width: 320px; /* Max width per card */
-  flex-basis: 300px; /* Base width */
-  flex-grow: 1;
-  margin: var(--espacement-sm); /* Use margin for spacing within flex */
+.stat-card { /* Apply card styles */
+  padding: var(--espacement-lg);
+  border: 1px solid var(--couleur-bordure);
+  box-shadow: var(--ombre-carte);
+  border-radius: var(--rayon-bordure-grand);
+  background: var(--couleur-fond-carte); /* Ensure background color */
+  text-align: center; /* Keep text centered */
+  /* Removed flex item properties and margin */
 }
 
 .stat-content {
@@ -879,26 +908,78 @@ canvas {
 /* --- Section Profil (Utilise .card et grille) --- */
 .profil-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Adjust minmax */
+  /* Updated minmax and added container padding */
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
   gap: var(--espacement-lg);
   max-width: 1200px;
   margin: auto;
-  padding: var(--espacement-lg) 0;
+  padding: var(--espacement-lg); /* Added horizontal padding */
 }
 
-.etape-card { /* Alias for .card */
+.etape-card { /* Apply consistent card styles */
   margin: 0; /* Grid gap handles spacing */
+  padding: var(--espacement-lg);
+  border: 1px solid var(--couleur-bordure);
+  box-shadow: var(--ombre-carte);
+  border-radius: var(--rayon-bordure-grand);
+  background: var(--couleur-fond-carte);
+  text-align: left; /* Align content left within cards */
+  display: flex; /* Use flex for better internal control */
+  flex-direction: column;
 }
 
-.etape-card input,
+/* Spacing within etape-card */
+.etape-card h3 {
+    margin-bottom: var(--espacement-md);
+    text-align: center; /* Center card titles */
+    color: var(--couleur-principale); /* Use main color for titles */
+}
+
+.etape-card p {
+    margin-bottom: var(--espacement-md);
+    color: var(--couleur-texte-secondaire);
+    line-height: 1.6;
+}
+
+.etape-card form {
+    margin-top: var(--espacement-sm); /* Reduced top margin */
+    margin-bottom: var(--espacement-md);
+    padding: 0; /* Remove default form padding */
+    box-shadow: none; /* Remove default form shadow */
+    border: none; /* Remove default form border */
+    max-width: none; /* Allow form to fill card */
+    text-align: left; /* Align form elements left */
+}
+
+.etape-card label {
+    margin-bottom: var(--espacement-xs); /* Tighter spacing below label */
+    font-size: 0.9rem;
+}
+
+.etape-card input:not([type="file"]),
+.etape-card select,
+.etape-card textarea {
+    margin-bottom: var(--espacement-md); /* Consistent spacing below inputs */
+}
+
+.etape-card .password-container {
+    margin-bottom: var(--espacement-sm); /* Tighter spacing below password fields */
+}
+
+.etape-card .password-requirements {
+    margin-bottom: var(--espacement-lg); /* More space after requirements */
+}
+
 .etape-card button,
-.etape-card select {
-  /* Base styles apply */
+.etape-card .btn {
+    margin-top: var(--espacement-md); /* Space above button */
+    width: 100%; /* Make buttons full width */
 }
 
 .etape-card input[type="file"] {
   display: block;
-  margin: var(--espacement-md) auto;
+  margin: var(--espacement-sm) 0 var(--espacement-md) 0; /* Consistent margins */
+  width: 100%; /* Ensure file input takes full width */
 }
 
 /* --- Changement de Mot de Passe --- */
@@ -950,7 +1031,7 @@ canvas {
 .password-requirements {
   list-style: none;
   padding: 0;
-  margin: var(--espacement-sm) 0 var(--espacement-md) 0;
+  margin: var(--espacement-sm) 0 var(--espacement-lg) 0; /* Increased bottom margin */
   text-align: left;
   font-size: 0.875rem;
   color: var(--couleur-texte-secondaire);

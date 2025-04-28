@@ -209,6 +209,23 @@ try {
             require_once __DIR__ . '/../src/Vue/utilisateur/gestionUtilisateurs.php';
             break;
 
+        case 'toggleLockStatus':
+            verifierConnexion();
+            if ($_SESSION['user']['is_admin'] !== 1) {
+                header('Location: routeur.php?route=connexion&error=unauthorized'); // Redirect non-admins
+                exit;
+            }
+            $id = $_GET['id'] ?? null;
+            if ($id) {
+                $controleurUtilisateur->toggleLockStatus($id); // Call the new controller method
+            } else {
+                // Handle missing ID, maybe redirect back with an error
+                header('Location: routeur.php?route=gestionUtilisateurs&error=missing_id');
+                exit;
+            }
+            // The controller method should handle redirection back to gestionUtilisateurs
+            break;
+
         case 'deconnexion':
             verifierConnexion();
             session_unset();
