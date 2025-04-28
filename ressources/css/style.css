@@ -750,7 +750,7 @@ form button, form .btn {
 
 .stat-content p {
   margin: var(--espacement-sm) 0;
-  font-weight: 600;
+  /* font-weight: 600; */ /* Removed to un-bold the label text */
 }
 
 .stat-content strong { /* Style for the actual stat number */
@@ -933,6 +933,7 @@ canvas {
     margin-bottom: var(--espacement-md);
     text-align: center; /* Center card titles */
     color: var(--couleur-principale); /* Use main color for titles */
+    font-size: 1.2em; /* Make title slightly more prominent */
 }
 
 .etape-card p {
@@ -976,10 +977,49 @@ canvas {
     width: 100%; /* Make buttons full width */
 }
 
+/* Add specific hover effect for buttons within cards */
+.etape-card button:hover:enabled,
+.etape-card .btn:hover:enabled {
+    filter: brightness(95%); /* Subtle darkening */
+}
+
 .etape-card input[type="file"] {
   display: block;
   margin: var(--espacement-sm) 0 var(--espacement-md) 0; /* Consistent margins */
   width: 100%; /* Ensure file input takes full width */
+  /* Apply consistent styling */
+  padding: var(--espacement-sm); /* Consistent padding */
+  border: 1px solid var(--couleur-bordure); /* Consistent border */
+  border-radius: var(--rayon-bordure-petit); /* Consistent radius */
+  background-color: var(--couleur-fond-input); /* Consistent background */
+  line-height: 1.5; /* Consistent line height */
+  font-size: 0.9rem; /* Slightly smaller text */
+  color: var(--couleur-texte-secondaire);
+  cursor: pointer;
+  transition: background-color var(--transition-standard), border-color var(--transition-standard);
+}
+
+/* Style the button part of the file input */
+.etape-card input[type="file"]::file-selector-button {
+    padding: var(--espacement-sm) var(--espacement-md);
+    margin: calc(-1 * var(--espacement-sm)) calc(-1 * var(--espacement-sm)); /* Adjust margins to fit padding */
+    margin-inline-end: var(--espacement-md); /* Space between button and text */
+    color: var(--couleur-texte-clair);
+    background-color: var(--couleur-principale);
+    border: 0;
+    border-radius: var(--rayon-bordure-petit) 0 0 var(--rayon-bordure-petit); /* Rounded left corners */
+    transition: background-color var(--transition-standard);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.etape-card input[type="file"]::file-selector-button:hover {
+    background-color: var(--couleur-principale-hover);
+}
+
+.etape-card input[type="file"]:hover {
+    background-color: var(--couleur-fond-input-hover);
+    border-color: var(--couleur-bordure-focus);
 }
 
 /* --- Changement de Mot de Passe --- */
@@ -1038,7 +1078,7 @@ canvas {
 }
 
 .password-requirements li {
-  margin: var(--espacement-xs) 0;
+  margin: var(--espacement-sm) 0; /* Increased vertical spacing */
   padding-left: 25px; /* More space for icon */
   position: relative;
   transition: color var(--transition-standard);
