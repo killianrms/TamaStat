@@ -201,16 +201,28 @@ try {
 
 
         case 'gestionUtilisateurs':
-            verifierConnexion();
-            if ($_SESSION['user']['is_admin'] !== 1) {
-                header('Location: routeur.php?route=connexion');
-                exit;
-            }
-            require_once __DIR__ . '/../src/Vue/utilisateur/gestionUtilisateurs.php';
+            // No need for explicit verification here, the controller method handles it
+            $controleurUtilisateur->adminGestionUtilisateurs();
             break;
 
+        // --- New Admin User Lock Routes ---
+        case 'adminBloquerUtilisateur':
+            // Controller method handles admin check and ID validation
+            $userId = $_GET['id'] ?? null;
+            $controleurUtilisateur->adminBloquerUtilisateur($userId);
+            // Controller method handles redirect
+            break;
+
+        case 'adminDebloquerUtilisateur':
+            // Controller method handles admin check and ID validation
+            $userId = $_GET['id'] ?? null;
+            $controleurUtilisateur->adminDebloquerUtilisateur($userId);
+            // Controller method handles redirect
+            break;
+        // --- End New Admin User Lock Routes ---
+
         case 'deconnexion':
-            verifierConnexion();
+            verifierConnexion(); // Keep verification for standard logout
             session_unset();
             session_destroy();
             header('Location: routeur.php?route=connexion');
