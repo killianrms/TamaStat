@@ -9,27 +9,32 @@ class ConfigurationBaseDeDonnees
 
     static public function getLogin(): string
     {
-        return getenv('DB_USER') ?: ''; // Provide a default empty string if not set
+        // TODO: Replace with your actual database username
+        return 'YOUR_DB_USER_HERE';
     }
 
     static public function getNomHote(): string
     {
-        return getenv('DB_HOST') ?: '';
+        // TODO: Replace with your actual database host
+        return 'YOUR_DB_HOST_HERE';
     }
 
     static public function getPort(): string
     {
-        return getenv('DB_PORT') ?: '3306'; // Default MySQL port if not set
+        // TODO: Replace with your actual database port
+        return 'YOUR_DB_PORT_HERE'; // e.g., '3306'
     }
 
     static public function getNomBaseDeDonnees(): string
     {
-        return getenv('DB_NAME') ?: '';
+        // TODO: Replace with your actual database name
+        return 'YOUR_DB_NAME_HERE';
     }
 
     static public function getPassword(): string
     {
-        return getenv('DB_PASS') ?: '';
+        // TODO: Replace with your actual database password
+        return 'YOUR_DB_PASSWORD_HERE';
     }
 }
 

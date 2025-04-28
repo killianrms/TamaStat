@@ -14,10 +14,6 @@ use App\Controleur\Specifique\ControleurCsv;
 use App\Controleur\Specifique\ControleurUtilisateur;
 
 require_once __DIR__ . '/../vendor/autoload.php';
-// Load environment variables from .env file
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__ . '/../'); // Points to the project root directory
-$dotenv->load();
-
 $route = $_GET['route'] ?? 'connexion';
 
 $controleurUtilisateur = new ControleurUtilisateur();
