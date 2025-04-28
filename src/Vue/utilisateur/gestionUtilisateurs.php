@@ -21,6 +21,19 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body class="gestion-utilisateurs-page">
 <h1>Gestion des utilisateurs</h1>
+<?php
+// Display success message if it exists
+if (isset($_SESSION['succes_message'])) {
+    echo '<div class="message succes">' . htmlspecialchars($_SESSION['succes_message']) . '</div>';
+    unset($_SESSION['succes_message']); // Clear the message after displaying
+}
+
+// Display error message if it exists
+if (isset($_SESSION['erreur_message'])) {
+    echo '<div class="message erreur">' . htmlspecialchars($_SESSION['erreur_message']) . '</div>';
+    unset($_SESSION['erreur_message']); // Clear the message after displaying
+}
+?>
 
 <table class="user-table">
     <thead>

@@ -220,7 +220,7 @@ class ControleurUtilisateur
             $_SESSION['erreur_message'] = "Erreur lors du verrouillage de l'utilisateur.";
         }
 
-        header('Location: routeur.php?route=adminGestionUtilisateurs');
+        header('Location: routeur.php?route=gestionUtilisateurs');
         exit;
     }
 
@@ -253,7 +253,7 @@ class ControleurUtilisateur
             $_SESSION['erreur_message'] = "Erreur lors du déverrouillage de l'utilisateur.";
         }
 
-        header('Location: routeur.php?route=adminGestionUtilisateurs');
+        header('Location: routeur.php?route=gestionUtilisateurs');
         exit;
     }
 

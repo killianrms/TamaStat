@@ -1240,3 +1240,32 @@ canvas {
   .legal-content p { font-size: 0.95em; }
 
 }
+
+/* ==========================================================================
+   📊 10. Styles Spécifiques - Page Statistiques (stats.php)
+   ========================================================================== */
+
+.stats-page .chart-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px; /* Espace entre les cartes graphiques (horizontal et vertical) */
+  justify-content: flex-start; /* Alignement standard au début */
+  margin-top: 30px; /* Espace au-dessus du conteneur de graphiques */
+  padding: 0 10px; /* Ajoute un peu de padding latéral au conteneur */
+}
+
+.stats-page .chart-card {
+  flex: 1 1 calc(50% - 10px); /* Base de 50% moins la moitié du gap */
+  max-width: calc(50% - 10px); /* Limite la largeur max */
+  box-sizing: border-box; /* Inclut padding/border dans la largeur */
+  margin: 0; /* Annule la marge auto de .card pour que flexbox/gap gère l'espacement */
+  /* Les styles de .card (background, padding, shadow) sont hérités/appliqués */
+}
+
+/* Ajustements pour les écrans moyens/petits (une seule colonne) */
+@media (max-width: 992px) { /* Point de rupture pour passer à une colonne */
+  .stats-page .chart-card {
+    flex: 1 1 100%; /* Une carte par ligne */
+    max-width: 100%;
+  }
+}
