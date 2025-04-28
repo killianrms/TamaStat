@@ -296,18 +296,6 @@ $tauxOccupation = ($nbBoxTotal > 0) ? round(($nbBoxLouees / $nbBoxTotal) * 100, 
     </div>
 </div>
 
-<!-- Nouveaux Boxes Résumé -->
-<div class="stats-summary-boxes">
-    <div class="stat-box">
-        <h4>Chiffre d'Affaire Total</h4>
-        <p class="stat-value">€ XXXX.XX</p> <!-- Placeholder -->
-    </div>
-    <div class="stat-box">
-        <h4>Statistiques Boxes Clés</h4>
-        <p class="stat-value">YYY / ZZZ</p> <!-- Placeholder -->
-    </div>
-    <!-- Ajoutez d'autres stat-box ici si nécessaire -->
-</div>
 
 <!-- 🛠️ CONTENEUR DES GRAPHIQUES -->
 <div class="chart-container">

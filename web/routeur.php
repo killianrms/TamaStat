@@ -14,6 +14,7 @@ use App\Controleur\Specifique\ControleurCsv;
 use App\Controleur\Specifique\ControleurUtilisateur;
 
 require_once __DIR__ . '/../vendor/autoload.php';
+
 $route = $_GET['route'] ?? 'connexion';
 
 $controleurUtilisateur = new ControleurUtilisateur();
@@ -200,28 +201,16 @@ try {
 
 
         case 'gestionUtilisateurs':
-            // No need for explicit verification here, the controller method handles it
-            $controleurUtilisateur->adminGestionUtilisateurs();
+            verifierConnexion();
+            if ($_SESSION['user']['is_admin'] !== 1) {
+                header('Location: routeur.php?route=connexion');
+                exit;
+            }
+            require_once __DIR__ . '/../src/Vue/utilisateur/gestionUtilisateurs.php';
             break;
-
-        // --- New Admin User Lock Routes ---
-        case 'adminBloquerUtilisateur':
-            // Controller method handles admin check and ID validation
-            $userId = $_GET['id'] ?? null;
-            $controleurUtilisateur->adminBloquerUtilisateur($userId);
-            // Controller method handles redirect
-            break;
-
-        case 'adminDebloquerUtilisateur':
-            // Controller method handles admin check and ID validation
-            $userId = $_GET['id'] ?? null;
-            $controleurUtilisateur->adminDebloquerUtilisateur($userId);
-            // Controller method handles redirect
-            break;
-        // --- End New Admin User Lock Routes ---
 
         case 'deconnexion':
-            verifierConnexion(); // Keep verification for standard logout
+            verifierConnexion();
             session_unset();
             session_destroy();
             header('Location: routeur.php?route=connexion');

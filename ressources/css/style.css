@@ -4,58 +4,68 @@
 
 :root {
   /* Couleurs principales */
-  --couleur-principale: #007bff;
-  --couleur-principale-hover: #0056b3;
+  --couleur-principale: #0072bc; /* Slightly adjusted blue */
+  --couleur-principale-hover: #005fa3;
   --couleur-secondaire: #ff9900;
-  --couleur-secondaire-hover: #ffcc00;
-  --couleur-accent: #0072bc;
-  --couleur-accent-hover: #005fa3;
+  --couleur-secondaire-hover: #e68a00; /* Darker orange hover */
+  --couleur-accent: #007bff; /* Using the original blue as accent */
+  --couleur-accent-hover: #0056b3;
 
   /* Couleurs neutres */
-  --couleur-fond: #f4f4f4;
+  --couleur-fond: #f8f9fa; /* Lighter background */
   --couleur-fond-carte: #ffffff;
-  --couleur-fond-sombre: #222;
-  --couleur-fond-input: #f8f8f8;
-  --couleur-fond-input-hover: #eee;
-  --couleur-fond-tableau-hover: #f1f1f1;
+  --couleur-fond-sombre: #212529; /* Standard dark */
+  --couleur-fond-input: #ffffff; /* Inputs same as cards */
+  --couleur-fond-input-hover: #f1f3f5; /* Subtle hover */
+  --couleur-fond-tableau-hover: #f1f3f5; /* Subtle hover */
 
   /* Couleurs de texte */
-  --couleur-texte-base: #333;
-  --couleur-texte-secondaire: #555;
+  --couleur-texte-base: #212529; /* Darker base text */
+  --couleur-texte-secondaire: #495057; /* Slightly darker secondary */
   --couleur-texte-clair: #ffffff;
-  --couleur-texte-sombre: #111;
-  --couleur-texte-lien-footer: #bbb;
+  --couleur-texte-sombre: #111; /* Keep for specific dark contexts */
+  --couleur-texte-lien-footer: #adb5bd; /* Lighter footer link */
 
   /* Couleurs de statut */
-  --couleur-erreur-fond: #ffdddd;
-  --couleur-erreur-texte: #d8000c;
-  --couleur-succes: green;
-  --couleur-invalide: red;
-  --couleur-bouton-desactive: #ccc;
+  --couleur-erreur-fond: #f8d7da;
+  --couleur-erreur-texte: #721c24;
+  --couleur-succes: #198754; /* Bootstrap green */
+  --couleur-invalide: #dc3545; /* Bootstrap red */
+  --couleur-bouton-desactive: #ced4da;
 
   /* Bordures */
-  --couleur-bordure: #ccc;
-  --couleur-bordure-sombre: #444;
+  --couleur-bordure: #dee2e6; /* Softer border */
+  --couleur-bordure-sombre: #495057;
   --couleur-bordure-focus: var(--couleur-principale);
-  --couleur-bordure-tableau: #ddd;
+  --couleur-bordure-tableau: #e9ecef; /* Lighter table border */
 
   /* Ombres */
-  --ombre-carte: 0px 4px 8px rgba(0, 0, 0, 0.1);
-  --ombre-input: 0px 4px 10px rgba(0, 0, 0, 0.1);
-  --ombre-modal: 0 3px 15px rgba(0, 0, 0, 0.2);
+  --ombre-carte: 0 2px 4px rgba(0, 0, 0, 0.075); /* Softer shadow */
+  --ombre-input: 0 1px 3px rgba(0, 0, 0, 0.05); /* Subtle input shadow */
+  --ombre-modal: 0 4px 15px rgba(0, 0, 0, 0.15); /* Slightly softer modal shadow */
+  --ombre-focus: 0 0 0 0.25rem rgba(0, 114, 188, 0.25); /* Focus shadow using main color */
 
   /* Polices */
-  --police-principale: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif; /* Modern system font stack */
+  --police-principale: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* Modern system font stack */
+  --police-secondaire: "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; /* Fallback */
 
   /* Rayons */
-  --rayon-bordure-petit: 5px;
-  --rayon-bordure-moyen: 8px;
-  --rayon-bordure-grand: 10px;
+  --rayon-bordure-petit: 0.25rem; /* 4px */
+  --rayon-bordure-moyen: 0.375rem; /* 6px */
+  --rayon-bordure-grand: 0.5rem; /* 8px */
   --rayon-bordure-rond: 50%;
 
   /* Transitions */
-  --transition-rapide: 0.2s ease-in-out;
-  --transition-standard: 0.3s ease;
+  --transition-rapide: 0.15s ease-in-out;
+  --transition-standard: 0.25s ease;
+
+  /* Espacements */
+  --espacement-xs: 0.25rem; /* 4px */
+  --espacement-sm: 0.5rem;  /* 8px */
+  --espacement-md: 1rem;    /* 16px */
+  --espacement-lg: 1.5rem;  /* 24px */
+  --espacement-xl: 2rem;    /* 32px */
+  --espacement-xxl: 2.5rem; /* 40px */
 }
 
 /* ==========================================================================
@@ -65,49 +75,53 @@
 *,
 *::before,
 *::after {
-  box-sizing: border-box; /* Gestion plus prévisible des dimensions */
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
 html {
   height: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
-  font-family: var(--police-principale);
+  font-family: var(--police-principale), var(--police-secondaire);
   background-color: var(--couleur-fond);
   color: var(--couleur-texte-base);
-  /* text-align: center; Removed global centering for better default readability */
+  text-align: center;
   display: flex;
   flex-direction: column;
-  min-height: 100%; /* Assure que le footer reste en bas */
-  font-size: 16px; /* Taille de base pour le responsive */
-  line-height: 1.6; /* Améliore la lisibilité */
+  min-height: 100vh; /* Use vh for full viewport height */
+  font-size: 1rem; /* 16px base */
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased; /* Smoother fonts */
+  -moz-osx-font-smoothing: grayscale;
 }
 
 main {
-  flex: 1; /* Permet au contenu principal de prendre l'espace disponible */
-  padding-bottom: 40px; /* Espace avant le footer */
+  flex: 1; /* Grow to fill available space */
+  padding-bottom: var(--espacement-xxl); /* Consistent spacing */
 }
 
 .container {
   width: 90%;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px 0; /* Padding vertical uniquement */
+  padding: var(--espacement-lg) 0; /* Consistent vertical padding */
 }
 
 h1, h2, h3, h4, h5, h6 {
   color: var(--couleur-texte-base);
-  margin-bottom: 15px;
+  margin-bottom: var(--espacement-md);
   line-height: 1.3;
+  font-weight: 600; /* Slightly bolder headings */
 }
 
-h1 { font-size: 2em; }
-h2 { font-size: 1.75em; }
-h3 { font-size: 1.5em; }
-h4 { font-size: 1.25em; }
+h1 { font-size: 2.25rem; } /* Slightly larger */
+h2 { font-size: 1.75rem; }
+h3 { font-size: 1.5rem; }
+h4 { font-size: 1.25rem; }
 
 a {
   color: var(--couleur-principale);
@@ -122,16 +136,18 @@ a:hover {
 
 ul, ol {
   list-style-position: inside;
-  padding-left: 20px;
+  padding-left: var(--espacement-lg);
+  margin-bottom: var(--espacement-md); /* Add bottom margin */
 }
 
 img {
   max-width: 100%;
   height: auto;
-  display: block; /* Empêche les espaces sous les images */
+  display: block;
+  vertical-align: middle; /* Better alignment */
 }
 
-/* Classe utilitaire pour centrer */
+/* Classe utilitaire pour centrer (si nécessaire) */
 .center-content {
   display: flex;
   justify-content: center;
@@ -145,50 +161,66 @@ img {
 /* --- Boutons --- */
 .btn,
 button {
-  display: inline-block; /* Permet padding/margin */
-  padding: 10px 15px;
-  border: none;
+  display: inline-block;
+  padding: var(--espacement-sm) var(--espacement-md); /* Consistent padding */
+  border: 1px solid transparent; /* Add border for consistency */
   border-radius: var(--rayon-bordure-petit);
   cursor: pointer;
-  font-size: 1em; /* Utilisation de em pour la scalabilité */
-  font-weight: bold;
+  font-size: 1rem;
+  font-weight: 600;
   text-align: center;
   text-decoration: none;
-  transition: background-color var(--transition-standard), transform var(--transition-rapide);
+  transition: background-color var(--transition-standard), border-color var(--transition-standard), color var(--transition-standard), transform var(--transition-rapide), box-shadow var(--transition-rapide);
   background-color: var(--couleur-principale);
   color: var(--couleur-texte-clair);
+  line-height: 1.5; /* Ensure consistent height */
+  user-select: none; /* Prevent text selection */
 }
 
 .btn:hover,
-button:hover:enabled { /* :enabled pour éviter le style sur bouton désactivé */
+button:hover:enabled {
   background-color: var(--couleur-principale-hover);
-  transform: translateY(-2px); /* Léger effet au survol */
+  border-color: var(--couleur-principale-hover);
+  transform: translateY(-1px); /* Subtle lift */
+}
+
+.btn:focus,
+button:focus {
+    outline: 0;
+    box-shadow: var(--ombre-focus);
 }
 
 .btn:disabled,
 button:disabled {
   background-color: var(--couleur-bouton-desactive);
+  border-color: var(--couleur-bouton-desactive);
+  color: var(--couleur-texte-secondaire);
   cursor: not-allowed;
   transform: none;
+  opacity: 0.65;
 }
 
 /* Style spécifique pour les boutons secondaires/alternatifs */
 .btn-secondaire {
   background-color: var(--couleur-secondaire);
-  color: var(--couleur-texte-sombre);
+  border-color: var(--couleur-secondaire);
+  color: var(--couleur-texte-clair); /* Use light text for better contrast */
 }
 
 .btn-secondaire:hover:enabled {
   background-color: var(--couleur-secondaire-hover);
+  border-color: var(--couleur-secondaire-hover);
 }
 
 .btn-accent {
   background-color: var(--couleur-accent);
+  border-color: var(--couleur-accent);
   color: var(--couleur-texte-clair);
 }
 
 .btn-accent:hover:enabled {
   background-color: var(--couleur-accent-hover);
+  border-color: var(--couleur-accent-hover);
 }
 
 /* --- Champs de formulaire (Inputs, Select) --- */
@@ -198,78 +230,114 @@ input[type="email"],
 input[type="number"],
 input[type="file"],
 input[type="month"],
-select {
+select,
+textarea { /* Added textarea */
+  display: block; /* Ensure block display */
   width: 100%;
-  padding: 10px;
-  margin-top: 5px;
-  margin-bottom: 15px; /* Espacement standard sous les champs */
+  padding: var(--espacement-sm) var(--espacement-md);
+  margin-bottom: var(--espacement-md); /* Consistent spacing */
   border: 1px solid var(--couleur-bordure);
   border-radius: var(--rayon-bordure-petit);
-  font-size: 1em;
-  background-color: var(--couleur-fond-carte); /* Fond blanc par défaut */
-  transition: border-color var(--transition-standard), background-color var(--transition-standard);
+  font-size: 1rem;
+  font-family: inherit; /* Inherit body font */
+  background-color: var(--couleur-fond-input);
+  color: var(--couleur-texte-base);
+  transition: border-color var(--transition-standard), background-color var(--transition-standard), box-shadow var(--transition-standard);
+  line-height: 1.5; /* Consistent height */
+  background-clip: padding-box; /* Fix for background color */
 }
 
 input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):hover,
-select:hover {
+select:hover,
+textarea:hover {
   background-color: var(--couleur-fond-input-hover);
 }
 
 input:focus,
-select:focus {
+select:focus,
+textarea:focus {
   border-color: var(--couleur-bordure-focus);
-  outline: none; /* Supprime l'outline par défaut, remplacé par la bordure */
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); /* Légère ombre au focus */
+  outline: none;
+  box-shadow: var(--ombre-focus);
 }
 
 input[type="file"] {
-  padding: 5px; /* Ajustement pour l'input file */
+  padding: var(--espacement-xs) var(--espacement-sm); /* Adjust padding */
   background-color: transparent;
-  border: none;
+  border: 1px solid var(--couleur-bordure); /* Add border for consistency */
   box-shadow: none;
 }
 
 input[type="file"]:focus {
-  outline: 1px dotted var(--couleur-principale); /* Outline simple pour file */
-  box-shadow: none;
+  outline: none;
+  box-shadow: var(--ombre-focus);
+  border-color: var(--couleur-bordure-focus);
 }
 
+/* Style for file input button (browser specific, basic styling) */
+input[type="file"]::file-selector-button {
+    padding: var(--espacement-sm) var(--espacement-md);
+    margin: calc(-1 * var(--espacement-xs)) calc(-1 * var(--espacement-sm)); /* Adjust margins */
+    margin-inline-end: var(--espacement-sm);
+    color: var(--couleur-texte-clair);
+    background-color: var(--couleur-principale);
+    border: 0;
+    border-radius: var(--rayon-bordure-petit) 0 0 var(--rayon-bordure-petit); /* Rounded left corners */
+    transition: background-color var(--transition-standard);
+    cursor: pointer;
+}
+
+input[type="file"]::file-selector-button:hover {
+    background-color: var(--couleur-principale-hover);
+}
+
+
 label {
-  display: block;
-  font-weight: bold;
+  display: inline-block; /* Allow margin bottom */
+  font-weight: 600;
   text-align: left;
-  margin: 10px 0 5px;
+  margin-bottom: var(--espacement-sm); /* Consistent spacing */
   color: var(--couleur-texte-base);
-  font-size: 0.9em;
+  font-size: 0.9rem;
 }
 
 /* --- Loader --- */
 .loader {
   display: none; /* Caché par défaut */
-  margin: 15px auto; /* Centré avec marge */
+  margin: var(--espacement-lg) auto; /* Centré avec marge */
   width: 30px;
   height: 30px;
   border: 4px solid var(--couleur-bordure);
   border-top-color: var(--couleur-principale); /* Couleur de l'animation */
   border-radius: var(--rayon-bordure-rond);
-  animation: spin 1s linear infinite;
+  animation: spin 0.8s linear infinite; /* Slightly faster spin */
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  to { transform: rotate(360deg); }
 }
 
-/* --- Messages d'erreur --- */
+/* --- Messages d'erreur/succès --- */
+.message { /* Generic message class */
+    padding: var(--espacement-md);
+    margin-bottom: var(--espacement-md);
+    border: 1px solid transparent;
+    border-radius: var(--rayon-bordure-petit);
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
 .error-message {
   background-color: var(--couleur-erreur-fond);
   color: var(--couleur-erreur-texte);
-  padding: 10px 15px;
-  border-radius: var(--rayon-bordure-petit);
-  text-align: center;
-  margin-bottom: 15px;
-  font-weight: bold;
-  font-size: 0.9em;
+  border-color: #f5c6cb; /* Matching border color */
+}
+
+.success-message { /* Added success message style */
+    background-color: #d1e7dd;
+    color: #0f5132;
+    border-color: #badbcc;
 }
 
 /* ==========================================================================
@@ -278,12 +346,12 @@ label {
 
 header {
   background-color: var(--couleur-principale);
-  padding: 15px 0; /* Padding vertical */
+  padding: var(--espacement-sm) 0; /* Reduced padding */
   color: var(--couleur-texte-clair);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  position: sticky; /* Barre de navigation fixe en haut */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  position: sticky;
   top: 0;
-  z-index: 100; /* Assure qu'elle est au-dessus du contenu */
+  z-index: 1020; /* Standard z-index for fixed headers */
 }
 
 .navbar {
@@ -292,58 +360,65 @@ header {
   justify-content: space-between;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px; /* Espacement latéral */
+  padding: 0 var(--espacement-lg); /* Consistent lateral spacing */
 }
 
 .navbar-brand h1 {
-  font-size: 1.5em; /* Taille ajustée */
-  font-weight: bold;
+  font-size: 1.5rem;
+  font-weight: 700; /* Bolder brand */
   margin: 0;
   color: var(--couleur-texte-clair);
+  line-height: 1; /* Prevent extra space */
 }
 
 .nav-links {
   display: flex;
-  gap: 20px; /* Espacement entre les liens */
+  gap: var(--espacement-lg); /* Consistent gap */
 }
 
 .nav-links a {
   color: var(--couleur-texte-clair);
   text-decoration: none;
-  font-size: 1em;
-  font-weight: bold;
-  transition: color var(--transition-standard);
-  padding: 5px 0; /* Ajout de padding pour une meilleure zone cliquable */
-  position: relative; /* Pour le pseudo-élément de survol */
+  font-size: 1rem;
+  font-weight: 500; /* Slightly less bold than brand */
+  transition: color var(--transition-standard), opacity var(--transition-standard);
+  padding: var(--espacement-xs) 0;
+  position: relative;
+  opacity: 0.9; /* Slightly transparent */
 }
 
-.nav-links a::after { /* Soulignement subtil au survol */
+.nav-links a::after {
   content: '';
   position: absolute;
   width: 0;
   height: 2px;
-  bottom: 0;
+  bottom: -2px; /* Position slightly below */
   left: 0;
   background-color: var(--couleur-secondaire);
   transition: width var(--transition-standard);
 }
 
-.nav-links a:hover {
-  color: var(--couleur-secondaire); /* Changement de couleur au survol */
-  text-decoration: none; /* Supprime le soulignement par défaut */
+.nav-links a:hover,
+.nav-links a.active { /* Style for active link */
+  color: var(--couleur-texte-clair);
+  text-decoration: none;
+  opacity: 1;
 }
 
-.nav-links a:hover::after {
+.nav-links a:hover::after,
+.nav-links a.active::after {
   width: 100%;
 }
 
-/* --- Menu Burger (Mobile) --- */
+/* --- Menu Burger (Mobile - Structure only, functionality in JS) --- */
 .burger {
-  display: none; /* Caché sur desktop */
+  display: none; /* Hidden on desktop */
   flex-direction: column;
   cursor: pointer;
-  gap: 5px; /* Espacement entre les barres */
-  padding: 5px; /* Zone cliquable */
+  gap: 5px;
+  padding: var(--espacement-sm);
+  background: none;
+  border: none;
 }
 
 .burger div {
@@ -354,16 +429,40 @@ header {
   transition: all 0.3s ease-in-out;
 }
 
-/* Animation du burger en croix */
-.burger.active .line1 {
-  transform: rotate(-45deg) translate(-5px, 6px);
+/* Active state styles for burger (handled by JS adding 'active' class) */
+.burger.active .line1 { transform: rotate(-45deg) translate(-5px, 6px); }
+.burger.active .line2 { opacity: 0; }
+.burger.active .line3 { transform: rotate(45deg) translate(-5px, -6px); }
+
+/* Mobile nav links container (hidden by default, shown by JS) */
+.nav-links-mobile {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    background-color: var(--couleur-principale);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: var(--espacement-sm) 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
-.burger.active .line2 {
-  opacity: 0;
+
+.nav-links-mobile.active {
+    display: flex;
 }
-.burger.active .line3 {
-  transform: rotate(45deg) translate(-5px, -6px);
+
+.nav-links-mobile a {
+    padding: var(--espacement-md) var(--espacement-lg);
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    width: 100%;
+    color: var(--couleur-texte-clair);
+    font-weight: 500;
 }
+.nav-links-mobile a:last-child { border-bottom: none; }
+.nav-links-mobile a:hover { background-color: var(--couleur-principale-hover); }
+
 
 /* ==========================================================================
    📌 4. Footer
@@ -372,62 +471,64 @@ header {
 footer {
   background: var(--couleur-fond-sombre);
   color: var(--couleur-texte-lien-footer);
-  padding: 30px 0 15px; /* Padding ajusté */
+  padding: var(--espacement-xl) 0 var(--espacement-md); /* Consistent padding */
   text-align: center;
   width: 100%;
-  margin-top: auto; /* Colle le footer en bas si le contenu est court */
+  margin-top: auto; /* Pushes footer down */
 }
 
 .footer-main {
   display: flex;
-  justify-content: space-around; /* Meilleure distribution */
-  align-items: flex-start; /* Alignement en haut */
+  justify-content: space-around;
+  align-items: flex-start;
   flex-wrap: wrap;
-  gap: 20px; /* Espacement entre les sections */
+  gap: var(--espacement-lg);
   max-width: 1100px;
-  margin: 0 auto 20px auto; /* Marge inférieure ajoutée */
-  padding: 0 20px 20px 20px; /* Padding ajusté */
+  margin: 0 auto var(--espacement-lg) auto;
+  padding: 0 var(--espacement-lg) var(--espacement-lg) var(--espacement-lg);
   border-bottom: 1px solid var(--couleur-bordure-sombre);
 }
 
 .footer-info, .footer-links-section {
   text-align: left;
-  flex: 1; /* Permet aux sections de grandir */
-  min-width: 200px; /* Largeur minimale pour éviter l'écrasement */
+  flex: 1;
+  min-width: 200px;
 }
 
 .footer-info h4, .footer-links-section h4 {
   color: var(--couleur-texte-clair);
-  margin-bottom: 10px;
-  font-size: 1.1em;
+  margin-bottom: var(--espacement-md);
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
 .footer-info ul, .footer-links-section ul {
   list-style: none;
   padding: 0;
+  margin: 0; /* Remove default margin */
 }
 
 .footer-info li, .footer-links-section li {
-  margin-bottom: 8px;
+  margin-bottom: var(--espacement-sm);
 }
 
 .footer-info a, .footer-links-section a {
-  color: var(--couleur-secondaire);
+  color: var(--couleur-texte-lien-footer); /* Use the lighter link color */
   text-decoration: none;
-  font-weight: normal; /* Poids normal par défaut */
+  font-weight: normal;
   transition: color var(--transition-standard);
 }
 
 .footer-info a:hover, .footer-links-section a:hover {
-  color: var(--couleur-secondaire-hover);
+  color: var(--couleur-texte-clair); /* Hover to white */
   text-decoration: underline;
 }
 
 .footer-socials {
   display: flex;
   justify-content: center;
-  gap: 15px;
-  margin-bottom: 20px; /* Espace avant les liens sociaux */
+  gap: var(--espacement-md);
+  margin-bottom: var(--espacement-lg);
 }
 
 .footer-socials .social-link {
@@ -440,18 +541,23 @@ footer {
 .footer-socials .social-link img {
   width: 100%;
   height: 100%;
-  filter: brightness(0) invert(1); /* Icônes blanches */
+  filter: grayscale(100%) invert(75%) sepia(11%) saturate(468%) hue-rotate(176deg) brightness(90%) contrast(86%); /* Match footer link color */
+  transition: filter var(--transition-standard);
+}
+
+.footer-socials .social-link:hover img {
+  filter: none; /* Full color on hover */
 }
 
 .footer-socials .social-link:hover {
-  transform: scale(1.2);
+  transform: scale(1.15); /* Slightly larger scale */
 }
 
 .footer-bottom {
   text-align: center;
-  font-size: 0.85em;
+  font-size: 0.875rem; /* 14px */
   color: var(--couleur-texte-lien-footer);
-  margin-top: 15px;
+  margin-top: var(--espacement-md);
 }
 
 /* ==========================================================================
@@ -460,162 +566,197 @@ footer {
 
 /* --- Formulaires Généraux --- */
 form {
-  max-width: 500px; /* Largeur max augmentée */
-  margin: 30px auto; /* Marge augmentée */
-  padding: 30px; /* Padding augmenté */
-  background: var(--couleur-fond-input);
+  max-width: 550px; /* Slightly wider */
+  margin: var(--espacement-xl) auto;
+  padding: var(--espacement-xl); /* More padding */
+  background: var(--couleur-fond-carte);
   border-radius: var(--rayon-bordure-moyen);
-  box-shadow: var(--ombre-input);
-  /* text-align: center; Removed global centering; align specific elements if needed */
+  box-shadow: var(--ombre-carte);
+  text-align: center;
+  border: 1px solid var(--couleur-bordure); /* Add subtle border */
+}
+
+form label {
+    display: block; /* Ensure labels are block for forms */
+    margin-bottom: var(--espacement-sm);
+}
+
+form button, form .btn {
+    margin-top: var(--espacement-md); /* Space above button */
 }
 
 /* --- Cartes (Utilisées pour étapes, stats, graphiques, profil) --- */
 .card {
   background: var(--couleur-fond-carte);
-  padding: 20px;
+  padding: var(--espacement-lg);
   border-radius: var(--rayon-bordure-grand);
   box-shadow: var(--ombre-carte);
   text-align: center;
-  margin: 20px auto;
+  margin: var(--espacement-lg) auto;
   transition: transform var(--transition-rapide), box-shadow var(--transition-rapide);
-  position: relative; /* Pour positionner des éléments internes comme help-bubble */
+  position: relative;
+  border: 1px solid var(--couleur-bordure); /* Add subtle border */
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0px 8px 15px rgba(0, 0, 0, 0.15);
+  transform: translateY(-3px); /* Subtle lift */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1); /* Slightly stronger hover shadow */
 }
 
 .card-title {
   color: var(--couleur-principale);
-  font-size: 1.25em; /* Taille ajustée */
-  margin-bottom: 15px;
+  font-size: 1.25rem;
+  margin-bottom: var(--espacement-md);
+  font-weight: 600;
 }
 
 /* --- Configuration des Box (Formulaire spécifique) --- */
-#configBoxForm { /* Gardons l'ID ici car c'est un formulaire unique */
+#configBoxForm { /* Keep ID for specificity */
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 400px; /* Largeur spécifique */
+  max-width: 400px;
+  padding: var(--espacement-lg); /* Adjust padding if needed */
 }
 
 #configBoxForm label {
-  font-size: 1em;
-  margin-top: 10px;
+  font-size: 1rem;
+  margin-top: var(--espacement-sm);
   color: var(--couleur-texte-secondaire);
   display: block;
   text-align: left;
-  width: 80%; /* Alignement avec l'input */
-  max-width: 250px;
+  width: 90%; /* Adjust width as needed */
+  max-width: 300px;
 }
 
 #configBoxForm input[type="number"] {
-  width: 80%;
-  max-width: 250px;
-  padding: 8px;
-  margin-top: 5px;
-  /* text-align: center; Removed centering to align with left-aligned label */
+  width: 90%;
+  max-width: 300px;
+  padding: var(--espacement-sm);
+  margin-top: var(--espacement-xs);
+  text-align: center;
 }
 
 #configBoxForm button {
-  margin-top: 20px; /* Marge augmentée */
-  padding: 10px 20px;
-  width: auto; /* Largeur auto pour ce bouton */
+  margin-top: var(--espacement-lg);
+  padding: var(--espacement-sm) var(--espacement-lg);
+  width: auto; /* Auto width for this specific button */
 }
 
 #configBoxForm .loader {
-  margin-top: 15px; /* Marge ajustée */
+  margin-top: var(--espacement-md);
 }
 
 /* --- Étapes (Utilise .card) --- */
-.step { /* Alias pour .card si utilisé spécifiquement pour les étapes */
-  max-width: 500px;
+.step { /* Alias for .card if used specifically for steps */
+  max-width: 550px;
 }
 
 /* --- GIF et Modales --- */
+.gif-container {
+    margin-bottom: var(--espacement-md); /* Add space below container */
+}
+
 .gif-container img {
   max-width: 350px;
   cursor: pointer;
   border-radius: var(--rayon-bordure-moyen);
-  transition: transform var(--transition-standard);
-  margin: 0 auto; /* Centrer l'image si le conteneur est plus large */
+  transition: transform var(--transition-standard), box-shadow var(--transition-standard);
+  margin: 0 auto;
+  border: 1px solid var(--couleur-bordure);
 }
 
 .gif-container img:hover {
-  transform: scale(1.05);
+  transform: scale(1.03); /* Subtle scale */
+  box-shadow: var(--ombre-carte);
 }
 
 .gif-modal {
-  display: none; /* Caché par défaut */
+  display: none;
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.8); /* Fond plus sombre */
+  background: rgba(0, 0, 0, 0.85); /* Darker overlay */
   justify-content: center;
   align-items: center;
-  z-index: 1000;
-  padding: 20px; /* Espace pour éviter que l'image touche les bords */
+  z-index: 1050; /* High z-index for modals */
+  padding: var(--espacement-lg);
+  cursor: pointer; /* Allow clicking outside to close */
 }
 
-.gif-modal.active { /* Classe pour afficher la modale */
+.gif-modal.active {
     display: flex;
 }
 
 .gif-modal img {
-  width: auto; /* Largeur auto pour garder les proportions */
-  max-width: 90%; /* Limite la largeur */
-  max-height: 90vh; /* Limite la hauteur */
+  width: auto;
+  max-width: 90%;
+  max-height: 90vh;
   border-radius: var(--rayon-bordure-moyen);
+  cursor: default; /* Prevent modal close when clicking image */
 }
 
 /* --- Statistiques Globales (Utilise .card) --- */
 .stats-globales {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: var(--espacement-lg);
   flex-wrap: wrap;
 }
 
-.stat-card { /* Alias pour .card */
-  width: 300px;
-  flex-grow: 1; /* Permet aux cartes de grandir un peu */
+.stat-card { /* Alias for .card */
+  width: 100%; /* Take full width within flex item */
+  max-width: 320px; /* Max width per card */
+  flex-basis: 300px; /* Base width */
+  flex-grow: 1;
+  margin: var(--espacement-sm); /* Use margin for spacing within flex */
 }
 
 .stat-content {
-  font-size: 1em;
+  font-size: 1rem;
   color: var(--couleur-texte-secondaire);
 }
 
 .stat-content p {
-  margin: 8px 0; /* Marge ajustée */
-  font-weight: bold;
+  margin: var(--espacement-sm) 0;
+  font-weight: 600;
+}
+
+.stat-content strong { /* Style for the actual stat number */
+    font-size: 1.5rem;
+    color: var(--couleur-texte-base);
+    display: block;
+    margin-bottom: var(--espacement-xs);
 }
 
 /* --- Graphiques (Utilise .card) --- */
 .chart-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Grille responsive */
-  gap: 20px;
-  padding: 20px 0; /* Padding vertical */
+  /* Desktop: Two columns */
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--espacement-lg);
+  padding: var(--espacement-lg) 0;
   justify-content: center;
-  align-items: start;
+  align-items: start; /* Align items to the top */
 }
 
-.chart-card { /* Alias pour .card */
-  padding: 15px;
+.chart-card { /* Alias for .card */
+  padding: var(--espacement-md); /* Slightly less padding for charts */
+  margin: 0; /* Grid gap handles spacing */
 }
 
 .chart-card h3 {
-  margin-bottom: 15px; /* Marge augmentée */
-  font-size: 1.1em;
+  margin-bottom: var(--espacement-md);
+  font-size: 1.1rem;
   color: var(--couleur-texte-base);
+  text-align: center;
 }
 
 canvas {
-  max-width: 100%; /* Assure que le canvas ne dépasse pas */
+  max-width: 100%;
+  height: auto !important; /* Override potential inline styles from Chart.js */
 }
 
 /* --- Filtres (Date, Dropdown) --- */
@@ -623,44 +764,52 @@ canvas {
     display: flex;
     justify-content: center;
     align-items: center;
-    gap: 15px;
-    flex-wrap: wrap; /* Permet le passage à la ligne sur petits écrans */
-    margin-bottom: 20px;
+    gap: var(--espacement-lg); /* Increased gap */
+    flex-wrap: wrap;
+    margin-bottom: var(--espacement-xl); /* More space below filters */
+    padding: var(--espacement-md);
+    background-color: var(--couleur-fond-carte);
+    border-radius: var(--rayon-bordure-moyen);
+    box-shadow: var(--ombre-input);
+    border: 1px solid var(--couleur-bordure);
 }
 
 .date-filters {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--espacement-sm);
 }
 
 .date-filters label, .dropdown label {
-  font-size: 0.9em;
-  font-weight: bold;
+  font-size: 0.9rem;
+  font-weight: 600;
   color: var(--couleur-texte-base);
-  margin: 0; /* Supprime la marge par défaut des labels ici */
+  margin: 0;
+  white-space: nowrap; /* Prevent label wrapping */
 }
 
 .date-filters input[type="month"] {
-  font-size: 0.9em;
-  padding: 8px; /* Padding ajusté */
-  width: auto; /* Largeur auto */
+  font-size: 0.9rem;
+  padding: var(--espacement-xs) var(--espacement-sm); /* Smaller padding */
+  width: auto;
   border: 1px solid var(--couleur-bordure);
   border-radius: var(--rayon-bordure-petit);
   text-align: center;
-  margin: 0; /* Supprime marge */
+  margin: 0;
+  margin-bottom: 0; /* Override default input margin */
 }
 
 .filter-actions {
   display: flex;
-  gap: 10px;
+  gap: var(--espacement-sm);
 }
 
 .filter-actions button, .reset-dates {
-  padding: 8px 12px; /* Padding ajusté */
-  font-size: 0.9em;
-  width: auto; /* Largeur auto */
-  margin: 0; /* Supprime marge */
+  padding: var(--espacement-xs) var(--espacement-sm); /* Smaller padding */
+  font-size: 0.9rem;
+  width: auto;
+  margin: 0;
+  margin-bottom: 0; /* Override default button margin */
 }
 
 /* Dropdown pour filtres */
@@ -670,25 +819,27 @@ canvas {
 }
 
 #toggleFilter { /* Style spécifique pour le bouton du dropdown */
-  padding: 8px 12px;
-  font-size: 0.9em;
+  padding: var(--espacement-xs) var(--espacement-sm);
+  font-size: 0.9rem;
   width: auto;
   margin: 0;
+  margin-bottom: 0; /* Override default button margin */
 }
 
 .dropdown-content {
   display: none;
   position: absolute;
   background-color: var(--couleur-fond-carte);
-  min-width: 220px; /* Largeur minimale */
-  max-height: 250px; /* Hauteur max avec scroll */
+  min-width: 240px; /* Wider dropdown */
+  max-height: 300px;
   overflow-y: auto;
   box-shadow: var(--ombre-modal);
-  padding: 10px;
+  padding: var(--espacement-sm);
   border-radius: var(--rayon-bordure-petit);
-  z-index: 10;
-  margin-top: 5px; /* Petit espace sous le bouton */
-  text-align: left; /* Alignement du contenu */
+  z-index: 1000; /* Ensure dropdown is above other content */
+  margin-top: var(--espacement-xs);
+  text-align: left;
+  border: 1px solid var(--couleur-bordure);
 }
 
 .dropdown-content.active {
@@ -696,14 +847,16 @@ canvas {
 }
 
 .dropdown-content label { /* Style des labels dans le dropdown */
-  display: flex; /* Utilisation de flex pour aligner checkbox et texte */
+  display: flex;
   align-items: center;
-  font-size: 0.9em;
-  padding: 8px 5px; /* Padding ajusté */
+  font-size: 0.9rem;
+  padding: var(--espacement-sm);
   cursor: pointer;
-  font-weight: normal; /* Poids normal */
-  border-radius: 3px;
+  font-weight: normal;
+  border-radius: var(--rayon-bordure-petit);
   transition: background-color var(--transition-standard);
+  margin-bottom: var(--espacement-xs); /* Space between items */
+  white-space: nowrap; /* Prevent wrapping */
 }
 
 .dropdown-content label:hover {
@@ -711,132 +864,140 @@ canvas {
 }
 
 .dropdown-content input[type="checkbox"] {
-  margin-right: 8px; /* Espace entre checkbox et texte */
-  width: auto; /* Largeur auto pour checkbox */
-  margin-bottom: 0; /* Pas de marge en bas */
+  margin-right: var(--espacement-sm);
+  width: auto;
+  margin-bottom: 0;
+  flex-shrink: 0; /* Prevent checkbox shrinking */
 }
 
 /* --- Section Profil (Utilise .card et grille) --- */
 .profil-container {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); /* Grille responsive */
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Adjust minmax */
+  gap: var(--espacement-lg);
   max-width: 1200px;
   margin: auto;
-  padding: 20px 0;
+  padding: var(--espacement-lg) 0;
 }
 
-.etape-card { /* Alias pour .card */
-  margin-bottom: 0; /* La grille gère l'espacement */
+.etape-card { /* Alias for .card */
+  margin: 0; /* Grid gap handles spacing */
 }
 
 .etape-card input,
 .etape-card button,
 .etape-card select {
-  /* Les styles de base des inputs/boutons s'appliquent */
-  /* Pas besoin de redéfinir width: 100% ici, c'est déjà le défaut */
+  /* Base styles apply */
 }
 
 .etape-card input[type="file"] {
   display: block;
-  margin: 10px auto; /* Centrage */
+  margin: var(--espacement-md) auto;
 }
 
 /* --- Changement de Mot de Passe --- */
 .password-container {
   position: relative;
-  display: flex; /* Pour aligner input et icône */
+  display: flex;
   align-items: center;
+  margin-bottom: var(--espacement-md); /* Add margin below container */
 }
 
 .password-container input[type="password"],
-.password-container input[type="text"] { /* S'applique quand le type change */
-  flex: 1; /* L'input prend l'espace */
-  /* padding-right est géré par l'icône */
+.password-container input[type="text"] {
+  flex: 1;
+  margin-bottom: 0; /* Remove margin from input inside container */
+  padding-right: 40px; /* Space for the icon */
 }
 
 .toggle-password {
   position: absolute;
-  right: 10px;
-  top: 50%;
-  transform: translateY(-50%); /* Centrage vertical précis */
+  right: 0;
+  top: 0;
+  height: 100%; /* Match input height */
+  width: 40px; /* Width for the button */
   cursor: pointer;
-  padding: 5px; /* Zone cliquable */
-  display: flex; /* Pour centrer l'image si elle a des marges */
+  display: flex;
   align-items: center;
   justify-content: center;
-  background: transparent; /* Pas de fond */
-  border: none; /* Pas de bordure */
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--couleur-texte-secondaire); /* Icon color */
+}
+
+.toggle-password:hover {
+    color: var(--couleur-texte-base);
 }
 
 .toggle-password img {
-  width: 20px; /* Taille de l'icône */
+  width: 20px;
   height: 20px;
-  display: block; /* Assure qu'il n'y a pas d'espace sous l'image */
+  display: block;
+  opacity: 0.7;
+}
+.toggle-password:hover img {
+    opacity: 1;
 }
 
 /* Critères de mot de passe */
 .password-requirements {
   list-style: none;
   padding: 0;
-  margin: 10px 0 15px 0; /* Marge ajustée */
+  margin: var(--espacement-sm) 0 var(--espacement-md) 0;
   text-align: left;
-  font-size: 0.9em;
+  font-size: 0.875rem;
   color: var(--couleur-texte-secondaire);
 }
 
 .password-requirements li {
-  margin: 5px 0;
-  padding-left: 20px; /* Espace pour l'icône */
+  margin: var(--espacement-xs) 0;
+  padding-left: 25px; /* More space for icon */
   position: relative;
+  transition: color var(--transition-standard);
 }
 
 /* Icônes pour valid/invalid (pseudo-éléments) */
 .password-requirements li::before {
     content: '';
     position: absolute;
-    left: 0;
+    left: 5px; /* Position icon */
     top: 50%;
     transform: translateY(-50%);
-    width: 12px;
-    height: 12px;
+    width: 14px; /* Slightly larger icon */
+    height: 14px;
     border-radius: 50%;
-    background-color: var(--couleur-bordure); /* Gris par défaut */
+    background-color: var(--couleur-bordure);
+    font-family: sans-serif; /* Ensure symbols render */
+    font-size: 10px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    line-height: 14px;
+    transition: background-color var(--transition-standard);
 }
 
-.password-requirements li.valid {
-  color: var(--couleur-succes);
-}
+.password-requirements li.valid { color: var(--couleur-succes); }
 .password-requirements li.valid::before {
     background-color: var(--couleur-succes);
-    content: '✔'; /* Coche */
-    color: white;
-    font-size: 8px;
-    text-align: center;
-    line-height: 12px;
+    content: '✔';
 }
 
-.password-requirements li.invalid {
-  color: var(--couleur-invalide);
-}
+.password-requirements li.invalid { color: var(--couleur-invalide); }
 .password-requirements li.invalid::before {
     background-color: var(--couleur-invalide);
-    content: '✖'; /* Croix */
-    color: white;
-    font-size: 8px;
-    text-align: center;
-    line-height: 12px;
+    content: '✖';
 }
 
 /* --- Bulle d'aide --- */
 .help-bubble {
   position: absolute;
-  top: 15px;
-  right: 15px;
-  background: var(--couleur-principale);
+  top: var(--espacement-md);
+  right: var(--espacement-md);
+  background: var(--couleur-accent); /* Use accent color */
   color: var(--couleur-texte-clair);
-  width: 25px;
-  height: 25px;
+  width: 28px; /* Slightly larger */
+  height: 28px;
   border-radius: var(--rayon-bordure-rond);
   display: flex;
   align-items: center;
@@ -848,79 +1009,92 @@ canvas {
   transition: background-color var(--transition-standard), transform var(--transition-rapide);
   border: none;
   outline: none;
+  font-size: 0.9rem;
 }
 
 .help-bubble:hover {
-  background: var(--couleur-principale-hover);
+  background: var(--couleur-accent-hover);
   transform: scale(1.1);
 }
 
 .help-tooltip {
   position: absolute;
-  top: 45px; /* Position sous la bulle */
-  right: 15px;
+  top: calc(var(--espacement-md) + 32px); /* Position below bubble */
+  right: var(--espacement-md);
   background: var(--couleur-fond-carte);
-  color: var(--couleur-texte-base); /* Texte normal */
-  padding: 15px;
+  color: var(--couleur-texte-base);
+  padding: var(--espacement-md);
   border-radius: var(--rayon-bordure-petit);
   box-shadow: var(--ombre-modal);
-  width: 300px;
-  display: none; /* Caché par défaut */
-  z-index: 100;
+  width: 320px; /* Wider tooltip */
+  display: none;
+  z-index: 1010; /* Above card content, below header */
   border: 1px solid var(--couleur-bordure);
-  text-align: left; /* Contenu aligné à gauche */
+  text-align: left;
 }
 
-.help-tooltip.active { /* Classe pour afficher */
+.help-tooltip.active {
     display: block;
 }
 
 .help-tooltip h3 {
   margin-top: 0;
-  color: var(--couleur-principale);
-  font-size: 1.1em;
+  color: var(--couleur-accent); /* Match bubble color */
+  font-size: 1.1rem;
+  margin-bottom: var(--espacement-sm);
 }
 
 .help-tooltip ol {
-  padding-left: 20px;
-  margin-top: 10px;
+  padding-left: var(--espacement-lg);
+  margin-top: var(--espacement-sm);
+  margin-bottom: 0; /* Remove bottom margin */
 }
 
 .help-tooltip li {
-  margin-bottom: 8px;
-  font-size: 0.9em;
+  margin-bottom: var(--espacement-sm);
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
 /* --- Tableau des Utilisateurs --- */
-.user-table-container { /* Conteneur pour permettre le défilement horizontal si nécessaire */
-    overflow-x: auto;
-    margin: 20px 0; /* Marge verticale */
+.user-table-container {
+    overflow-x: auto; /* Enable horizontal scroll on smaller viewports if needed */
+    margin: var(--espacement-lg) 0;
+    border: 1px solid var(--couleur-bordure-tableau);
+    border-radius: var(--rayon-bordure-moyen);
+    box-shadow: var(--ombre-input);
 }
 
 .user-table {
   width: 100%;
   border-collapse: collapse;
   background: var(--couleur-fond-carte);
-  box-shadow: var(--ombre-input);
-  border-radius: var(--rayon-bordure-moyen);
-  overflow: hidden; /* Pour que le radius s'applique aux coins */
-  min-width: 600px; /* Largeur minimale pour éviter l'écrasement du contenu */
+  /* Removed overflow: hidden; border-radius on container is enough */
+  min-width: 650px; /* Ensure minimum width */
+  font-size: 0.95rem; /* Slightly adjust base size */
 }
 
 .user-table th,
 .user-table td {
-  padding: 12px 15px; /* Padding ajusté */
+  padding: var(--espacement-sm) var(--espacement-md); /* Consistent padding */
   text-align: left;
   border-bottom: 1px solid var(--couleur-bordure-tableau);
-  vertical-align: middle; /* Alignement vertical */
+  vertical-align: middle;
 }
 
-.user-table thead th { /* Style de l'en-tête */
-  background-color: var(--couleur-principale);
-  color: var(--couleur-texte-clair);
-  font-weight: bold;
-  font-size: 0.9em;
-  text-transform: uppercase; /* Majuscules pour les titres */
+.user-table thead th {
+  background-color: var(--couleur-fond); /* Lighter header */
+  color: var(--couleur-texte-base); /* Darker text */
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px; /* Add letter spacing */
+  border-bottom-width: 2px; /* Thicker bottom border for header */
+  border-color: var(--couleur-bordure);
+}
+
+.user-table tbody tr {
+    transition: background-color var(--transition-standard);
 }
 
 .user-table tbody tr:hover {
@@ -928,29 +1102,35 @@ canvas {
 }
 
 .user-table tbody tr:last-child td {
-  border-bottom: none; /* Pas de bordure pour la dernière ligne */
+  border-bottom: none;
 }
 
 .user-table .actions {
-  text-align: center; /* Centrage des actions */
-  white-space: nowrap; /* Empêche le retour à la ligne des liens d'action */
+  text-align: center;
+  white-space: nowrap;
 }
 
 .user-table .actions a {
   color: var(--couleur-principale);
   text-decoration: none;
-  font-weight: bold;
-  margin: 0 5px;
-  padding: 3px 6px; /* Petit padding pour les liens */
-  border-radius: 3px;
+  font-weight: 500; /* Normal weight for action links */
+  margin: 0 var(--espacement-xs);
+  padding: var(--espacement-xs) var(--espacement-sm);
+  border-radius: var(--rayon-bordure-petit);
   transition: background-color var(--transition-standard), color var(--transition-standard);
+  display: inline-block; /* Ensure padding applies correctly */
 }
 
 .user-table .actions a:hover {
-  text-decoration: none; /* Pas de soulignement ici */
+  text-decoration: none;
   background-color: var(--couleur-principale-hover);
   color: var(--couleur-texte-clair);
 }
+
+.user-table .actions a.edit-link { /* Specific style if needed */
+    /* color: #ffc107; */ /* Example: Warning color */
+}
+/* .user-table .actions a.edit-link:hover { background-color: #e0a800; color: #000; } */
 
 .user-table .actions a.delete-link {
   color: var(--couleur-invalide);
@@ -963,522 +1143,207 @@ canvas {
 
 /* Bouton "Ajouter utilisateur" */
 .add-user-button {
-  display: block; /* Prend toute la largeur disponible */
-  width: fit-content; /* S'adapte au contenu */
-  margin: 20px auto; /* Centrage */
-  /* Utilise les styles .btn par défaut */
+  display: block;
+  width: fit-content;
+  margin: var(--espacement-lg) auto;
 }
 
 /* --- Pages Légales (CGU, Mentions) --- */
-.legal-content { /* Classe commune */
+.legal-content {
   max-width: 900px;
-  margin: 40px auto; /* Marge ajustée */
-  padding: 30px; /* Padding augmenté */
+  margin: var(--espacement-xl) auto;
+  padding: var(--espacement-xl);
   background: var(--couleur-fond-carte);
-  box-shadow: var(--ombre-input);
+  box-shadow: var(--ombre-carte);
   border-radius: var(--rayon-bordure-moyen);
-  text-align: left; /* Contenu aligné à gauche */
+  text-align: left;
+  border: 1px solid var(--couleur-bordure);
 }
 
 .legal-content h1 {
-  font-size: 1.8em; /* Taille ajustée */
-  font-weight: bold;
+  font-size: 1.8rem;
+  font-weight: 700;
   text-align: center;
   color: var(--couleur-principale);
-  margin-bottom: 30px; /* Marge augmentée */
+  margin-bottom: var(--espacement-xl);
 }
 
 .legal-content h2 {
-  font-size: 1.4em; /* Taille ajustée */
+  font-size: 1.4rem;
   color: var(--couleur-texte-base);
-  margin-top: 25px;
-  margin-bottom: 10px;
-  border-bottom: 1px solid var(--couleur-bordure); /* Soulignement léger */
-  padding-bottom: 5px;
+  margin-top: var(--espacement-lg);
+  margin-bottom: var(--espacement-sm);
+  border-bottom: 1px solid var(--couleur-bordure);
+  padding-bottom: var(--espacement-xs);
+  font-weight: 600;
 }
 
 .legal-content p {
-  font-size: 1em;
-  line-height: 1.7; /* Hauteur de ligne augmentée */
+  font-size: 1rem;
+  line-height: 1.7;
   color: var(--couleur-texte-secondaire);
-  margin-bottom: 15px;
+  margin-bottom: var(--espacement-md);
+}
+
+.legal-content ul, .legal-content ol {
+    margin-bottom: var(--espacement-md);
+    padding-left: var(--espacement-xl); /* More indent for lists */
+}
+
+.legal-content li {
+    margin-bottom: var(--espacement-sm);
 }
 
 .legal-content a {
-  /* Styles de lien par défaut s'appliquent */
-  font-weight: bold;
+  font-weight: 600; /* Bolder links in legal */
 }
 
 /* --- Styles spécifiques Flatpickr (si nécessaire) --- */
-/* Conserver les styles Flatpickr s'ils sont utilisés et fonctionnels */
+/* Keep existing Flatpickr styles if they work, potentially adjust colors */
 .flatpickr-monthSelect-month {
     width: 5.5em;
     height: 2.5em;
     margin: 0.1em;
     padding: 0.3em 0.5em;
+    border-radius: var(--rayon-bordure-petit);
+    border: 1px solid var(--couleur-bordure);
+    background: var(--couleur-fond-input);
+    color: var(--couleur-texte-base);
+    transition: background-color var(--transition-standard);
+}
+.flatpickr-monthSelect-month:hover {
+    background: var(--couleur-fond-input-hover);
 }
 
 .flatpickr-calendar {
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--ombre-modal);
     border-radius: var(--rayon-bordure-moyen);
+    background: var(--couleur-fond-carte);
+    border: 1px solid var(--couleur-bordure);
 }
+/* Add more specific Flatpickr overrides if needed to match theme */
+
 
 /* ==========================================================================
-   📱 6. Responsive Design (Media Queries)
+   🚫 END OF DESKTOP STYLES - Responsive styles removed as requested 🚫
    ========================================================================== */
 
-/* --- Tablettes et petits écrans (<= 1024px) --- */
-@media screen and (max-width: 1024px) {
-  .container {
-    width: 95%; /* Légère augmentation de la largeur */
-  }
+/* ==========================================================================
+   📱 10. Styles Responsives (Media Queries)
+   ========================================================================== */
 
-  .navbar {
-      padding: 0 15px; /* Réduction du padding latéral */
-  }
+@media (max-width: 768px) {
 
-  .profil-container, .chart-container {
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Ajustement pour tablettes */
-  }
-
-  .user-table th, .user-table td {
-      padding: 10px 12px; /* Padding légèrement réduit */
-  }
-}
-
-/* --- Smartphones et tablettes en portrait (<= 768px) --- */
-@media screen and (max-width: 768px) {
+  /* --- Ajustements Globaux --- */
   body {
-    font-size: 15px; /* Légère réduction de la taille de base */
+    font-size: 0.95rem; /* Légère réduction de la taille de police de base */
   }
-
-  h1 { font-size: 1.8em; }
-  h2 { font-size: 1.5em; }
-  h3 { font-size: 1.25em; }
 
   .container {
-      padding: 15px 0;
+    width: 95%; /* Plus de largeur sur mobile */
+    padding: var(--espacement-md) 0; /* Réduire légèrement le padding vertical */
   }
 
-  /* --- Header Mobile --- */
+  h1 { font-size: 1.8rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.3rem; }
+  h4 { font-size: 1.1rem; }
+
+  /* --- Header --- */
   .navbar {
-      padding: 0 10px; /* Padding réduit */
-      position: relative; /* Pour positionner le menu déroulant */
+    padding: 0 var(--espacement-md); /* Réduire padding latéral */
   }
 
   .nav-links {
-    display: none; /* Caché par défaut */
-    flex-direction: column;
-    position: absolute;
-    top: 100%; /* Se positionne sous le header */
-    left: 0;
-    width: 100%;
-    background-color: var(--couleur-principale); /* Même fond que le header */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 10px 0;
-    gap: 0; /* Pas de gap, géré par padding/bordure */
-    border-top: 1px solid rgba(255, 255, 255, 0.2); /* Séparateur */
+    display: none; /* Cacher les liens desktop */
   }
-
-  .nav-links.active {
-    display: flex; /* Affiché quand le burger est cliqué */
-  }
-
-  .nav-links a {
-    padding: 12px 20px; /* Padding pour les liens mobiles */
-    text-align: center;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Séparateur léger */
-    width: 100%;
-  }
-  .nav-links a:last-child {
-      border-bottom: none; /* Pas de bordure pour le dernier */
-  }
-  .nav-links a:hover {
-      background-color: var(--couleur-principale-hover); /* Fond au survol */
-      color: var(--couleur-texte-clair); /* Garde la couleur claire */
-  }
-   .nav-links a::after {
-       display: none; /* Pas de soulignement animé sur mobile */
-   }
 
   .burger {
     display: flex; /* Afficher le burger */
   }
 
-  /* --- Contenu Principal Mobile --- */
-  form {
-    width: 90%;
-    padding: 20px; /* Padding réduit */
-  }
+  /* Styles pour .nav-links-mobile sont déjà définis pour être affichés via JS */
+  /* Assurez-vous que le JS ajoute/enlève la classe 'active' sur .nav-links-mobile */
 
-  input, select, button, .btn {
-    font-size: 1em; /* Taille relative à la base du body */
-    padding: 12px; /* Padding unifié */
-  }
-
-  /* Ajustement spécifique pour les boutons dans les formulaires */
-  form button, form .btn {
-      width: 100%; /* Prend toute la largeur dans les formulaires */
-  }
-
-  .card {
-      padding: 15px;
-      width: 90%; /* Cartes plus larges */
-      margin-left: auto;
-      margin-right: auto;
-  }
-
-  .stats-globales {
-    flex-direction: column; /* Empilement vertical */
-    align-items: center;
-    gap: 15px;
-  }
-
-  .stat-card {
-    width: 100%; /* Prend toute la largeur */
-    max-width: 350px; /* Limite la largeur max */
-  }
-
-  .chart-container {
-    grid-template-columns: 1fr; /* Une seule colonne */
-    gap: 15px;
-  }
-
-  .chart-card {
-      width: 100%; /* Prend toute la largeur */
-  }
-
-  .profil-container {
-      grid-template-columns: 1fr; /* Une seule colonne */
-      gap: 15px;
-  }
-
-  #configBoxForm input[type="number"],
-  #configBoxForm label {
-      width: 90%; /* Plus large sur mobile */
-      max-width: none;
-  }
-  #configBoxForm button {
-      width: 90%; /* Bouton plus large */
-  }
-
-  .filters-container {
-      flex-direction: column; /* Empilement des filtres */
-      align-items: stretch; /* Étire les éléments */
-      gap: 10px;
-  }
-  .date-filters {
-      justify-content: space-between; /* Espace entre label et input */
-      width: 100%;
-  }
-  .date-filters input[type="month"] {
-      flex-grow: 1; /* L'input prend l'espace */
-      margin-left: 10px;
-  }
-  .filter-actions {
-      width: 100%;
-      justify-content: center; /* Centre les boutons d'action */
-  }
-  .dropdown {
-      width: 100%;
-  }
-  #toggleFilter {
-      width: 100%;
-  }
-  .dropdown-content {
-      min-width: unset; /* Pas de min-width */
-      width: 100%; /* Prend toute la largeur */
-      left: 0; /* Alignement à gauche */
-  }
-
-  /* --- Tableau Mobile --- */
-  .user-table th,
-  .user-table td {
-    font-size: 0.9em; /* Texte plus petit */
-    padding: 8px 10px; /* Padding réduit */
-  }
-  /* Optionnel: Cacher certaines colonnes moins importantes sur mobile */
-  /* .user-table .col-email, .user-table .col-date { display: none; } */
-
-  /* --- Footer Mobile --- */
+  /* --- Footer --- */
   .footer-main {
-    flex-direction: column; /* Empilement vertical */
-    align-items: center; /* Centrage */
-    text-align: center;
-    padding-bottom: 15px;
-    margin-bottom: 15px;
+    flex-direction: column; /* Empiler les sections */
+    align-items: center; /* Centrer les sections empilées */
+    text-align: center; /* Centrer le texte dans les sections */
+    padding-bottom: var(--espacement-lg);
+    border-bottom: none; /* Enlever la bordure entre sections sur mobile */
   }
 
   .footer-info, .footer-links-section {
-    text-align: center; /* Centrage du texte */
-    width: 100%; /* Prend toute la largeur */
-    min-width: unset;
+    text-align: center; /* Centrer le texte */
+    width: 90%; /* Donner une largeur définie */
+    max-width: 350px; /* Limiter la largeur max */
+    margin-bottom: var(--espacement-lg); /* Ajouter de l'espace entre sections */
+    padding-bottom: var(--espacement-md); /* Ajouter padding sous chaque section */
+    border-bottom: 1px solid var(--couleur-bordure-sombre); /* Ajouter bordure sous chaque section */
   }
 
-  .footer-socials {
-    margin-top: 15px; /* Espace au-dessus des icônes sociales */
-    margin-bottom: 15px;
-  }
-
-  .footer-socials .social-link {
-    width: 30px; /* Icônes légèrement plus petites */
-    height: 30px;
+  .footer-info:last-child, .footer-links-section:last-child {
+      margin-bottom: 0;
+      border-bottom: none; /* Pas de bordure pour le dernier élément */
   }
 
   .footer-bottom {
-      font-size: 0.8em;
+      padding: var(--espacement-md) var(--espacement-md) 0; /* Ajuster padding */
+      font-size: 0.85rem;
   }
 
-  /* --- Pages Légales Mobile --- */
-  .legal-content {
-    width: 90%;
-    margin: 20px auto;
-    padding: 20px;
-  }
-  .legal-content h1 { font-size: 1.5em; }
-  .legal-content h2 { font-size: 1.2em; }
-  .legal-content p { font-size: 0.95em; }
 
-}
-
-/* ==========================================================================
-   📊 10. Styles Spécifiques - Page Statistiques (stats.php)
-   ========================================================================== */
-
-.stats-page .chart-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px; /* Espace entre les cartes graphiques (horizontal et vertical) */
-  justify-content: flex-start; /* Alignement standard au début */
-  margin-top: 30px; /* Espace au-dessus du conteneur de graphiques */
-  padding: 0 10px; /* Ajoute un peu de padding latéral au conteneur */
-}
-
-.stats-page .chart-card {
-  flex: 1 1 calc(50% - 10px); /* Base de 50% moins la moitié du gap */
-  max-width: calc(50% - 10px); /* Limite la largeur max */
-  box-sizing: border-box; /* Inclut padding/border dans la largeur */
-  margin: 0; /* Annule la marge auto de .card pour que flexbox/gap gère l'espacement */
-  /* Les styles de .card (background, padding, shadow) sont hérités/appliqués */
-}
-
-/* Ajustements pour les écrans moyens/petits (une seule colonne) */
-@media (max-width: 992px) { /* Point de rupture pour passer à une colonne */
-  .stats-page .chart-card {
-    flex: 1 1 100%; /* Une carte par ligne */
-    max-width: 100%;
-  }
-}
-
-/* ==========================================================================
-   📊 Styles Spécifiques - Page Statistiques (.stats-page)
-   ========================================================================== */
-
-/* --- Titre Principal --- */
-.stats-page > h1 { /* Ciblage plus spécifique */
-  text-align: center;
-  color: var(--couleur-principale); /* #007bff */
-  margin-top: 20px; /* Ajouter un peu d'espace au-dessus */
-  margin-bottom: 30px; /* Espacement avant les boîtes */
-}
-
-/* --- Boîtes Résumé (Nouvelles) --- */
-.stats-summary-boxes {
-  display: flex;
-  flex-wrap: wrap; /* Permet le passage à la ligne sur petits écrans */
-  gap: 20px; /* Espacement entre les boîtes */
-  justify-content: center; /* Centre les boîtes si l'espace le permet */
-  margin-bottom: 40px; /* Espace avant les graphiques */
-}
-
-.stat-box {
-  background-color: var(--couleur-fond-carte); /* #ffffff */
-  padding: 20px;
-  border-radius: var(--rayon-bordure-moyen); /* 8px */
-  box-shadow: var(--ombre-carte); /* 0px 4px 8px rgba(0, 0, 0, 0.1) */
-  text-align: center;
-  flex: 1 1 250px; /* Flex-grow, flex-shrink, flex-basis (base de 250px, s'adapte) */
-  min-width: 200px; /* Largeur minimale */
-  transition: transform var(--transition-rapide), box-shadow var(--transition-rapide);
-}
-
-.stat-box:hover {
-    transform: translateY(-3px);
-    box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.12);
-}
-
-.stat-box h4 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  font-size: 1.1em;
-  color: var(--couleur-texte-secondaire); /* #555 */
-}
-
-.stat-box .stat-value {
-  font-size: 1.8em;
-  font-weight: bold;
-  color: var(--couleur-principale); /* #007bff */
-  margin: 0;
-}
-
-/* --- Styles existants pour .stats-globales (Ajustés pour cohérence) --- */
-.stats-globales {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    justify-content: center;
-    margin-bottom: 30px; /* Espace avant les nouvelles boîtes */
-}
-
-.stats-globales .stat-card {
-    background-color: var(--couleur-fond-carte);
-    padding: 15px 20px;
-    border-radius: var(--rayon-bordure-moyen);
-    box-shadow: var(--ombre-carte);
-    text-align: left; /* Aligner le texte à gauche dans ces cartes */
-    flex: 1 1 300px; /* S'adapte, base de 300px */
-    min-width: 250px;
-}
-
-.stats-globales .stat-card h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    font-size: 1.2em;
-    color: var(--couleur-accent);
-    border-bottom: 1px solid var(--couleur-bordure);
-    padding-bottom: 5px;
-}
-
-.stats-globales .stat-card .stat-content p {
-    margin-bottom: 8px;
-    font-size: 0.95em;
-    color: var(--couleur-texte-secondaire);
-}
-
-.stats-globales .stat-card .stat-content p strong {
-    color: var(--couleur-texte-base);
-}
-
-
-/* --- Conteneur des Graphiques --- */
-.stats-page .chart-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 25px; /* Espacement entre les cartes graphiques */
-  justify-content: center; /* Centre les cartes si elles ne remplissent pas la ligne */
-}
-
-/* --- Cartes Graphiques --- */
-.stats-page .chart-card {
-  background-color: var(--couleur-fond-carte);
-  padding: 20px;
-  border-radius: var(--rayon-bordure-grand);
-  box-shadow: var(--ombre-carte);
-  flex: 1 1 100%; /* Par défaut: une colonne sur mobile */
-  min-width: 280px; /* Empêche d'être trop petit */
-  /* Transition ajoutée pour la fluidité si la taille change */
-  transition: flex-basis var(--transition-standard);
-}
-
-.stats-page .chart-card h3 {
-  text-align: center;
-  margin-top: 0;
-  margin-bottom: 20px;
-  color: var(--couleur-accent); /* #0072bc */
-}
-
-/* --- Layout 2 Colonnes pour les Graphiques (Écrans Larges) --- */
-@media (min-width: 992px) {
-  .stats-page .chart-card {
-    /* Calcul précis pour 2 colonnes avec l'espacement (gap) */
-    flex-basis: calc(50% - (25px / 2)); /* 50% moins la moitié du gap */
-    /* Assurer que ça ne grandit pas au-delà de 50% */
-    flex-grow: 0;
-  }
-}
-
-/* --- Filtres et Dropdowns dans les cartes graphiques --- */
-.stats-page .chart-card .date-filters,
-.stats-page .chart-card .filter-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-    margin-bottom: 15px;
-    font-size: 0.9em;
-}
-
-.stats-page .chart-card .date-filters label {
-    margin: 0; /* Reset margin */
-    font-weight: normal;
-}
-
-.stats-page .chart-card .date-filters input.month-picker {
-    flex: 1 1 120px; /* Permet aux inputs de prendre de la place */
-    padding: 5px 8px;
-    margin: 0; /* Reset margin */
-    font-size: 0.9em;
-    min-width: 120px;
-}
-
-.stats-page .chart-card .date-filters button,
-.stats-page .chart-card .filter-actions button {
-    padding: 5px 10px;
-    font-size: 0.85em;
-    font-weight: normal;
-}
-
-.stats-page .chart-card .dropdown {
-    position: relative;
-    display: inline-block; /* Ou block selon le besoin */
-    margin-bottom: 15px;
-}
-
-.stats-page .chart-card .dropdown button#toggleFilter,
-.stats-page .chart-card .dropdown button#toggleFilterJours {
-    padding: 6px 12px;
-    font-size: 0.9em;
-    background-color: var(--couleur-secondaire);
-    color: var(--couleur-texte-sombre);
-}
-.stats-page .chart-card .dropdown button#toggleFilter:hover,
-.stats-page .chart-card .dropdown button#toggleFilterJours:hover {
-    background-color: var(--couleur-secondaire-hover);
-}
-
-
-.stats-page .chart-card .dropdown-content {
-    display: none; /* Caché par défaut */
-    position: absolute;
-    background-color: var(--couleur-fond-carte);
-    min-width: 200px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-    z-index: 1;
-    max-height: 200px; /* Hauteur max avec scroll */
-    overflow-y: auto;
-    border: 1px solid var(--couleur-bordure);
-    border-radius: var(--rayon-bordure-petit);
-    padding: 10px;
-}
-
-.stats-page .chart-card .dropdown-content.show {
+  /* --- Formulaires --- */
+  /* (Optionnel: ajustements si les labels/inputs posent problème) */
+  /* Exemple:
+  label {
     display: block;
+    width: 100%;
+    margin-bottom: var(--espacement-xs);
+  }
+  input[type="text"], input[type="password"], etc {
+     margin-bottom: var(--espacement-sm);
+  }
+  */
+
+  /* --- Tableaux --- */
+  /* (Optionnel: Si des tableaux existent et nécessitent un défilement horizontal) */
+  /* Exemple:
+  .table-responsive {
+    overflow-x: auto;
+    display: block;
+    width: 100%;
+    -webkit-overflow-scrolling: touch;
+  }
+  table {
+     width: auto; // ou une largeur min spécifique
+     min-width: 600px; // exemple
+  }
+  */
+
+  /* --- Graphiques (stats.php) --- */
+  /* Cible les enfants directs pour les empiler */
+  .chart-container > * {
+      display: block; /* Assure que chaque enfant prend toute la largeur */
+      width: 100%; /* Force la pleine largeur */
+      margin-bottom: var(--espacement-lg); /* Ajoute de l'espace entre les graphiques empilés */
+  }
+  .chart-container > *:last-child {
+      margin-bottom: 0; /* Pas de marge pour le dernier graphique */
+  }
+
+  /* --- Autres ajustements spécifiques --- */
+  /* Ajoutez ici d'autres règles nécessaires pour des éléments spécifiques */
+
 }
 
-.stats-page .chart-card .dropdown-content label {
-    display: block; /* Chaque label sur sa ligne */
-    padding: 5px 0;
-    font-weight: normal;
-    font-size: 0.9em;
-    cursor: pointer;
+/* (Optionnel) Point d'arrêt pour très petits écrans */
+/*
+@media (max-width: 480px) {
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.4rem; }
+  .container { padding: var(--espacement-sm) 0; }
+  .btn, button { padding: var(--espacement-xs) var(--espacement-sm); font-size: 0.9rem; }
 }
-
-.stats-page .chart-card .dropdown-content label:hover {
-    background-color: var(--couleur-fond-input-hover);
-}
-
-.stats-page .chart-card .dropdown-content input[type="checkbox"] {
-    margin-right: 8px;
-    width: auto; /* Reset width */
-    vertical-align: middle;
-}
+*/

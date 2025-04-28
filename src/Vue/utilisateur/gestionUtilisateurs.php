@@ -7,7 +7,7 @@ if (!isset($_SESSION['user']) || $_SESSION['user']['is_admin'] !== 1) {
 use App\Configuration\ConnexionBD;
 
 $pdo = (new ConnexionBD())->getPdo();
-$stmt = $pdo->query('SELECT id, nom_utilisateur, email, is_admin, is_locked FROM utilisateurs'); // Fetch is_locked
+$stmt = $pdo->query('SELECT * FROM utilisateurs');
 $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -21,19 +21,6 @@ $utilisateurs = $stmt->fetchAll(PDO::FETCH_ASSOC);
 </head>
 <body class="gestion-utilisateurs-page">
 <h1>Gestion des utilisateurs</h1>
-<?php
-// Display success message if it exists
-if (isset($_SESSION['succes_message'])) {
-    echo '<div class="message succes">' . htmlspecialchars($_SESSION['succes_message']) . '</div>';
-    unset($_SESSION['succes_message']); // Clear the message after displaying
-}
-
-// Display error message if it exists
-if (isset($_SESSION['erreur_message'])) {
-    echo '<div class="message erreur">' . htmlspecialchars($_SESSION['erreur_message']) . '</div>';
-    unset($_SESSION['erreur_message']); // Clear the message after displaying
-}
-?>
 
 <table class="user-table">
     <thead>
@@ -41,7 +28,6 @@ if (isset($_SESSION['erreur_message'])) {
         <th>Nom d'utilisateur</th>
         <th>Email</th>
         <th>Admin</th>
-        <th>Statut</th> <!-- New column for lock status -->
         <th>Actions</th>
     </tr>
     </thead>
@@ -51,21 +37,12 @@ if (isset($_SESSION['erreur_message'])) {
             <td><?= htmlspecialchars($utilisateur['nom_utilisateur']) ?></td>
             <td><?= htmlspecialchars($utilisateur['email']) ?></td>
             <td><?= $utilisateur['is_admin'] ? 'Oui' : 'Non' ?></td>
-            <td><?= $utilisateur['is_locked'] ? '<span style="color:red;">Verrouillé</span>' : '<span style="color:green;">Actif</span>' ?></td> <!-- Display lock status -->
             <td class="actions">
                 <?php if ($utilisateur['is_admin']): ?>
-                    <p>Actions non disponibles pour les administrateurs</p>
+                    <p>Impossible de modifier ou supprimer un administrateur</p>
                 <?php else: ?>
-                    <!-- Keep existing actions -->
                     <a href="routeur.php?route=modifierUtilisateur&id=<?= $utilisateur['id'] ?>">Modifier</a>
                     <a href="routeur.php?route=supprimerUtilisateur&id=<?= $utilisateur['id'] ?>" class="delete-link" onclick="return confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')">Supprimer</a>
-
-                    <!-- Add Lock/Unlock actions -->
-                    <?php if ($utilisateur['is_locked']): ?>
-                        <a href="routeur.php?route=adminDebloquerUtilisateur&id=<?= $utilisateur['id'] ?>" class="action-link">Déverrouiller</a>
-                    <?php else: ?>
-                        <a href="routeur.php?route=adminBloquerUtilisateur&id=<?= $utilisateur['id'] ?>" class="action-link">Verrouiller</a>
-                    <?php endif; ?>
                 <?php endif; ?>
             </td>
         </tr>
